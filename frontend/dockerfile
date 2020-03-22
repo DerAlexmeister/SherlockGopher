@@ -1,0 +1,3 @@
+# Dockerfile 
+
+FROM golang:latest as build
