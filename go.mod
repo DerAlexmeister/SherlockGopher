@@ -1,0 +1,10 @@
+module github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen
+
+go 1.14
+
+require (
+	github.com/gin-gonic/gin v1.6.0
+	github.com/golang/protobuf v1.3.5 // indirect
+	github.com/micro/go-micro v1.18.0
+	golang.org/x/sys v0.0.0-20200321134203-328b4cd54aae // indirect
+)
