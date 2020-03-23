@@ -1,1 +1,13 @@
-# Protofile webserver
+// Protofile webserver
+
+syntax = "proto3";
+
+package webserverproto;
+
+/*
+CrawlWebServer will be the proto representation of the CrawlWebServer.
+*/
+
+service CrawlWebServer {
+    
+}
