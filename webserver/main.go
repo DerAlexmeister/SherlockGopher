@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	servicename string = "CrawlWebServer"
-	address     string = "localhost:8081"
+	servicename string = "CrawlWebServer" // Name of the Service
+	address     string = "localhost:8081" // Address of the Webserver
 )
 
 /*
@@ -41,7 +41,7 @@ func main() {
 	router := gin.Default()
 
 	router.GET("/helloping", webServerService.Helloping)
-	router.POST("search", webServerService.RecieveURL)
+	router.POST("/search", webServerService.RecieveURL)
 
 	router.Run(getAddress())
 
