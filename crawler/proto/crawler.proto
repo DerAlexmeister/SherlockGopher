@@ -1,1 +1,44 @@
 # Protofile
+
+syntax = "proto3";
+
+package crawlerproto;
+
+/*
+Status of the Crawler.
+*/
+enum ServiceStatus {
+    DONE = 0; // Crawler Finished Working
+}
+
+/*
+Crawler will be the gRPC service for the crawler
+*/
+service Crawler {
+
+    rpc RecieveURL(SubmitURLRequest) returns (SubmitURLResponse) {}
+
+    rpc FinishedRunning(google.protobuf.Empty) returns (StatusMessage) {}
+
+}
+
+/*
+SubmitURLRequest will submit a URL.
+*/
+message SubmitURLRequest {
+    string URL = 1; // Add more fields.
+}
+
+/*
+SubmitURLResponse will answer a SubmitURLRequest with a bool to indecate the status of the request.
+*/
+message SubmitURLResponse {
+    bool recieved = 1;
+}
+
+/*
+Will submit the Status of the Crawler.
+*/
+message StatusMessage {
+    ServiceStatus status = 1;
+}
