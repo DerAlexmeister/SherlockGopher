@@ -24,10 +24,6 @@ service Crawler {
 
 }
 
-service Chunker {
-    rpc Chunker(google.protobuf.Empty) returns (stream Chunk) {}
-}
-
 /*
 part of the file
 */
