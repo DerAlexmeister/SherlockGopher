@@ -30,7 +30,9 @@ func getAddress() string {
 func main() {
 	service := web.NewService(web.Name(getServiceName()))
 
-	service.Init()
+	if err := service.Init(); err != nil {
+		log.Fatal(err)
+	}
 
 	router := gin.Default()
 
