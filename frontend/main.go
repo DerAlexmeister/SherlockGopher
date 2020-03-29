@@ -27,34 +27,14 @@ func getAddress() string {
 	return address
 }
 
-/*
-New ill return a new ServeReact service.
-*/
-func New() *ServeReact {
-	return &ServeReact{}
-}
-
-/*
-ServeReact this service will serve the react files.
-*/
-type ServeReact struct{}
-
-func (react *ServeReact) serveIndex(context *gin.Context) {
-	context.JSON(200, map[string]string{
-		"message": "Welcome json!",
-	})
-}
-
 func main() {
 	service := web.NewService(web.Name(getServiceName()))
 
 	service.Init()
 
-	reactService := New()
-
 	router := gin.Default()
+
 	router.Use(static.Serve("/", static.LocalFile("./views", true)))
-	router.GET("/testing", reactService.serveIndex)
 
 	router.Run(getAddress())
 
