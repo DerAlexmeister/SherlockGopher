@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/micro/go-micro/web"
 )
@@ -52,6 +53,7 @@ func main() {
 	reactService := New()
 
 	router := gin.Default()
+	router.Use(static.Serve("/", static.LocalFile("./views", true)))
 	router.GET("/testing", reactService.serveIndex)
 
 	router.Run(getAddress())
