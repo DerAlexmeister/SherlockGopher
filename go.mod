@@ -3,7 +3,6 @@ module github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen
 go 1.14
 
 require (
-	github.com/DerAlexx/HTML-Link-Parser v0.0.0-20191012214806-2b9b2f29df0a // indirect
 	github.com/gin-gonic/contrib v0.0.0-20191209060500-d6e26eeaa607
 	github.com/gin-gonic/gin v1.6.0
 	github.com/golang/protobuf v1.3.5 // indirect
