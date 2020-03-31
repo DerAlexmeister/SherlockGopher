@@ -20,15 +20,6 @@ service Crawler {
 
     rpc FinishedRunning(google.protobuf.Empty) returns (StatusMessage) {}
 
-    rpc Chunker(google.protobuf.Empty) returns (stream Chunk) {}
-
-}
-
-/*
-part of the file
-*/
-message Chunk {
-    bytes chunk = 1;
 }
 
 /*
@@ -51,4 +42,5 @@ Will submit the Status of the Crawler.
 message StatusMessage {
     ServiceStatus status = 1;
 }
+
 
