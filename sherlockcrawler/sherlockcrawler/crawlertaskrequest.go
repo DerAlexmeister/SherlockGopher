@@ -36,6 +36,13 @@ func (creq *CrawlerTaskRequest) getResponse() http.Response {
 }
 
 /*
+getResponseByReferenz will return the response of a crawlertask.
+*/
+func (creq *CrawlerTaskRequest) getResponseByReferenz() *http.Response {
+	return creq.response
+}
+
+/*
 setAddr will set the addr to a given CrawlerTaskRequest.
 */
 func (creq *CrawlerTaskRequest) setAddr(laddr string) {
