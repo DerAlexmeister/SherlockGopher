@@ -19,7 +19,6 @@ service Crawler {
     rpc RecieveURL(SubmitURLRequest) returns (SubmitURLResponse) {}
 
     rpc FinishedRunning(google.protobuf.Empty) returns (StatusMessage) {}
-
 }
 
 /*
