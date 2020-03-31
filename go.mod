@@ -7,7 +7,5 @@ require (
 	github.com/micro/go-micro v1.18.0
 	github.com/pkg/errors v0.9.1
 	google.golang.org/grpc v1.26.0
-	github.com/micro/go-micro/v2 v2.4.0
-	github.com/pkg/errors v0.9.1
 
 )
