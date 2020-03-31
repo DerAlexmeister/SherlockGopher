@@ -5,15 +5,15 @@ type HTMLTree struct {
 	rootNode *Node
 }
 
-type Node struct {
-
-}
-
 func NewHTMLTree(html string) *HTMLTree {
 	return &HTMLTree{htmlRaw:html}
 }
 
 func (tree *HTMLTree) Parse() *Node {
-
 	return tree.rootNode
 }
+
+func (tree *HTMLTree) RootNode() *Node {
+	return tree.rootNode
+}
+
