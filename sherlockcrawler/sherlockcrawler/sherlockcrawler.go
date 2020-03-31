@@ -18,8 +18,7 @@ func (que *CrawlerQueue) getCurrentQueue() *(map[string]*CrawlerTaskRequest) {
 ContainsAddress will check whether or not a addr is allready in use or not.
 */
 func (que *CrawlerQueue) ContainsAddress(addr string) bool {
-	_, contains := (*que.getCurrentQueue())[addr]
-	if !contains {
+	if _, contains := (*que.getCurrentQueue())[addr]; !contains {
 		return false
 	}
 	return true

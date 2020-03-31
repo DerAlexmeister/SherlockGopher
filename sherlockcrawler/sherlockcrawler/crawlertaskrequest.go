@@ -2,6 +2,7 @@ package sherlockcrawler
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -72,4 +73,18 @@ func (creq *CrawlerTaskRequest) MakeRequestForHTML() (*http.Response, error) {
 		return nil, fmt.Errorf("An error occured while trying to get the Website: %s", creq.addr)
 	}
 	return response, nil
+}
+
+/*
+MakeRequestAndStoreResponse will make a request and store the result in the field response of the task.
+*/
+func (creq *CrawlerTaskRequest) MakeRequestAndStoreResponse() bool {
+	response, err := creq.MakeRequestForHTML()
+	if err != nil {
+		log.Fatal("An error occured while trying to make a request and store it.")
+		return false
+	}
+	creq.setResponse(response)
+	//TODO make the response a bytearray
+	return true
 }
