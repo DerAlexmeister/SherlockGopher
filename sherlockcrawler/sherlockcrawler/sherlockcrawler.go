@@ -1,18 +1,5 @@
 package sherlockcrawler
 
-import (
-	"fmt"
-	"net/http"
-)
-
-/*
-CrawlerTaskRequest will be a request made by the analyser.
-*/
-type CrawlerTaskRequest struct {
-	addr  string
-	state bool
-}
-
 /*
 CrawlerQueue will be the queue of the current CrawlerTaskRequest.
 */
@@ -25,17 +12,6 @@ getCurrentQueue will return a pointer to the current Queue.
 */
 func (que *CrawlerQueue) getCurrentQueue() *(map[string]*CrawlerTaskRequest) {
 	return &que.Queue
-}
-
-/*
-MakeRequestForHTML will make a request to a given Website and return its HTML-Code.
-*/
-func (creq *CrawlerTaskRequest) MakeRequestForHTML() (*http.Response, error) {
-	response, err := http.Get(creq.addr)
-	if err != nil {
-		return nil, fmt.Errorf("An error occured while trying to get the Website: %s", creq.addr)
-	}
-	return response, nil
 }
 
 /*
@@ -58,4 +34,15 @@ func (que *CrawlerQueue) AppendQueue(target string, task *CrawlerTaskRequest) er
 		return nil //TODO Returntype noch mal überarbeiten weil Error vlt nicht das beste.
 	}
 	return nil //TODO Returntype noch mal überarbeiten weil Error vlt nicht das beste.
+}
+
+/*
+RemoveFromQueue will remove a task from the queue by a given address.
+*/
+func (que *CrawlerQueue) RemoveFromQueue(target string) bool {
+	if !que.ContainsAddress(target) {
+		delete((*que.getCurrentQueue()), target)
+		return true
+	}
+	return false
 }
