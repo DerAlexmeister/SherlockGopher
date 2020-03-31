@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package crawlerproto;
 
-import "google/protobuf/empty.proto";
-
 /*
 Status of the Crawler.
 */
@@ -19,16 +17,6 @@ service Crawler {
     rpc RecieveURL(SubmitURLRequest) returns (SubmitURLResponse) {}
 
     rpc FinishedRunning(google.protobuf.Empty) returns (StatusMessage) {}
-
-    rpc Chunker(google.protobuf.Empty) returns (stream Chunk) {}
-
-}
-
-/*
-part of the file
-*/
-message Chunk {
-    bytes chunk = 1;
 }
 
 /*
