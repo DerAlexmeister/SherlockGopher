@@ -10,8 +10,50 @@ CrawlerTaskRequest will be a request made by the analyser.
 */
 type CrawlerTaskRequest struct {
 	addr     string
-	isDone   bool
+	isdone   bool
 	response *http.Response
+}
+
+/*
+getAddr getter for the address.
+*/
+func (creq *CrawlerTaskRequest) getAddr() string {
+	return creq.addr
+}
+
+/*
+getStatus will return the status of the task.
+*/
+func (creq *CrawlerTaskRequest) isDone() bool {
+	return creq.isdone
+}
+
+/*
+getResponse will return the response of a crawlertask.
+*/
+func (creq *CrawlerTaskRequest) getResponse() http.Response {
+	return *(creq.response)
+}
+
+/*
+setAddr will set the addr to a given CrawlerTaskRequest.
+*/
+func (creq *CrawlerTaskRequest) setAddr(laddr string) {
+	creq.addr = laddr
+}
+
+/*
+setResponse will set the response of the Request to a given CrawlerTaskRequest.
+*/
+func (creq *CrawlerTaskRequest) setDone(lisDone bool) {
+	creq.isdone = lisDone
+}
+
+/*
+setResponse will set the response of the Request to a given CrawlerTaskRequest.
+*/
+func (creq *CrawlerTaskRequest) setResponse(lresponse *http.Response) {
+	creq.response = lresponse
 }
 
 /*
@@ -23,11 +65,4 @@ func (creq *CrawlerTaskRequest) MakeRequestForHTML() (*http.Response, error) {
 		return nil, fmt.Errorf("An error occured while trying to get the Website: %s", creq.addr)
 	}
 	return response, nil
-}
-
-/*
-SetResponse will set the response of the Request to a given CrawlerTaskRequest.
-*/
-func (creq *CrawlerTaskRequest) SetResponse(lresponse *http.Response) {
-
 }
