@@ -79,7 +79,7 @@ func (c *ClientGRPC) UploadFile(ctx context.Context) error {
 	err = stream.Close()
 
 	if err != nil {
-		return errors.New("error while closing stream"))
+		return errors.New("error while closing stream")
 	}
 	return nil
 }
