@@ -28,6 +28,6 @@ func (creq *CrawlerTaskRequest) MakeRequestForHTML() (*http.Response, error) {
 /*
 SetResponse will set the response of the Request to a given CrawlerTaskRequest.
 */
-func (creq *CrawlerTaskRequest) SetResponse(lresponse *http.Response) error {
-	return nil
+func (creq *CrawlerTaskRequest) SetResponse(lresponse *http.Response) {
+
 }
