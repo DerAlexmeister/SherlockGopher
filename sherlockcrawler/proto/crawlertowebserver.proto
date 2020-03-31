@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package crawlerproto;
+package crawlerwebserverproto;
 
 import "google/protobuf/empty.proto";
 
