@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-const chunkSize int = 10
+const chunkSize int = 1024
 const filepath string = "testdatei.txt"
 
 type ClientGRPC struct {
@@ -33,34 +33,36 @@ func readF() *os.File {
 func NewClientGRPC(service micro.Service) (c ClientGRPC) {
 	c.chunkSize = chunkSize
 	c.client = sender.NewSenderService("client", service.Client())
+
 	return c
 }
 
-func (c *ClientGRPC) UploadFile(ctx context.Context) (err error) {
+func (c *ClientGRPC) UploadFile(ctx context.Context) error {
 	writing := true
 	file := readF()
 
-	// Open a stream-based connection with the gRPC server
 	stream, err := c.client.Upload(ctx)
 
 	if err != nil {
-		err = errors.Wrapf(err, "failed to create upload stream for file %s", file)
-		return
+		return errors.New("failed to create upload stream for file")
 	}
 
 	buf := make([]byte, chunkSize)
+
 	var n int
+
 	for writing {
 		n, err = file.Read(buf)
 
 		if err != nil {
 			if err == io.EOF {
 				writing = false
+
 				err = nil
+
 				continue
 			}
-			err = errors.Wrapf(err, "errored while copying from file to buf")
-			return
+			return errors.New("error while copying from file to buf")
 		}
 
 		err = stream.Send(&sender.Chunk{
@@ -68,18 +70,16 @@ func (c *ClientGRPC) UploadFile(ctx context.Context) (err error) {
 		})
 
 		if err != nil {
-			err = errors.Wrapf(err, "failed to send chunk via stream")
-			return
+			return errors.New("error while streaming")
 		}
 	}
 
-	//receive
+	//receive fehlt
 
 	err = stream.Close()
 
 	if err != nil {
-		err = errors.Wrapf(err, "failed to receive upstream status response")
-		return
+		return errors.New("error while closing stream"))
 	}
-	return
+	return nil
 }
