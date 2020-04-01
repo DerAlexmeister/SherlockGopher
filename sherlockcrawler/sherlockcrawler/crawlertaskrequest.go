@@ -27,6 +27,7 @@ const (
 CrawlerTaskRequest will be a request made by the analyser.
 */
 type CrawlerTaskRequest struct {
+	taskid            int64
 	addr              string
 	taskstate         TASKSTATE
 	taskerror         error
@@ -42,6 +43,13 @@ NewTask will return an empty CrawlerTaskRequest.
 */
 func NewTask() CrawlerTaskRequest {
 	return CrawlerTaskRequest{}
+}
+
+/*
+getTaskID will return the id of a given task.
+*/
+func (creq *CrawlerTaskRequest) getTaskID() int64 {
+	return creq.taskid
 }
 
 /*
@@ -105,6 +113,13 @@ getStatusCode will return the statuscode.
 */
 func (creq *CrawlerTaskRequest) getStatusCode() int {
 	return creq.statuscode
+}
+
+/*
+setTaskID will set the task id of a given task.
+*/
+func (creq *CrawlerTaskRequest) setTaskID(lid int64) {
+	creq.taskid = lid
 }
 
 /*
