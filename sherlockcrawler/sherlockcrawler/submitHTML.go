@@ -44,17 +44,17 @@ func min(a, b int) int {
 /*
 cuts byte array in slices of chunksize and sends them to the analyzer
 */
-func (c *ClientGRPC) UploadFile(ctx context.Context, arr []byte, addr string) error {
+func (c *ClientGRPC) UploadFile(ctx context.Context, ltask CrawlerTaskRequest) error {
 	stream, err := c.client.Upload(ctx)
 
 	if err != nil {
 		return errors.New("failed to create upload stream for file")
 	}
 
-	var lengthByteArray int = len(arr)
+	var lengthByteArray int = len(ltask.getResponseBodyInBytes())
 
 	for i := 0; i < lengthByteArray; i += chunkSize {
-		buf := arr[i:min(i+chunkSize, lengthByteArray)]
+		buf := ltask.getResponseBodyInBytes()[i:min(i+chunkSize, lengthByteArray)]
 
 		err = stream.Send(&sender.Chunk{
 			Content: buf,
