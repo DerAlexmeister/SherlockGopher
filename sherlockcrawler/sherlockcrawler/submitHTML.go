@@ -2,34 +2,28 @@ package sherlockcrawler
 
 import (
 	"context"
-	"io"
-	"os"
 
 	"github.com/micro/go-micro"
 	sender "github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen/sherlockcrawler/proto"
 	"github.com/pkg/errors"
 )
 
+/*
+size of a chunk. important to minimize the amount of bytes sent at once
+*/
 const chunkSize int = 1024
-const filepath string = "testdatei.txt"
 
+/*
+Sender
+*/
 type ClientGRPC struct {
 	client    sender.SenderService
 	chunkSize int
 }
 
-func readF() *os.File {
-	file, err := os.Open(filepath)
-
-	if err != nil {
-		panic(err.Error())
-	}
-
-	defer file.Close()
-
-	return file
-}
-
+/*
+creates a new sender
+*/
 func NewClientGRPC(service micro.Service) (c ClientGRPC) {
 	c.chunkSize = chunkSize
 	c.client = sender.NewSenderService("client", service.Client())
@@ -37,36 +31,33 @@ func NewClientGRPC(service micro.Service) (c ClientGRPC) {
 	return c
 }
 
-func (c *ClientGRPC) UploadFile(ctx context.Context) error {
-	writing := true
-	file := readF()
+/*
+help method
+*/
+func min(a, b int) int {
+	if a <= b {
+		return a
+	}
+	return b
+}
 
+/*
+cuts byte array in slices of chunksize and sends them to the analyzer
+*/
+func (c *ClientGRPC) UploadFile(ctx context.Context, arr []byte, addr string) error {
 	stream, err := c.client.Upload(ctx)
 
 	if err != nil {
 		return errors.New("failed to create upload stream for file")
 	}
 
-	buf := make([]byte, chunkSize)
+	var lengthByteArray int = len(arr)
 
-	var n int
-
-	for writing {
-		n, err = file.Read(buf)
-
-		if err != nil {
-			if err == io.EOF {
-				writing = false
-
-				err = nil
-
-				continue
-			}
-			return errors.New("error while copying from file to buf")
-		}
+	for i := 0; i < lengthByteArray; i += chunkSize {
+		buf := arr[i:min(i+chunkSize, lengthByteArray)]
 
 		err = stream.Send(&sender.Chunk{
-			Content: buf[:n],
+			Content: buf,
 		})
 
 		if err != nil {
