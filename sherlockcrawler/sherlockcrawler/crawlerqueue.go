@@ -8,6 +8,15 @@ type CrawlerQueue struct {
 }
 
 /*
+NewCrawlerQueue will return a new Queue.
+*/
+func (que *CrawlerQueue) NewCrawlerQueue() CrawlerQueue {
+	return CrawlerQueue{
+		Queue: make(map[string]*CrawlerTaskRequest),
+	}
+}
+
+/*
 getCurrentQueue will return a pointer to the current Queue.
 */
 func (que *CrawlerQueue) getCurrentQueue() *(map[string]*CrawlerTaskRequest) {
