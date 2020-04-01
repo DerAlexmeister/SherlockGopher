@@ -34,6 +34,7 @@ type CrawlerTaskRequest struct {
 	responseHeader    *http.Header
 	responseBody      string
 	responseBodyBytes []byte
+	statuscode        int
 }
 
 /*
@@ -100,6 +101,13 @@ func (creq *CrawlerTaskRequest) getTaskError() error {
 }
 
 /*
+getStatusCode will return the statuscode.
+*/
+func (creq *CrawlerTaskRequest) getStatusCode() int {
+	return creq.statuscode
+}
+
+/*
 setAddr will set the addr to a given CrawlerTaskRequest.
 */
 func (creq *CrawlerTaskRequest) setAddr(laddr string) {
@@ -149,6 +157,13 @@ func (creq *CrawlerTaskRequest) setTaskError(lerror error) {
 }
 
 /*
+setStatusCode set the statuscode of the task.
+*/
+func (creq *CrawlerTaskRequest) setStatusCode(lstatuscode int) {
+	creq.statuscode = lstatuscode
+}
+
+/*
 MakeRequestForHTML will make a request to a given Website and return its HTML-Code.
 */
 func (creq *CrawlerTaskRequest) MakeRequestForHTML() (*http.Response, error) {
@@ -176,6 +191,7 @@ func (creq *CrawlerTaskRequest) MakeRequestAndStoreResponse() bool {
 		creq.setTaskError(err)
 		return false
 	}
+	//TODO Check wo alles via setter gesetzt wird.
 	creq.setResponse(response)
 	creq.setResponseBody(string(bodyBytes))
 	creq.setResponseBodyInBytes(bodyBytes)
