@@ -14,7 +14,7 @@ size of a chunk. important to minimize the amount of bytes sent at once
 const chunkSize int = 1024
 
 /*
-Sender
+ClientGRPC will be the Client/Sender.
 */
 type ClientGRPC struct {
 	client    sender.SenderService
@@ -22,7 +22,7 @@ type ClientGRPC struct {
 }
 
 /*
-creates a new sender
+NewClientGRPC creates a new sender.
 */
 func NewClientGRPC(service micro.Service) (c ClientGRPC) {
 	c.chunkSize = chunkSize
@@ -42,7 +42,7 @@ func min(a, b int) int {
 }
 
 /*
-cuts byte array in slices of chunksize and sends them to the analyzer
+UploadFile cuts byte array in slices of chunksize and sends them to the analyzer.
 */
 func (c *ClientGRPC) UploadFile(ctx context.Context, arr []byte, addr string) error {
 	stream, err := c.client.Upload(ctx)
