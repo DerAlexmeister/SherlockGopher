@@ -29,10 +29,12 @@ CrawlerTaskRequest will be a request made by the analyser.
 type CrawlerTaskRequest struct {
 	addr              string
 	taskstate         TASKSTATE
+	taskerror         error
 	response          *http.Response
 	responseHeader    *http.Header
 	responseBody      string
 	responseBodyBytes []byte
+	statuscode        int
 }
 
 /*
@@ -85,6 +87,27 @@ func (creq *CrawlerTaskRequest) getResponseByReferenz() *http.Response {
 }
 
 /*
+getResponseBodyInBytes will return the responsebody as a bytearray.
+*/
+func (creq *CrawlerTaskRequest) getResponseBodyInBytes() []byte {
+	return creq.responseBodyBytes
+}
+
+/*
+getTask will return an error which was caused by the http package.
+*/
+func (creq *CrawlerTaskRequest) getTaskError() error {
+	return creq.taskerror
+}
+
+/*
+getStatusCode will return the statuscode.
+*/
+func (creq *CrawlerTaskRequest) getStatusCode() int {
+	return creq.statuscode
+}
+
+/*
 setAddr will set the addr to a given CrawlerTaskRequest.
 */
 func (creq *CrawlerTaskRequest) setAddr(laddr string) {
@@ -127,6 +150,20 @@ func (creq *CrawlerTaskRequest) setResponseBodyInBytes(lbody []byte) {
 }
 
 /*
+setTaskError will set the error raised by the http package.
+*/
+func (creq *CrawlerTaskRequest) setTaskError(lerror error) {
+	creq.taskerror = lerror
+}
+
+/*
+setStatusCode set the statuscode of the task.
+*/
+func (creq *CrawlerTaskRequest) setStatusCode(lstatuscode int) {
+	creq.statuscode = lstatuscode
+}
+
+/*
 MakeRequestForHTML will make a request to a given Website and return its HTML-Code.
 */
 func (creq *CrawlerTaskRequest) MakeRequestForHTML() (*http.Response, error) {
@@ -144,14 +181,17 @@ func (creq *CrawlerTaskRequest) MakeRequestAndStoreResponse() bool {
 	response, err := creq.MakeRequestForHTML()
 	if err != nil {
 		log.Fatal(err) //TODO formated error
+		creq.setTaskError(err)
 		return false
 	}
 	defer response.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.Fatal(err) //TODO formated error
+		creq.setTaskError(err)
 		return false
 	}
+	//TODO Check wo alles via setter gesetzt wird.
 	creq.setResponse(response)
 	creq.setResponseBody(string(bodyBytes))
 	creq.setResponseBodyInBytes(bodyBytes)
