@@ -30,7 +30,7 @@ type CrawlerTaskRequest struct {
 	taskid            int64  //taskid, send every time.
 	addr              string //addr, once
 	taskstate         TASKSTATE
-	taskerror         error //error send as stirng incase there is an error then dont send a body
+	taskerror         error //error, send as string incase there is an error then dont send a body
 	response          *http.Response
 	responseHeader    *http.Header //header, once (typ map)
 	responseBody      string
