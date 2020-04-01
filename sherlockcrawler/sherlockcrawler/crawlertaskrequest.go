@@ -27,15 +27,15 @@ const (
 CrawlerTaskRequest will be a request made by the analyser.
 */
 type CrawlerTaskRequest struct {
-	taskid            int64
-	addr              string
+	taskid            int64  //taskid, send every time.
+	addr              string //addr, once
 	taskstate         TASKSTATE
-	taskerror         error
+	taskerror         error //error send as stirng incase there is an error then dont send a body
 	response          *http.Response
-	responseHeader    *http.Header
+	responseHeader    *http.Header //header, once (typ map)
 	responseBody      string
-	responseBodyBytes []byte
-	statuscode        int
+	responseBodyBytes []byte //body, split
+	statuscode        int    //statuscode, once
 }
 
 /*
