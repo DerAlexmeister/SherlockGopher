@@ -1,12 +1,12 @@
 # Dockerfile for the frontend.
 
 FROM golang:latest as build
-COPY . /app
-WORKDIR /app
-RUN go build -o frontend main.go
+WORKDIR /app 
+ADD . . 
+RUN go build -o main . 
 
 FROM alpine
-
-EXPOSE 8080 
-
-ENTRYPOINT ["/frontend"]
+COPY --from=build /app/main /app/
+EXPOSE 8080:8080
+WORKDIR /app
+CMD ["main"]
