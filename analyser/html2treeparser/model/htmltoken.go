@@ -1,22 +1,22 @@
 package model
 
 type HtmlToken interface {
-Type() TokenType
-RawContent() string
+	Type() TokenType
+	RawContent() string
 }
 
 type TokenType int
 
 const (
-	StartTag TokenType = 0
-	EndTag TokenType = 1
+	StartTag       TokenType = 0
+	EndTag         TokenType = 1
 	SelfClosingTag TokenType = 2
-	PlainText TokenType = 3
+	PlainText      TokenType = 3
 )
 
-type TagToken struct{
-	tokenType TokenType
-	tagType string
+type TagToken struct {
+	tokenType  TokenType
+	tagType    string
 	rawContent string
 }
 
@@ -28,8 +28,12 @@ func (tgTk *TagToken) RawContent() string {
 	return tgTk.rawContent
 }
 
+func (tgTk *TagToken) TagType() string {
+	return tgTk.tagType
+}
+
 type TextToken struct {
-	tokenType TokenType
+	tokenType  TokenType
 	rawContent string
 }
 
@@ -40,5 +44,3 @@ func (txTk *TextToken) Type() TokenType {
 func (txTk *TextToken) RawContent() string {
 	return txTk.rawContent
 }
-
-

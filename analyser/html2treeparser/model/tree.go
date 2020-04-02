@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"github.com/golang-collections/collections/stack"
+	"log"
 	"strings"
 )
 
@@ -39,7 +40,7 @@ func (tree *HTMLTree) handleTag(tag string) *TagToken {
 	} else if tagRaw[0] == '/' {
 		token = &TagToken{
 			tokenType:  EndTag,
-			tagType:    tagType,
+			tagType:    tagType[1:],
 			rawContent: tagRaw,
 		}
 	} else {
@@ -87,7 +88,88 @@ func (tree *HTMLTree) Tokenize() []HtmlToken {
 }
 
 func (tree *HTMLTree) Parse() *Node {
-	return nil
+	tokenStream := tree.Tokenize()
+	stack := stack.New()
+	isRoot := true
+	tree.rootNode = &Node{
+		tag:      Tag{},
+		parent:   nil,
+		children: nil,
+	}
+	currentNode := tree.rootNode
+	for i := 0; i < len(tokenStream); i++ {
+		switch currentToken := tokenStream[i].(type) {
+		case *TagToken:
+			switch currentToken.tokenType {
+			case StartTag:
+				if isRoot {
+					currentNode.tag = Tag{
+						tagType:       currentToken.tagType,
+						tagAttributes: tree.ExtractAttributes(currentToken.rawContent),
+						tagContent:    "",
+					}
+					currentNode.parent = nil
+					isRoot = false
+				} else {
+					parent := currentNode
+					currentNode = &Node{
+						tag:      Tag{},
+						parent:   parent,
+						children: nil,
+					}
+					parent.children = append(parent.children, currentNode)
+
+					currentNode.tag = Tag{
+						tagType:       currentToken.tagType,
+						tagAttributes: tree.ExtractAttributes(currentToken.rawContent),
+						tagContent:    "",
+					}
+					currentNode.parent = parent
+				}
+				stack.Push(currentNode)
+			case EndTag:
+				if currentNode, ok := stack.Pop().(*Node); ok {
+					if currentNode.tag.tagType != currentToken.tagType {
+						log.Fatalf("Malformed HTML-Document! Expected closing tag %s, but was %s", currentNode.tag.tagType, currentToken.tagType)
+					}
+				}
+			case SelfClosingTag:
+				newNode := &Node{
+					tag:      Tag{
+						tagType:       currentToken.tagType,
+						tagAttributes: tree.ExtractAttributes(currentToken.rawContent),
+						tagContent:    "",
+					},
+					parent:   currentNode,
+					children: nil,
+				}
+				currentNode.children = append(currentNode.children, newNode)
+			default:
+				log.Fatalf("Type mismatch! Expected Start, End, or SelfClosingTag, but was %s", currentToken.tokenType)
+			}
+
+		case *TextToken:
+			currentNode.tag.tagContent = currentNode.tag.tagContent + currentToken.rawContent
+		default:
+			log.Fatal("Type mismatch! TagToken or TextToken, but was none")
+		}
+	}
+	return tree.rootNode
+}
+
+func (tree *HTMLTree) ExtractAttributes(tagContent string) []TagAttribute {
+	attributesRaw := strings.Split(tagContent, " ")
+	attributes := make([]TagAttribute, 0)
+	for _, attribute := range attributesRaw {
+		if _, contained := find(attributesRaw, "="); contained {
+			splitAttribute := strings.Split(attribute, "=")
+			attributes = append(attributes, TagAttribute{
+				attributeType: splitAttribute[0],
+				value:         splitAttribute[1],
+			})
+		}
+	}
+	return attributes
 }
 
 func (tree *HTMLTree) ParseRuneByRune() *Node {
