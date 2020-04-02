@@ -3,22 +3,55 @@ package model
 import (
 	"fmt"
 	"github.com/golang-collections/collections/stack"
+	"strings"
 )
 
 type HTMLTree struct {
-	htmlRaw string
+	htmlRaw  string
 	rootNode *Node
 }
 
 func NewHTMLTree(html string) *HTMLTree {
-	return &HTMLTree{htmlRaw:html}
+	return &HTMLTree{htmlRaw: html}
 }
 
-func (tree *HTMLTree) HandleTag(tag string) *TextToken {
+func find(slice []string, val string) (int, bool) {
+	for i, item := range slice {
+		if item == val {
+			return i, true
+		}
+	}
+	return -1, false
+}
+
+func (tree *HTMLTree) handleTag(tag string) *TagToken {
+	var token *TagToken
+	tagRaw := strings.TrimSpace(tag)
 	voidElements := []string{"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
+	tagType := strings.Split(tagRaw, " ")[0]
 
+	if _, contained := find(voidElements, tagType); contained {
+		token = &TagToken{
+			tokenType:  SelfClosingTag,
+			tagType:    tagType,
+			rawContent: tagRaw,
+		}
+	} else if tagRaw[0] == '/' {
+		token = &TagToken{
+			tokenType:  EndTag,
+			tagType:    tagType,
+			rawContent: tagRaw,
+		}
+	} else {
+		token = &TagToken{
+			tokenType:  StartTag,
+			tagType:    tagType,
+			rawContent: tagRaw,
+		}
+	}
+
+	return token
 }
-
 
 func (tree *HTMLTree) Tokenize() []HtmlToken {
 	element := ""
@@ -26,51 +59,35 @@ func (tree *HTMLTree) Tokenize() []HtmlToken {
 
 	for i := 0; i < len(tree.htmlRaw); i++ {
 		if tree.htmlRaw[i] == '<' {
-			classified = append(classified, &TextToken{
-				tokenType:  PlainText,
-				rawContent: element,
-			})
+			if element != "" {
+				element = strings.TrimSpace(element)
+				if element != "" {
+					classified = append(classified, &TextToken{
+						tokenType:  PlainText,
+						rawContent: element,
+					})
+				}
+			}
 			element = ""
 
 			tag := ""
-			for l := i+1; l< len(tree.htmlRaw); l++ {
+			for l := i + 1; l < len(tree.htmlRaw); l++ {
 				if tree.htmlRaw[l] == '>' {
-					i = l+1
-					classified = append(classified, tree.HandleTag(tag))
+					i = l + 1
+					classified = append(classified, tree.handleTag(tag))
 					break
 				} else {
 					tag = tag + string(tree.htmlRaw[l])
 				}
 			}
 		}
-		element = element + string(tree.htmlRaw)
+		element = element + string(tree.htmlRaw[i])
 	}
-
-
-
-
-	/*for i, rune := range tree.htmlRaw {
-		if inBetweenTags {
-			if rune == '<' {
-				classified = append(classified, &TextToken{
-					tokenType:  Text,
-					rawContent: element,
-				})
-				element = ""
-				inBetweenTags = false
-			} else {
-				element = element + string(rune)
-			}
-		} else {
-			if rune == '/' && tree.htmlRaw[i -1] == '<' {
-
-			}
-		}
-	}*/
+	return classified
 }
 
 func (tree *HTMLTree) Parse() *Node {
-
+	return nil
 }
 
 func (tree *HTMLTree) ParseRuneByRune() *Node {
@@ -109,7 +126,7 @@ func (tree *HTMLTree) ParseRuneByRune() *Node {
 		}
 		if inTag {
 			if char == '>' {
-				if tree.htmlRaw[i -1] == '/'{
+				if tree.htmlRaw[i-1] == '/' {
 					// check for selfclosing tag
 				} else {
 					currentNode.tag = Tag{
@@ -124,7 +141,7 @@ func (tree *HTMLTree) ParseRuneByRune() *Node {
 			currentTag = currentTag + string(char)
 		} else if inClosingTag {
 			if char == '>' {
-				expected, ok:= stack.Peek().(*Node)
+				expected, ok := stack.Peek().(*Node)
 				if !ok {
 					fmt.Errorf("Element on top of stack %v is not of type *Pointer", expected)
 				}
@@ -145,10 +162,6 @@ func (tree *HTMLTree) ParseRuneByRune() *Node {
 	return tree.rootNode
 }
 
-
-
-
 func (tree *HTMLTree) RootNode() *Node {
 	return tree.rootNode
 }
-
