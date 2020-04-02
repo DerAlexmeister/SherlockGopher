@@ -1,22 +1,11 @@
+// General purpose file for the crawler to connect to the analyser.
+
 syntax = "proto3";
 
-package crawlerproto;
+package AnalyserTunnel;
 
-service Sender {
-    rpc Upload(stream Chunk) returns (UploadStatus) {}
-}
-
-message Chunk {
-        bytes Content = 1;
-}
-
-enum UploadStatusCode {
-        Unknown = 0;
-        Ok = 1;
-        Failed = 2;
-}
-
-message UploadStatus {
-        string Message = 1;
-        UploadStatusCode Code = 2;
+service AnalyserInterface {
+    
+    
+    
 }
