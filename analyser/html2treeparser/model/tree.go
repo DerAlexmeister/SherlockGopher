@@ -74,15 +74,18 @@ func (tree *HTMLTree) Tokenize() []HtmlToken {
 			tag := ""
 			for l := i + 1; l < len(tree.htmlRaw); l++ {
 				if tree.htmlRaw[l] == '>' {
-					i = l + 1
+					i = l
 					classified = append(classified, tree.handleTag(tag))
 					break
 				} else {
 					tag = tag + string(tree.htmlRaw[l])
 				}
 			}
+			//element = ""
+		} else {
+			toAdd := string(tree.htmlRaw[i])
+			element = element + toAdd
 		}
-		element = element + string(tree.htmlRaw[i])
 	}
 	return classified
 }
@@ -131,11 +134,21 @@ func (tree *HTMLTree) Parse() *Node {
 				if currentNode, ok := stack.Pop().(*Node); ok {
 					if currentNode.tag.tagType != currentToken.tagType {
 						log.Fatalf("Malformed HTML-Document! Expected closing tag %s, but was %s", currentNode.tag.tagType, currentToken.tagType)
+					} else if !ok{
+						log.Fatal() // TODO: Print error
 					}
+				}
+				if stack.Len() > 0 {
+				if nextNode, ok := stack.Peek().(*Node); ok {
+					currentNode = nextNode
+
+				} else {
+					log.Fatal() // TODO: Print error
+				}
 				}
 			case SelfClosingTag:
 				newNode := &Node{
-					tag:      Tag{
+					tag: Tag{
 						tagType:       currentToken.tagType,
 						tagAttributes: tree.ExtractAttributes(currentToken.rawContent),
 						tagContent:    "",
@@ -157,11 +170,11 @@ func (tree *HTMLTree) Parse() *Node {
 	return tree.rootNode
 }
 
-func (tree *HTMLTree) ExtractAttributes(tagContent string) []TagAttribute {
+func (tree *HTMLTree) ExtractAttributes(tagContent string) []TagAttribute { //TODO: Handle attributes like style="font-size: 1px" whitespace is a problem
 	attributesRaw := strings.Split(tagContent, " ")
 	attributes := make([]TagAttribute, 0)
 	for _, attribute := range attributesRaw {
-		if _, contained := find(attributesRaw, "="); contained {
+		if contained := strings.IndexRune(attribute, '='); contained != -1 {
 			splitAttribute := strings.Split(attribute, "=")
 			attributes = append(attributes, TagAttribute{
 				attributeType: splitAttribute[0],
