@@ -3,6 +3,10 @@ syntax = "proto3";
 package messaging;
 
 service Analyser {
+
+}
+
+service GuploadService {
         rpc Upload(stream Chunk) returns (UploadStatus) {}
 }
 
