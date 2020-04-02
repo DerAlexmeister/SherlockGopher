@@ -4,7 +4,10 @@ import (
 	"github.com/micro/go-micro"
 )
 
-const serviceName = "analyser-service"
+const (
+	serviceName      = "analyser-service"
+	streamingService = "filestransfer-service"
+)
 
 func main() {
 
