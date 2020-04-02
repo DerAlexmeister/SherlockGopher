@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
 
 /*
@@ -34,8 +35,9 @@ type CrawlerTaskRequest struct {
 	response          *http.Response
 	responseHeader    *http.Header //header, once (typ map)
 	responseBody      string
-	responseBodyBytes []byte //body, split
-	statuscode        int    //statuscode, once
+	responseBodyBytes []byte        //body, split
+	statuscode        int           //statuscode, once
+	responseTime      time.Duration //response time, once
 }
 
 /*
