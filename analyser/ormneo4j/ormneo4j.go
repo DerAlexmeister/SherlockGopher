@@ -73,15 +73,15 @@ func GetNewDatabaseConnection() (neo4j.Driver, error) {
 /*
 CloseDatabaseConnection will close the drivers to the DB.
 */
-func CloseDatabaseConnection(driver neo4j.Driver) {
-	defer driver.Close()
+func CloseDatabaseConnection(driver *neo4j.Driver) {
+	defer (*driver).Close()
 }
 
 /*
 GetSession will return a session to operate on inorder to send and recieve data.
 */
-func GetSession(driver neo4j.Driver) (neo4j.Session, error) {
-	session, err := driver.Session(neo4j.AccessModeWrite)
+func GetSession(driver *neo4j.Driver) (neo4j.Session, error) {
+	session, err := (*driver).Session(neo4j.AccessModeWrite)
 	if err != nil {
 		return nil, err
 	}
@@ -91,13 +91,17 @@ func GetSession(driver neo4j.Driver) (neo4j.Session, error) {
 /*
 CloseSession will close a session to the DB.
 */
-func CloseSession(session neo4j.Session) {
-	defer session.Close()
+func CloseSession(session *neo4j.Session) {
+	defer (*session).Close()
 }
 
 /*
 RunStatement will execute a given statement on a given session and return the result.
 */
-func RunStatement(session neo4j.Session, statments string, args map[string]interface{}) {
-
+func RunStatement(session *neo4j.Session, statment string, args map[string]interface{}) (neo4j.Result, error) {
+	result, err := (*session).Run(statment, args)
+	if err != nil {
+		return nil, fmt.Errorf("An error occured while trying to run the cypherstatement. Error: %s", err)
+	}
+	return result, nil
 }
