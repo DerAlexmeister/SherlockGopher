@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
 
 /*
@@ -27,14 +28,16 @@ const (
 CrawlerTaskRequest will be a request made by the analyser.
 */
 type CrawlerTaskRequest struct {
-	addr              string
+	taskid            int64  //taskid, send every time.
+	addr              string //addr, once
 	taskstate         TASKSTATE
-	taskerror         error
+	taskerror         error //error, send as string incase there is an error then dont send a body
 	response          *http.Response
-	responseHeader    *http.Header
+	responseHeader    *http.Header //header, once (typ map)
 	responseBody      string
-	responseBodyBytes []byte
-	statuscode        int
+	responseBodyBytes []byte        //body, split
+	statuscode        int           //statuscode, once
+	responseTime      time.Duration //response time, once
 }
 
 /*
@@ -42,6 +45,13 @@ NewTask will return an empty CrawlerTaskRequest.
 */
 func NewTask() CrawlerTaskRequest {
 	return CrawlerTaskRequest{}
+}
+
+/*
+getTaskID will return the id of a given task.
+*/
+func (creq *CrawlerTaskRequest) getTaskID() int64 {
+	return creq.taskid
 }
 
 /*
@@ -105,6 +115,13 @@ getStatusCode will return the statuscode.
 */
 func (creq *CrawlerTaskRequest) getStatusCode() int {
 	return creq.statuscode
+}
+
+/*
+setTaskID will set the task id of a given task.
+*/
+func (creq *CrawlerTaskRequest) setTaskID(lid int64) {
+	creq.taskid = lid
 }
 
 /*
