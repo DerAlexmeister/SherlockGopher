@@ -65,7 +65,11 @@ func (c *ClientGRPC) UploadFile(ctx context.Context, ltask CrawlerTaskRequest) e
 		}
 	}
 
-	//receive fehlt
+	var status *sender.UploadStatus
+
+	if status.Code != sender.UploadStatusCode_Ok {
+		return errors.New("upload failed - msg: %s")
+	}
 
 	err = stream.Close()
 
