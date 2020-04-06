@@ -6,6 +6,7 @@ import (
 	"github.com/micro/go-micro"
 	proto "github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen/analyser/proto"
 	"github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen/analyser/sherlockanalyser"
+	"github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen/analyser/streamreceiver"
 )
 
 const (
@@ -41,5 +42,16 @@ func main() {
 	)
 
 	streamingservice.Init()
+
+	newService := streamreceiver.NewServerGRPC()
+
+	err1 := proto.RegisterReceiverHandler(service.Server(), newService)
+	if err1 == nil {
+		if err := service.Run(); err != nil {
+			fmt.Println(err)
+		}
+	} else {
+		fmt.Println(err1)
+	}
 
 }
