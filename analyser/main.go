@@ -1,7 +1,11 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/micro/go-micro"
+	proto "github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen/analyser/proto"
+	"github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen/analyser/sherlockanalyser"
 )
 
 const (
@@ -11,17 +15,31 @@ const (
 
 func main() {
 
+	// Analyserservice
 	service := micro.NewService(
 		micro.Name(serviceName),
 	)
-
-	//err := proto.AnalyserService()
-
 	service.Init()
 
-	/*
-		if err := service.Run(); err != nil {
-			log.Fatalf("Failed to start service. Error:\n\t%s", err.Error())
-		}
-	*/
+	AnalyserService := sherlockanalyser.NewAnalyserServiceHandler()
+
+	AnalyserService.InjectDependency(sherlockanalyser.NewAnalyserDependencies())
+
+	err := proto.RegisterAnalyserHandler(service.Server(), AnalyserService)
+
+	if err != nil {
+		fmt.Println(err)
+	} else if lerr := service.Run(); lerr != nil {
+		fmt.Println(lerr)
+	} else {
+		fmt.Printf("Service %s started as intended... ", serviceName)
+	}
+	// FileTransferService.
+
+	streamingservice := micro.NewService(
+		micro.Name(streamingService),
+	)
+
+	streamingservice.Init()
+
 }
