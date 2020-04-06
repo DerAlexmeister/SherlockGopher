@@ -1,6 +1,5 @@
 //React app
-const RESTENDPOINT = "localhost:8081"
-const SEARCHENDPOINT = RESTENDPOINT + "/search/"
+import { SEARCHENDPOINT } from "./const.jsx";
 
 // Just the Searchbar Component with the logo, title and the searchbar to submit a url.
 class SearchBar extends React.Component {
