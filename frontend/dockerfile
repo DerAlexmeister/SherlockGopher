@@ -5,8 +5,7 @@ WORKDIR /app
 ADD . . 
 RUN go build -o main . 
 
-FROM alpine
+FROM iron/go
 COPY --from=build /app/main /app/
 EXPOSE 8080:8080
-WORKDIR /app
-CMD ["main"]
+ENTRYPOINT ["/app/main"]
