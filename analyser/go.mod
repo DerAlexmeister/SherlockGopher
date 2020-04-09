@@ -1,4 +1,4 @@
-module github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen
+module github.com/ob-algdatii-20ss/SherlockGopher/analyser/
 
 go 1.14
 

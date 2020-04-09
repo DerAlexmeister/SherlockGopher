@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	model "github.com/ob-algdatii-20ss/SherlockGopher/analyser/html2treeparser/model"
+	model "github.com/ob-algdatii-20ss/SherlockGopher/analyser/html2treeparser"
 )
 
 /*
