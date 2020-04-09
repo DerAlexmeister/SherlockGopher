@@ -5,7 +5,7 @@ import (
 	"errors"
 	"io"
 
-	proto "github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen/analyser/proto"
+	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
 )
 
 /*

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	model "github.com/ob-algdatii-20ss/SherlockGopher/analyser/html2treeparser"
+	model "github.com/ob-algdatii-20ss/SherlockGopher/analyser/sherlockparser/model"
 )
 
 /*
@@ -35,7 +35,7 @@ type AnalyserTaskRequest struct {
 	responseHeader    *http.Header //header, once (typ map)
 	responseBody      []string
 	responseBodyBytes []byte        //body, split
-	statuscode        int           //statuscode, once
+	statuscode        int           //statuscode,github.com/ob-algdatii-20ss/SherlockGopher/analyser/ once
 	responseTime      time.Duration //response time, once
 }
 
