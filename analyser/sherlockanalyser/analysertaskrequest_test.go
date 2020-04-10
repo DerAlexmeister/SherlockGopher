@@ -1,28 +1,61 @@
 package sherlockanalyser
 
-import "testing"
+import (
+	"bufio"
+	"io/ioutil"
+	"os"
+	"testing"
+)
 
-func Test1(t *testing.T) {
-	atask := NewTask()
+var testData = []struct {
+	in   string
+	out  string
+	addr string
+}{
+	{"./testfiles/in1.txt", "./testfiles/out1.txt", "https://github.com/jwalteri/GO-StringUtils"},
+	{"./testfiles/in2.txt", "./testfiles/out2.txt", "https://walterj.de/mmix.html"},
+}
 
-	atask.setHTMLCode("<html><head><title>MMIX</title></head><body><p>Private Website von Johannes Walter. <br>E-Mail: someone@walterj.de <br><a href='/impressum.html'>Impressum</a><a href='/impressum.html'>Datenschutz</a></p><br><br><h1>MMIX</h1><br><p>Tutoriumsunterlagen: <a href='https://github.com/jwalteri/MMIX'>GitHub von Johannes Walter</a></p></body></html>")
-	atask.setAddr("https://walterj.de/mmix.html")
-	atask.setTaskID(1)
+func TestAnalyser(t *testing.T) {
+	for _, tt := range testData {
+		t.Run(tt.in, func(t *testing.T) {
+			atask := NewTask()
 
-	atask.Execute()
+			htmlcode, _ := ioutil.ReadFile(tt.in)
+			expected, _ := readLines(tt.out)
 
-	expected := make([]string, 0)
-	expected = append(expected, "https://walterj.de/impressum.html")
-	expected = append(expected, "https://walterj.de/impressum.html")
-	expected = append(expected, "https://github.com/jwalteri/MMIX")
+			atask.setHTMLCode(string(htmlcode))
+			atask.setAddr(tt.addr)
+			atask.setTaskID(1)
+			atask.Execute()
 
-	if len(expected) != len(atask.getFoundLinks()) {
-		t.Errorf("got %d elements, want %d elements", len(atask.foundLinks), len(expected))
+			if len(expected) != len(atask.getFoundLinks()) {
+				t.Errorf("got %d elements, want %d elements", len(atask.foundLinks), len(expected))
+			}
+
+			for i, ele := range atask.getFoundLinks() {
+				if ele != expected[i] {
+					t.Errorf("got %q, want %q", ele, expected[i])
+				}
+			}
+		})
+	}
+}
+
+func readLines(path string) ([]string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var lines []string
+
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
 	}
 
-	for i, ele := range atask.getFoundLinks() {
-		if ele != expected[i] {
-			t.Errorf("got %q, want %q", ele, expected[i])
-		}
-	}
+	return lines, scanner.Err()
 }

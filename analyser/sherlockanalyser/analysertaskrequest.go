@@ -1,6 +1,7 @@
 package sherlockanalyser
 
 import (
+	"errors"
 	"strings"
 
 	model "github.com/ob-algdatii-20ss/SherlockGopher/analyser/sherlockparser/model"
@@ -183,6 +184,7 @@ func (atask *AnalyserTaskRequest) classifyNode(node *model.Node) {
 	if attributeType, ok := atask.linkLibrary[tag.TagType()]; ok {
 		for _, attribute := range tag.Attributes() {
 			if attributeType == attribute.AttributeType() {
+				// TODO: REMOVE BUGHUNTER
 				atask.handleLink(atask.Bughunter(attribute.Value()))
 			}
 		}
@@ -194,7 +196,10 @@ TODO: DELETE AFTER FIX
 Bughunter kills bugs
 */
 func (atask *AnalyserTaskRequest) Bughunter(link string) string {
-	return strings.ReplaceAll(link, "'", "")
+	link = strings.ReplaceAll(link, "'", "")
+	link = strings.ReplaceAll(link, "\"", "")
+
+	return link
 }
 
 /*
@@ -203,23 +208,34 @@ E.g.:
 	Input: 	"/stuff/blub"
 	Output:	"https://randamonium.bay/stuff/blub"
 */
-func (atask *AnalyserTaskRequest) prettyPrintLink(link string) string {
-	if link[0] == '/' {
-		return atask.getRootAddr() + link
+func (atask *AnalyserTaskRequest) prettyPrintLink(link string) (string, error) {
+	if link == "" {
+		return "", errors.New("it's not a link")
 	}
 
-	return link
+	// TODO: REMOVE BUGHUNTER
+	link = atask.Bughunter(link)
+
+	if link[0] == '/' {
+		return atask.getRootAddr() + link, nil
+	}
+
+	if !strings.HasPrefix(link, "www") && !strings.HasPrefix(link, "http") {
+		return "", errors.New("it's not a link")
+	}
+
+	return link, nil
 }
 
 /*
 handleLink Verifies wheater link is valid (add to NEO4J and send to crawler) or not
 */
 func (atask *AnalyserTaskRequest) handleLink(link string) {
-	link = atask.prettyPrintLink(link)
-
-	if !atask.containedInNEO4J(link) {
-		atask.foundLinks = append(atask.foundLinks, link)
-		atask.addToNEO4J(link)
+	if link, err := atask.prettyPrintLink(link); err == nil {
+		if !atask.containedInNEO4J(link) {
+			atask.foundLinks = append(atask.foundLinks, link)
+			atask.addToNEO4J(link)
+		}
 	}
 }
 

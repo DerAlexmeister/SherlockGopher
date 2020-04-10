@@ -1,0 +1,1 @@
+<html><head><title>MMIX</title></head><body><p>Private Website von Johannes Walter. <br>E-Mail: someone@walterj.de <br><a href='/impressum.html'>Impressum</a><a href='/impressum.html'>Datenschutz</a></p><br><br><h1>MMIX</h1><br><p>Tutoriumsunterlagen: <a href='https://github.com/jwalteri/MMIX'>GitHub von Johannes Walter</a></p></body></html>

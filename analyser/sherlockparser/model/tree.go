@@ -2,9 +2,10 @@ package model
 
 import (
 	"fmt"
-	"github.com/golang-collections/collections/stack"
 	"log"
 	"strings"
+
+	"github.com/golang-collections/collections/stack"
 )
 
 type HTMLTree struct {
@@ -134,17 +135,17 @@ func (tree *HTMLTree) Parse() *Node {
 				if currentNode, ok := stack.Pop().(*Node); ok {
 					if currentNode.tag.tagType != currentToken.tagType {
 						log.Fatalf("Malformed HTML-Document! Expected closing tag %s, but was %s", currentNode.tag.tagType, currentToken.tagType)
-					} else if !ok{
+					} else if !ok {
 						log.Fatal() // TODO: Print error
 					}
 				}
 				if stack.Len() > 0 {
-				if nextNode, ok := stack.Peek().(*Node); ok {
-					currentNode = nextNode
+					if nextNode, ok := stack.Peek().(*Node); ok {
+						currentNode = nextNode
 
-				} else {
-					log.Fatal() // TODO: Print error
-				}
+					} else {
+						log.Fatal() // TODO: Print error
+					}
 				}
 			case SelfClosingTag:
 				newNode := &Node{
@@ -166,6 +167,9 @@ func (tree *HTMLTree) Parse() *Node {
 		default:
 			log.Fatal("Type mismatch! TagToken or TextToken, but was none")
 		}
+		// TODO: remove
+		// comment in for console output
+		//tree.traverse(tree.rootNode, 0)
 	}
 	return tree.rootNode
 }
@@ -255,6 +259,19 @@ func (tree *HTMLTree) ParseRuneByRune() *Node {
 	}
 
 	return tree.rootNode
+}
+
+func (tree *HTMLTree) traverse(node *Node, level int) {
+	tag := node.tag.tagType
+
+	for i := 0; i < level; i++ {
+		fmt.Print(" ")
+	}
+	fmt.Println(tag)
+
+	for _, ele := range node.Children() {
+		tree.traverse(ele, level+5)
+	}
 }
 
 func (tree *HTMLTree) RootNode() *Node {
