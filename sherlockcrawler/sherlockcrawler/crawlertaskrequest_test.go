@@ -12,10 +12,12 @@ import (
 )
 
 const (
-	id                  = 1
-	addr                = "localhost:8080"
-	state               = FINISHED
-	ltime time.Duration = 10
+	id                          = 1
+	addr                        = "localhost:8080"
+	state                       = FINISHED
+	ltime         time.Duration = 10
+	errorsappered               = 3
+	statuscode                  = 200
 )
 
 // Testing error
@@ -28,6 +30,26 @@ func TestCrawlerTaskRequest(t *testing.T) {
 	task.setTaskState(state)
 	task.setTaskError(err)
 	task.setResponseTime(ltime)
+	task.setTrysIfError(errorsappered)
+	task.setStatusCode(statuscode)
+
+	if task.getAddr() != addr {
+		t.Fatalf("Address's do not match. Expected: %s, Got: %s", task.getAddr(), addr)
+	} else if task.getTaskID() != id {
+		t.Fatalf("IDs do not match. Expected: %d, Got: %d", task.getTaskID(), id)
+	} else if task.getTaskState() != state {
+		t.Fatalf("Taskstates do not match. Expected: %s, Got: %s", string(task.getTaskState()), string(state))
+	} else if task.getTaskError() != err {
+		t.Fatalf("Taskerror do not match. Expected: %s, Got: %s", string(task.getTaskError().Error()), string(err.Error()))
+	} else if task.getResponseTime() != ltime {
+		t.Fatalf("Responsetime do not match. Expected: %d, Got: %d", int(task.getResponseTime()), int(ltime))
+	} else if task.getStatusCode() != statuscode {
+		t.Fatalf("Statuscode do not match. Expected: %d, Got: %d", task.getStatusCode(), statuscode)
+	} else if task.getTrysError() != errorsappered {
+		t.Fatalf("Amount of errors does not match. Expected: %d, Got: %d", task.getTrysError(), errorsappered)
+	} else {
+		t.Log("Getter and Setter work well (Not Tested are all response related, see later tests).")
+	}
 }
 
 /*

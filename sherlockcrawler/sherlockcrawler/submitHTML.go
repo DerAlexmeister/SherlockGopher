@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/micro/go-micro"
-	sender "github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen/sherlockcrawler/proto"
+	sender "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto"
 	"github.com/pkg/errors"
 )
 
