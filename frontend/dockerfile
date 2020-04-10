@@ -7,5 +7,7 @@ RUN go build -o main .
 
 FROM iron/go
 COPY --from=build /app/main /app/
+COPY views/ /app/views
 EXPOSE 8080:8080
+RUN ls /app/views/js
 ENTRYPOINT ["/app/main"]
