@@ -28,6 +28,7 @@ func getAddress() string {
 }
 
 func main() {
+
 	service := web.NewService(web.Name(getServiceName()))
 
 	if err := service.Init(); err != nil {
@@ -45,4 +46,5 @@ func main() {
 	if err := service.Run(); err != nil {
 		log.Fatal(err)
 	}
+
 }

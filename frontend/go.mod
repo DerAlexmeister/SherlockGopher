@@ -1,4 +1,4 @@
-module github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen/frontend
+module github.com/ob-algdatii-20ss/SherlockGopher/frontend
 
 go 1.14
 
