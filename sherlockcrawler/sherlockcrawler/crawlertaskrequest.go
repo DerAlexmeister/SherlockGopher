@@ -28,10 +28,11 @@ const (
 CrawlerTaskRequest will be a request made by the analyser.
 */
 type CrawlerTaskRequest struct {
-	taskid            int64  //taskid, send every time.
+	taskid            uint64 //taskid, send every time.
 	addr              string //addr, once
 	taskstate         TASKSTATE
 	taskerror         error //error, send as string incase there is an error then dont send a body
+	taskerrortry      int   //never
 	response          *http.Response
 	responseHeader    *http.Header //header, once (typ map)
 	responseBody      string
@@ -44,13 +45,15 @@ type CrawlerTaskRequest struct {
 NewTask will return an empty CrawlerTaskRequest.
 */
 func NewTask() CrawlerTaskRequest {
-	return CrawlerTaskRequest{}
+	return CrawlerTaskRequest{
+		taskstate: UNDONE,
+	}
 }
 
 /*
 getTaskID will return the id of a given task.
 */
-func (creq *CrawlerTaskRequest) getTaskID() int64 {
+func (creq *CrawlerTaskRequest) getTaskID() uint64 {
 	return creq.taskid
 }
 
@@ -118,9 +121,23 @@ func (creq *CrawlerTaskRequest) getStatusCode() int {
 }
 
 /*
+getTrysError will return the number of errors occured.
+*/
+func (creq *CrawlerTaskRequest) getTrysError() int {
+	return creq.taskerrortry
+}
+
+/*
+getResponseTime will return the time it took to make the response and get an answer.
+*/
+func (creq *CrawlerTaskRequest) getResponseTime() time.Duration {
+	return creq.responseTime
+}
+
+/*
 setTaskID will set the task id of a given task.
 */
-func (creq *CrawlerTaskRequest) setTaskID(lid int64) {
+func (creq *CrawlerTaskRequest) setTaskID(lid uint64) {
 	creq.taskid = lid
 }
 
@@ -134,7 +151,7 @@ func (creq *CrawlerTaskRequest) setAddr(laddr string) {
 /*
 setResponse will set the response of the Request to a given CrawlerTaskRequest.
 */
-func (creq *CrawlerTaskRequest) setDone(ltaskstate TASKSTATE) {
+func (creq *CrawlerTaskRequest) setTaskState(ltaskstate TASKSTATE) {
 	creq.taskstate = ltaskstate
 }
 
@@ -181,6 +198,20 @@ func (creq *CrawlerTaskRequest) setStatusCode(lstatuscode int) {
 }
 
 /*
+setTrysIfError will be the setter for the number of missed trys.
+*/
+func (creq *CrawlerTaskRequest) setTrysIfError(lnumerrors int) {
+	creq.taskerrortry = lnumerrors
+}
+
+/*
+setResponseTime will set the time it tookt to make the request and recieve an answer.
+*/
+func (creq *CrawlerTaskRequest) setResponseTime(ltime time.Duration) {
+	creq.responseTime = ltime
+}
+
+/*
 MakeRequestForHTML will make a request to a given Website and return its HTML-Code.
 */
 func (creq *CrawlerTaskRequest) MakeRequestForHTML() (*http.Response, error) {
@@ -208,7 +239,7 @@ func (creq *CrawlerTaskRequest) MakeRequestAndStoreResponse() bool {
 		creq.setTaskError(err)
 		return false
 	}
-	//TODO Check wo alles via setter gesetzt wird.
+	//TODO
 	creq.setResponse(response)
 	creq.setResponseBody(string(bodyBytes))
 	creq.setResponseBodyInBytes(bodyBytes)
