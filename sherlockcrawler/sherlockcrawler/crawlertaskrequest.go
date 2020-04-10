@@ -218,7 +218,7 @@ MakeRequestForHTML will make a request to a given Website and return its HTML-Co
 func (creq *CrawlerTaskRequest) MakeRequestForHTML() (*http.Response, error) {
 	response, err := http.Get(creq.addr)
 	if err != nil {
-		return nil, fmt.Errorf("An error occured while trying to get the Website: %s", creq.addr)
+		return nil, fmt.Errorf("An error occurred while trying to get the Website: %s", creq.addr)
 	}
 	return response, nil
 }

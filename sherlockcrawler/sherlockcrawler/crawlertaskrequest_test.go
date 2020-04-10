@@ -23,6 +23,9 @@ const (
 // Testing error
 var err error = errors.New("An error")
 
+/*
+TestCrawlerTaskRequest will test a crawlertaskrequest in general so its getters and setters.
+*/
 func TestCrawlerTaskRequest(t *testing.T) {
 	task := NewTask()
 	task.setTaskID(id)
@@ -94,7 +97,7 @@ func TestMakeRequestForHTMLWithError(t *testing.T) {
 	defer server.Close()
 }
 
-func TestMakeRequestAndStoreResponse(t *testing.T) {
+func TestMakeRequestAndStoreResponse(t *testing.T) { //TODO
 	wanted := "This should be in the body of the HTTP response."
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
@@ -104,9 +107,35 @@ func TestMakeRequestAndStoreResponse(t *testing.T) {
 	task.setAddr(server.URL)
 	result := task.MakeRequestAndStoreResponse()
 	if result {
+		if task.getResponseByReferenz() == nil {
 
+		} else if !reflect.DeepEqual([]byte(wanted), task.getResponseBodyInBytes()) {
+
+		} else if !reflect.DeepEqual(wanted, task.getResponseBody()) {
+
+		}
 	} else {
 		t.Fatal("A Problem occrued while trying to call MakeRequestAndStoreResponse")
+	}
+
+	defer server.Close()
+}
+
+/*
+TestMakeRequestAndStoreResponseWithEmptyAddrField will test a request with empty addr field.
+*/
+func TestMakeRequestAndStoreResponseWithEmptyAddrField(t *testing.T) {
+	wanted := "This should be in the body of the HTTP response."
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Write([]byte(wanted))
+	}))
+	task := NewTask()
+	result := task.MakeRequestAndStoreResponse()
+	if !result && task.getTaskError().Error() == "cannot process a task with an empty address field" && task.getTrysError() > 0 && task.getTaskState() == FAILED {
+		t.Log("An error occurred as expected.")
+	} else {
+		t.Fatal("A Problem occrued while trying to call MakeRequestAndStoreResponse should return an error but did not")
 	}
 
 	defer server.Close()
