@@ -39,12 +39,13 @@ func getMAXTASKS() int64 {
 }
 
 /*
-ContainsAddress will check whether or not a addr is allready in use or not.
+ContainsAddress will check whether or not a addr is already in use or not.
 */
 func (que *AnalyserQueue) ContainsAddress(addr int64) bool {
 	if _, contains := (*que.getCurrentQueue())[addr]; !contains {
 		return false
 	}
+
 	return true
 }
 
@@ -53,6 +54,7 @@ containsID will check whether the queue has already a given id in use.
 */
 func (que *AnalyserQueue) containsID(id int64) bool {
 	_, inMap := (*que.getCurrentQueue())[id]
+
 	return inMap
 }
 
@@ -61,6 +63,7 @@ Function to produce a random taskid.
 */
 func (que *AnalyserQueue) getRandomUserID(length int64) int64 {
 	rand.Seed(time.Now().UnixNano())
+
 	for {
 		potantialID := rand.Int63n(length)
 		if !que.containsID(potantialID) {
@@ -78,6 +81,7 @@ func (que *AnalyserQueue) AppendQueue(task *AnalyserTaskRequest) bool {
 		(*que.getCurrentQueue())[taskid] = task
 		return true
 	}
+
 	return false
 }
 
@@ -89,5 +93,6 @@ func (que *AnalyserQueue) RemoveFromQueue(taskid int64) bool {
 		delete((*que.getCurrentQueue()), taskid)
 		return true
 	}
+
 	return false
 }
