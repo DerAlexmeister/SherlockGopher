@@ -95,5 +95,19 @@ func TestMakeRequestForHTMLWithError(t *testing.T) {
 }
 
 func TestMakeRequestAndStoreResponse(t *testing.T) {
+	wanted := "This should be in the body of the HTTP response."
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Write([]byte(wanted))
+	}))
+	task := NewTask()
+	task.setAddr(server.URL)
+	result := task.MakeRequestAndStoreResponse()
+	if result {
 
+	} else {
+		t.Fatal("A Problem occrued while trying to call MakeRequestAndStoreResponse")
+	}
+
+	defer server.Close()
 }
