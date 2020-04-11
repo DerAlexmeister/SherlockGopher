@@ -100,7 +100,7 @@ func TestMakeRequestForHTMLWithError(t *testing.T) {
 /*
 TestMakeRequestAndStoreResponse will make a response and store all responses.
 */
-func TestMakeRequestAndStoreResponse(t *testing.T) { //TODO
+func TestMakeRequestAndStoreResponse(t *testing.T) {
 	wanted := "This should be in the body of the HTTP response."
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
@@ -108,7 +108,7 @@ func TestMakeRequestAndStoreResponse(t *testing.T) { //TODO
 	}))
 	task := NewTask()
 	task.setAddr(server.URL)
-	result := task.MakeRequestAndStoreResponse()
+	result := task.MakeRequestAndStoreResponse(nil)
 	if result {
 		if task.getResponseByReferenz() == nil {
 			t.Fatalf("Got a nil reference to the responce Expected: not nil pointer, Got %p", task.getResponseByReferenz())
@@ -140,7 +140,7 @@ func TestMakeRequestAndStoreResponseWithEmptyAddrField(t *testing.T) {
 		w.Write([]byte(wanted))
 	}))
 	task := NewTask()
-	result := task.MakeRequestAndStoreResponse()
+	result := task.MakeRequestAndStoreResponse(nil)
 	if !result && task.getTaskError().Error() == "cannot process a task with an empty address field" && task.getTrysError() > 0 && task.getTaskState() == FAILED {
 		t.Log("An error occurred as expected.")
 	} else {

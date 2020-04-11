@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -235,7 +236,7 @@ func (creq *CrawlerTaskRequest) onError(lerr error) {
 /*
 MakeRequestAndStoreResponse will make a request and store the result in the field response of the task.
 */
-func (creq *CrawlerTaskRequest) MakeRequestAndStoreResponse() bool {
+func (creq *CrawlerTaskRequest) MakeRequestAndStoreResponse(waitgroup *sync.WaitGroup) bool {
 	creq.setTaskState(PROCESSING)
 	if creq.addr == "" {
 		creq.onError(errors.New("cannot process a task with an empty address field"))
@@ -261,5 +262,8 @@ func (creq *CrawlerTaskRequest) MakeRequestAndStoreResponse() bool {
 	creq.setStatusCode(response.StatusCode)
 	creq.setTaskError(nil)
 	creq.setTaskState(FINISHED)
+	if waitgroup != nil {
+		waitgroup.Done()
+	}
 	return true
 }

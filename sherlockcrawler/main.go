@@ -8,7 +8,10 @@ import (
 	sherlock "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/sherlockcrawler"
 )
 
-const serviceName = "crawler-service"
+const (
+	serviceName     = "crawler-service"
+	fileservicename = "crawler-filestreamingservice"
+)
 
 func main() {
 	// CrawlerService.
@@ -36,4 +39,7 @@ func main() {
 	}
 
 	//Filetransferservice.
+
+	filestreamservice := micro.NewService(micro.Name(fileservicename))
+	filestreamservice.Init()
 }

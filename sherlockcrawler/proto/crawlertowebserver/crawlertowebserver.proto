@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package crawlerwebserverproto;
 
-import "google/protobuf/empty.proto";
+//import "google/protobuf/empty.proto";
 
 /*
 Status of the Crawler.
@@ -16,11 +16,48 @@ Crawler will be the gRPC service for the crawler
 */
 service Crawler {
 
-    rpc RecieveURL(SubmitURLRequest) returns (SubmitURLResponse) {}
+    // Receive will take a URLRequest and answer with a statuscode like 200.
+    rpc ReceiveURL(SubmitURLRequest) returns (SubmitURLResponse) {}
 
-    rpc FinishedRunning(google.protobuf.Empty) returns (StatusMessage) {}
+    // StatusOfTaskQueue will send the status of the tasks.
+    rpc StatusOfTaskQueue(TaskStatusRequest) returns (TaskStatusResponse) {}
+
+    // HasFinished will respond with the status of the entire system.
+    rpc HasFinished(HasFinishedRequest) returns (HasFinishedResponse) {}
 }
 
+enum STATUS_OF_THE_ENTIRE_SYSTEM {
+    undefined = 0;
+    done = 1;
+    running = 2;
+    unexpected_exit = 3;
+}
+
+message HasFinishedRequest {
+
+}
+
+message HasFinishedResponse {
+    STATUS_OF_THE_ENTIRE_SYSTEM state = 1;
+}
+
+/*
+TaskStatusRequest will represent a request for the current status of the tasks.
+*/
+message TaskStatusRequest {
+
+}
+
+/*
+TaskStatusResponse will represent a response for a TaskStatusRequest.
+*/
+message TaskStatusResponse {
+    string website = 1;
+    uint64 undone = 2;
+    uint64 processing = 3;
+    uint64 finished = 4;
+    uint64 failed = 5;
+}
 /*
 SubmitURLRequest will submit a URL.
 */
@@ -34,12 +71,4 @@ SubmitURLResponse will answer a SubmitURLRequest with a bool to indecate the sta
 message SubmitURLResponse {
     bool recieved = 1;
 }
-
-/*
-Will submit the Status of the Crawler.
-*/
-message StatusMessage {
-    ServiceStatus status = 1;
-}
-
 
