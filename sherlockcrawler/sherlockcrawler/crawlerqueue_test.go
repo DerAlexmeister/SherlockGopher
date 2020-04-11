@@ -2,6 +2,9 @@ package sherlockcrawler
 
 import "testing"
 
+/*
+TestQueueHasIDAlreadyInUse tests whether a id is already in use.
+*/
 func TestQueueHasIDAlreadyInUse(t *testing.T) {
 	queue := NewCrawlerQueue()
 	task := &CrawlerTaskRequest{}
@@ -16,6 +19,9 @@ func TestQueueHasIDAlreadyInUse(t *testing.T) {
 
 }
 
+/*
+TestQueueContainsTaskIDFailes tests trys
+*/
 func TestQueueContainsTaskIDFailes(t *testing.T) {
 	queue := NewCrawlerQueue()
 	task := &CrawlerTaskRequest{}

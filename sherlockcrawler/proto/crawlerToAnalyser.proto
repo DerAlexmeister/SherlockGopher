@@ -2,10 +2,22 @@
 
 syntax = "proto3";
 
-package AnalyserTunnel;
+package AnalyserInterface;
+
+//import "google/protobuf/empty.proto";
 
 service AnalyserInterface {
     
+    // Create a Task which should be crawled by sherlock crawler.
+    rpc CreateTask(CrawlTaskCreateRequest) returns (CrawlTaskCreateResponse) {}
     
+
+}
+
+message CrawlTaskCreateRequest {
     
+}
+
+message CrawlTaskCreateResponse {
+
 }
