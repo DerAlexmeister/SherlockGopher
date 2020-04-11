@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/micro/go-micro/web"
-	webserver "github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen/webserver/webserver"
+	webserver "github.com/ob-algdatii-20ss/SherlockGopher/webserver/webserver"
 )
 
 const (
