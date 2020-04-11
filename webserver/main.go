@@ -10,7 +10,7 @@ import (
 
 const (
 	servicename string = "CrawlWebServer" // Name of the Service
-	address     string = "localhost:8081" // Address of the Webserver
+	address     string = "0.0.0.0:8081"   // Address of the Webserver
 )
 
 /*
