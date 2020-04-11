@@ -97,6 +97,9 @@ func TestMakeRequestForHTMLWithError(t *testing.T) {
 	defer server.Close()
 }
 
+/*
+TestMakeRequestAndStoreResponse will make a response and store all responses.
+*/
 func TestMakeRequestAndStoreResponse(t *testing.T) { //TODO
 	wanted := "This should be in the body of the HTTP response."
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
