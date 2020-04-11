@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package analyserproto;
+package analyserfilestream;
 
 service Receiver {
     rpc Upload(stream Chunk) returns (UploadStatus) {}
