@@ -16,7 +16,7 @@ func main() {
 		micro.Name(serviceName),
 	)
 	service.Init()
-	/*
+
 		AnalyserService := sherlockanalyser.NewAnalyserServiceHandler()
 
 		AnalyserService.InjectDependency(sherlockanalyser.NewAnalyserDependencies())
@@ -48,5 +48,5 @@ func main() {
 		} else {
 			fmt.Println(err1)
 		}
-	*/
+
 }
