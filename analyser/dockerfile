@@ -4,7 +4,6 @@ FROM golang:1.14 as build
 COPY . /app
 WORKDIR /app
 
-RUN ls -la
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o dockanalyser .
 
 FROM alpine:latest
