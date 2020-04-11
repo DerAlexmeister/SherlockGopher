@@ -7,7 +7,8 @@ RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o frontend .
 
 FROM alpine:latest
 COPY --from=build /app/frontend /app/
-COPY views/ /app/views
+COPY views /app/views
+WORKDIR /app 
+RUN ls -la 
 EXPOSE 8080
-#RUN ls -la 
-ENTRYPOINT [ "/app/frontend" ] 
+ENTRYPOINT [ "./frontend" ] 

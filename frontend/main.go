@@ -10,7 +10,7 @@ import (
 
 const (
 	servicename string = "Reactservice"
-	address     string = "localhost:8080"
+	address     string = "0.0.0.0:8080"
 )
 
 /*
