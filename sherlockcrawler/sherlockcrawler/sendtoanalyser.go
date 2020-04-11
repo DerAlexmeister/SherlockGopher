@@ -9,7 +9,7 @@ import (
 )
 
 /*
-size of a chunk. important to minimize the amount of bytes sent at once
+chunkSize represents the size of a chunk. it is necessary to minimize the amount of bytes sent at once.
 */
 const chunkSize int = 1024
 
@@ -32,7 +32,7 @@ func NewClientGRPC(service micro.Service) (c ClientGRPC) {
 }
 
 /*
-help method
+min is a help method. it receives 2 values and returns the smaller one.
 */
 func min(a, b int) int {
 	if a <= b {
@@ -68,7 +68,7 @@ func (c *ClientGRPC) UploadFile(ctx context.Context, ltask CrawlerTaskRequest) e
 	var status *sender.UploadStatus
 
 	if status.Code != sender.UploadStatusCode_Ok {
-		return errors.New("upload failed - msg: %s")
+		return errors.Errorf("upload failed - msg: %s", status.Message)
 	}
 
 	err = stream.Close()

@@ -2,20 +2,32 @@ syntax = "proto3";
 
 package crawlerproto;
 
+/*
+Sender represents the file sender
+*/
 service Sender {
     rpc Upload(stream Chunk) returns (UploadStatus) {}
 }
 
+/*
+Chunk represents a part of a http response
+*/
 message Chunk {
         bytes Content = 1;
 }
 
+/*
+UploadStatusCode gives information. the receiver sends a ok if he received all chunks
+*/
 enum UploadStatusCode {
         Unknown = 0;
         Ok = 1;
         Failed = 2;
 }
 
+/*
+UploadStatus is the response from the receiver
+*/
 message UploadStatus {
         string Message = 1;
         UploadStatusCode Code = 2;
