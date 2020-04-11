@@ -5,9 +5,6 @@ import (
 	"time"
 )
 
-//MAXTASKS will be the maximum amout of possible tasks in one queue.
-const MAXTASKS uint64 = 9223372036854775807
-
 /*
 CrawlerQueue will be the queue of the current CrawlerTaskRequest.
 */
@@ -18,7 +15,7 @@ type CrawlerQueue struct {
 /*
 NewCrawlerQueue will return a new Queue.
 */
-func (que *CrawlerQueue) NewCrawlerQueue() CrawlerQueue {
+func NewCrawlerQueue() CrawlerQueue {
 	return CrawlerQueue{
 		Queue: make(map[uint64]*CrawlerTaskRequest),
 	}
@@ -32,28 +29,13 @@ func (que *CrawlerQueue) getCurrentQueue() *(map[uint64]*CrawlerTaskRequest) {
 }
 
 /*
-getMAXTASKS will return the const MAXTASKS which represents the maximum amout of current tasks.
+ContainsTaskID will check whether or not a id is allready in use or not.
 */
-func getMAXTASKS() uint64 {
-	return MAXTASKS
-}
-
-/*
-ContainsAddress will check whether or not a addr is allready in use or not.
-*/
-func (que *CrawlerQueue) ContainsAddress(addr uint64) bool {
-	if _, contains := (*que.getCurrentQueue())[addr]; !contains {
+func (que *CrawlerQueue) ContainsTaskID(id uint64) bool {
+	if _, contains := (*que.getCurrentQueue())[id]; !contains {
 		return false
 	}
 	return true
-}
-
-/*
-containsID will check whether the queue has already a given id in use.
-*/
-func (que *CrawlerQueue) containsID(id uint64) bool {
-	_, inMap := (*que.getCurrentQueue())[id]
-	return inMap
 }
 
 /*
@@ -63,7 +45,7 @@ func (que *CrawlerQueue) getRandomUserID() uint64 {
 	rand.Seed(time.Now().UnixNano())
 	for {
 		potantialID := rand.Uint64()
-		if !que.containsID(potantialID) {
+		if !que.ContainsTaskID(potantialID) && potantialID > 0 {
 			return potantialID
 		}
 	}
@@ -71,22 +53,24 @@ func (que *CrawlerQueue) getRandomUserID() uint64 {
 
 /*
 AppendQueue will append the current queue with a new CrawlerTaskRequest.
+Will return the taskid. Incase an error occurred it will return 0.
+The Taskid is a uint64.
 */
-func (que *CrawlerQueue) AppendQueue(task *CrawlerTaskRequest) bool {
+func (que *CrawlerQueue) AppendQueue(task *CrawlerTaskRequest) uint64 {
 	taskid := que.getRandomUserID()
-	if !que.ContainsAddress(taskid) {
+	if !que.ContainsTaskID(taskid) && task != nil {
 		task.setTaskID(taskid)
 		(*que.getCurrentQueue())[taskid] = task
-		return true
+		return taskid
 	}
-	return false
+	return 0
 }
 
 /*
-RemoveFromQueue will remove a task from the queue by a given address.
+RemoveFromQueue will remove a task from the queue by a given Taskid.
 */
 func (que *CrawlerQueue) RemoveFromQueue(taskid uint64) bool {
-	if !que.ContainsAddress(taskid) {
+	if taskid > 0 && que.ContainsTaskID(taskid) {
 		delete((*que.getCurrentQueue()), taskid)
 		return true
 	}
