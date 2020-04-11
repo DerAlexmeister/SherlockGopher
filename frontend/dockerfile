@@ -9,6 +9,5 @@ FROM alpine:latest
 COPY --from=build /app/frontend /app/
 COPY views /app/views
 WORKDIR /app 
-RUN ls -la 
 EXPOSE 8080
 ENTRYPOINT [ "./frontend" ] 
