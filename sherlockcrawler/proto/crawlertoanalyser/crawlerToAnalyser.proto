@@ -2,9 +2,14 @@
 
 syntax = "proto3";
 
-package AnalyserInterface;
+package analyserinterface;
 
 //import "google/protobuf/empty.proto";
+
+enum URL_STATUS {
+    ok = 0;
+    failure = 1;
+}
 
 service AnalyserInterface {
     
@@ -15,9 +20,9 @@ service AnalyserInterface {
 }
 
 message CrawlTaskCreateRequest {
-    
+    string url = 1;
 }
 
 message CrawlTaskCreateResponse {
-
+    URL_STATUS statuscode = 1;
 }
