@@ -5,7 +5,7 @@ COPY . /app
 WORKDIR /app
 
 RUN ls -la
-RUN go build -o dockcrawler .
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o dockcrawler .
 
 FROM alpine:latest
 COPY --from=build /app/dockcrawler /app/
