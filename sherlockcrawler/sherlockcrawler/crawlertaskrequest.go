@@ -3,9 +3,10 @@ package sherlockcrawler
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 /*
@@ -217,31 +218,48 @@ MakeRequestForHTML will make a request to a given Website and return its HTML-Co
 func (creq *CrawlerTaskRequest) MakeRequestForHTML() (*http.Response, error) {
 	response, err := http.Get(creq.addr)
 	if err != nil {
-		return nil, fmt.Errorf("An error occured while trying to get the Website: %s", creq.addr)
+		return nil, fmt.Errorf("An error occurred while trying to get the Website: %s", creq.addr)
 	}
 	return response, nil
+}
+
+/*
+onError will set all things needed if an error occured while dealing with a task or ŕequest/response.
+*/
+func (creq *CrawlerTaskRequest) onError(lerr error) {
+	creq.setTaskError(lerr)
+	creq.setTrysIfError(creq.getTrysError() + 1)
+	creq.setTaskState(FAILED)
 }
 
 /*
 MakeRequestAndStoreResponse will make a request and store the result in the field response of the task.
 */
 func (creq *CrawlerTaskRequest) MakeRequestAndStoreResponse() bool {
+	creq.setTaskState(PROCESSING)
+	if creq.addr == "" {
+		creq.onError(errors.New("cannot process a task with an empty address field"))
+		return false
+	}
+	starttime := time.Now()
 	response, err := creq.MakeRequestForHTML()
 	if err != nil {
-		log.Fatal(err) //TODO formated error
-		creq.setTaskError(err)
+		creq.onError(err)
 		return false
 	}
 	defer response.Body.Close()
+	creq.setResponseTime((time.Now()).Sub(starttime))
 	bodyBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Fatal(err) //TODO formated error
-		creq.setTaskError(err)
+		creq.onError(err)
 		return false
 	}
-	//TODO
 	creq.setResponse(response)
+	creq.setResponseHeader(&response.Header)
 	creq.setResponseBody(string(bodyBytes))
 	creq.setResponseBodyInBytes(bodyBytes)
+	creq.setStatusCode(response.StatusCode)
+	creq.setTaskError(nil)
+	creq.setTaskState(FINISHED)
 	return true
 }

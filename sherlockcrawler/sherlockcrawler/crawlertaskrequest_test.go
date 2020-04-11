@@ -23,6 +23,9 @@ const (
 // Testing error
 var err error = errors.New("An error")
 
+/*
+TestCrawlerTaskRequest will test a crawlertaskrequest in general so its getters and setters.
+*/
 func TestCrawlerTaskRequest(t *testing.T) {
 	task := NewTask()
 	task.setTaskID(id)
@@ -94,6 +97,52 @@ func TestMakeRequestForHTMLWithError(t *testing.T) {
 	defer server.Close()
 }
 
-func TestMakeRequestAndStoreResponse(t *testing.T) {
+func TestMakeRequestAndStoreResponse(t *testing.T) { //TODO
+	wanted := "This should be in the body of the HTTP response."
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Write([]byte(wanted))
+	}))
+	task := NewTask()
+	task.setAddr(server.URL)
+	result := task.MakeRequestAndStoreResponse()
+	if result {
+		if task.getResponseByReferenz() == nil {
+			t.Fatalf("Got a nil reference to the responce Expected: not nil pointer, Got %p", task.getResponseByReferenz())
+		} else if !reflect.DeepEqual([]byte(wanted), task.getResponseBodyInBytes()) {
+			t.Fatal("The byte version of the body are not equal.")
+		} else if !reflect.DeepEqual(wanted, task.getResponseBody()) {
+			t.Fatalf("The body's of the response task.getResponseBody() and wanted(This should be in the body of the HTTP response.) are different")
+		} else if !reflect.DeepEqual(task.getResponse().Header, task.getResponseHeader()) {
+			t.Fatalf("Response.Header and getResponseHeader returnd different results. Expected: %v, Got %v", task.getResponse().Header, task.getResponseHeader())
+		} else if task.getResponse().StatusCode != 200 && task.getResponse().StatusCode != task.getStatusCode() {
+			t.Fatalf("Response status code retrieved on 2 different ways returned different results Expected: %d, Got %d", task.getResponse().StatusCode, task.getStatusCode())
+		} else {
+			t.Log("Successfully testet missing getters compared to the test TestCrawlerTaskRequest")
+		}
+	} else {
+		t.Fatal("A Problem occrued while trying to call MakeRequestAndStoreResponse")
+	}
 
+	defer server.Close()
+}
+
+/*
+TestMakeRequestAndStoreResponseWithEmptyAddrField will test a request with empty addr field.
+*/
+func TestMakeRequestAndStoreResponseWithEmptyAddrField(t *testing.T) {
+	wanted := "This should be in the body of the HTTP response."
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Write([]byte(wanted))
+	}))
+	task := NewTask()
+	result := task.MakeRequestAndStoreResponse()
+	if !result && task.getTaskError().Error() == "cannot process a task with an empty address field" && task.getTrysError() > 0 && task.getTaskState() == FAILED {
+		t.Log("An error occurred as expected.")
+	} else {
+		t.Fatal("A Problem occrued while trying to call MakeRequestAndStoreResponse should return an error but did not")
+	}
+
+	defer server.Close()
 }
