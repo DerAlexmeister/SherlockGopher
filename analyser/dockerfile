@@ -1,0 +1,12 @@
+#Dockerfile
+
+FROM golang:1.14 as build
+COPY . /app
+WORKDIR /app
+
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o dockanalyser .
+
+FROM alpine:latest
+COPY --from=build /app/dockanalyser /app/
+EXPOSE 8200
+ENTRYPOINT ["/app/dockanalyser"]

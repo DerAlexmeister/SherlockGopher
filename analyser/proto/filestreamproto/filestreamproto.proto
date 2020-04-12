@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package analyserfilestream;
+
+/*
+Receiver represents the file receiver
+*/
+service Receiver {
+    rpc Upload(stream Chunk) returns (UploadStatus) {}
+}
+
+/*
+Chunk represents a part of a http response
+*/
+message Chunk {
+        bytes Content = 1;
+}
+
+/*
+UploadStatusCode. the receiver sends ok if he received all chunks
+*/
+enum UploadStatusCode {
+        Unknown = 0;
+        Ok = 1;
+        Failed = 2;
+}
+
+/*
+UploadStatus is the response from the receiver
+*/
+message UploadStatus {
+        string Message = 1;
+        UploadStatusCode Code = 2;
+}

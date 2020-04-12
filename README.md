@@ -10,7 +10,7 @@ Sherlock Gopher is a distributed System which will crawl over a given website an
 ## Features for Version beyond 1.0 
  - Advanced analysis of the HTML/CSS and Javascript
  - More information in the graph
- - Store and save the results of diffrent sites
+ - Store and save the results of different sites
  - Export as json 
  - REST-API for Skripting 
  - Skripting in the Frontend
