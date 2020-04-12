@@ -91,7 +91,7 @@ func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask 
 		return errors.New("error while closing stream")
 	}
 
-	//TODO remove from queue on success
+	c.getQueue().RemoveFromQueue(ltask.getTaskID())
 	return nil
 }
 
@@ -101,7 +101,7 @@ func helpSendErrorCase(ctx context.Context, ltask *CrawlerTaskRequest, stream se
 		TaskId:       ltask.getTaskID(),
 		Address:      ltask.getAddr(),
 		TaskError:    ltask.getTaskError().Error(),
-		ResponseTime: ltask.getResponseTime(),
+		ResponseTime: int64(ltask.getResponseTime()),
 	})
 
 	if err != nil {
@@ -117,12 +117,20 @@ func helpSendErrorCase(ctx context.Context, ltask *CrawlerTaskRequest, stream se
 }
 
 func helpSendInfos(ctx context.Context, ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
+
+	headerArr := []*sender.HeaderArray{}
+	//valueArr := []*sender.HeaderArrayValue{}
+	for k, v := range ltask.getResponseHeader() {
+		//valueArr = append(valueArr, &sender.HeaderArrayValue{Value: v})
+		headerArr = append(headerArr, &sender.HeaderArray{Key: k, ValueArr: v})
+	}
+
 	err = stream.SendMsg(&sender.Infos{
 		TaskId:       ltask.getTaskID(),
 		Address:      ltask.getAddr(),
-		HeaderArray:  ltask.getResponseHeader(),
-		StatusCode:   ltask.getStatusCode(),
-		ResponseTime: ltask.getResponseTime(),
+		Header:       headerArr,
+		StatusCode:   int32(ltask.getStatusCode()),
+		ResponseTime: int64(ltask.getResponseTime()),
 	})
 
 	if err != nil {
