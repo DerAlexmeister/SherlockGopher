@@ -33,10 +33,16 @@ enum STATUS_OF_THE_ENTIRE_SYSTEM {
     unexpected_exit = 3;
 }
 
+/*
+
+*/
 message HasFinishedRequest {
 
 }
 
+/*
+
+*/
 message HasFinishedResponse {
     STATUS_OF_THE_ENTIRE_SYSTEM state = 1;
 }
@@ -70,5 +76,6 @@ SubmitURLResponse will answer a SubmitURLRequest with a bool to indecate the sta
 */
 message SubmitURLResponse {
     bool recieved = 1;
+    string error = 2;
 }
 

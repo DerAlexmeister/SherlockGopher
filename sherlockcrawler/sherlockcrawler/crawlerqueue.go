@@ -142,7 +142,7 @@ func (status *QueueStatus) getAmountOfFailedTasks() uint64 {
 }
 
 /*
-getNumberOfUndoneTasks will return the number of Tasks with statusn undone.
+getNumberOfUndoneTasks will return the number of Tasks with status undone, processing, finished, failed.
 */
 func (que *CrawlerQueue) getNumberOfStatus() (uint64, uint64, uint64, uint64) {
 	var undone, processing, finished, failed uint64 = 0, 0, 0, 0

@@ -3,10 +3,12 @@ package sherlockcrawler
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"sync"
 	"time"
 
 	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyser"
+	protoweb "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertowebserver"
 	"github.com/pkg/errors"
 )
 
@@ -136,4 +138,36 @@ func (sherlock *Sherlockcrawler) ManageTasks() {
 		fmt.Println(sherlock.getQueue().GetStatusOfQueue())
 		time.Tick(delaytime * time.Millisecond)
 	}
+}
+
+/*
+ReceiveURL will spawn the first task in the queue in order to start the howl process.
+*/
+func (sherlock *Sherlockcrawler) ReceiveURL(ctx context.Context, in *protoweb.SubmitURLRequest, out *protoweb.SubmitURLResponse) error {
+	var lerr error = errors.New("malformed URL, please submit a well-formed one")
+	if u, err := url.Parse(in.GetURL()); err != nil {
+		task := NewTask()
+		task.setAddr(string(u.String()))
+		sherlock.getQueue().AppendQueue(&task)
+		out.Recieved = true
+		return nil
+	}
+	out.Recieved = false
+	out.Error = lerr.Error()
+	return lerr
+}
+
+/*
+StatusOfTaskQueue will send the status of the queue.
+*/
+func (sherlock *Sherlockcrawler) StatusOfTaskQueue(ctx context.Context, _ *protoweb.TaskStatusRequest, out *protoweb.TaskStatusResponse) error {
+	sherlock.getQueue().getNumberOfStatus()
+	return nil
+}
+
+/*
+HasFinished will send a message to the webserver incase the crawler is done.
+*/
+func (sherlock *Sherlockcrawler) HasFinished(ctx context.Context, in *protoweb.HasFinishedRequest, out *protoweb.HasFinishedResponse) error {
+	return nil
 }
