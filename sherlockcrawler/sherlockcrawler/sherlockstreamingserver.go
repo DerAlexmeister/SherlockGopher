@@ -63,7 +63,7 @@ func min(a, b int) int {
 /*
 sendFileToAnalyser will send a file to the analyser.
 */
-func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask *CrawlerTaskRequest, taskid uint64) error {
+func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask *CrawlerTaskRequest) error {
 
 	stream, err := c.Client.Upload(ctx)
 	if err != nil {
@@ -71,16 +71,16 @@ func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask 
 	}
 
 	if ltask.taskerror != nil {
-		err = helpSendErrorCase(ctx, ltask, taskid, stream)
+		err = helpSendErrorCase(ctx, ltask, stream)
 		if err != nil {
 			return err
 		}
 	} else {
-		err = helpSendInfos(ctx, ltask, taskid, stream)
+		err = helpSendInfos(ctx, ltask, stream)
 		if err != nil {
 			return err
 		}
-		err = helpSend(ctx, ltask, taskid, stream)
+		err = helpSend(ctx, ltask, stream)
 		if err != nil {
 			return err
 		}
@@ -95,31 +95,49 @@ func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask 
 	return nil
 }
 
-func helpSendErrorCase(ctx context.Context, ltask *CrawlerTaskRequest, taskid uint64, stream sender.Sender_UploadService) (err error) {
+func helpSendErrorCase(ctx context.Context, ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
 	//TODO send errorcase
+	err = stream.SendMsg(&sender.ErrorCase{
+		TaskId:       ltask.getTaskID(),
+		Address:      ltask.getAddr(),
+		TaskError:    ltask.getTaskError().Error(),
+		ResponseTime: ltask.getResponseTime(),
+	})
+
+	if err != nil {
+		return errors.New("error while sending info message")
+	}
 
 	var status *sender.UploadStatus
 	if status.Code != sender.UploadStatusCode_Ok {
-		return errors.Errorf("upload failed - msg: %s", status.Message)
+		return errors.Errorf("upload error case failed - msg: %s", status.Message)
 	}
 
 	return err
 }
 
-func helpSendInfos(ctx context.Context, ltask *CrawlerTaskRequest, taskid uint64, stream sender.Sender_UploadService) (err error) {
-	//TODO send infocase
+func helpSendInfos(ctx context.Context, ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
+	err = stream.SendMsg(&sender.Infos{
+		TaskId:       ltask.getTaskID(),
+		Address:      ltask.getAddr(),
+		HeaderArray:  ltask.getResponseHeader(),
+		StatusCode:   ltask.getStatusCode(),
+		ResponseTime: ltask.getResponseTime(),
+	})
+
+	if err != nil {
+		return errors.New("error while sending info message")
+	}
 
 	var status *sender.UploadStatus
 	if status.Code != sender.UploadStatusCode_Ok {
-		return errors.Errorf("upload failed - msg: %s", status.Message)
+		return errors.Errorf("upload infos failed - msg: %s", status.Message)
 	}
 
 	return err
 }
 
-func helpSend(ctx context.Context, ltask *CrawlerTaskRequest, taskid uint64, stream sender.Sender_UploadService) (err error) {
-
-	//TODO send additional infos
+func helpSend(ctx context.Context, ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
 
 	var lengthByteArray int = len(ltask.getResponseBodyInBytes())
 
@@ -128,7 +146,7 @@ func helpSend(ctx context.Context, ltask *CrawlerTaskRequest, taskid uint64, str
 
 		err = stream.Send(&sender.Chunk{
 			Content: buf,
-			TaskId:  taskid,
+			TaskId:  ltask.getTaskID(),
 		})
 
 		if err != nil {
@@ -145,12 +163,12 @@ func helpSend(ctx context.Context, ltask *CrawlerTaskRequest, taskid uint64, str
 }
 
 /*
-Upload cuts byte array in slices of chunksize and sends them to the analyzer.
+UploadFile cuts byte array in slices of chunksize and sends them to the analyzer.
 */
 func (c *SherlockStreamingServer) Upload(ctx context.Context) error {
 	for {
-		for id, task := range *c.getQueue().getThisQueue() {
-			if err := c.sendFileToAnalyser(ctx, task, id); err != nil {
+		for _, task := range *c.getQueue().getThisQueue() {
+			if err := c.sendFileToAnalyser(ctx, task); err != nil {
 				fmt.Printf("An error occurred while trying to submit a file. Error: %s ", err.Error())
 			}
 		}
