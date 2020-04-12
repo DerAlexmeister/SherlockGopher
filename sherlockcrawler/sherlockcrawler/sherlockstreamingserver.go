@@ -61,7 +61,7 @@ func min(a, b int) int {
 }
 
 /*
-sendFileToAnalyser will send a file to the analyser.
+sendFileToAnalyser will send a file + additional information to the analyser.
 */
 func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask *CrawlerTaskRequest) error {
 
@@ -95,6 +95,9 @@ func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask 
 	return nil
 }
 
+/*
+helpSendErrorCase is a help method to reduce the size of the sendFileToAnalyser function. it is used in case there is an error.
+*/
 func helpSendErrorCase(ctx context.Context, ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
 	err = stream.SendMsg(&sender.ErrorCase{
 		TaskId:       ltask.getTaskID(),
@@ -115,6 +118,9 @@ func helpSendErrorCase(ctx context.Context, ltask *CrawlerTaskRequest, stream se
 	return err
 }
 
+/*
+helpSendInfos is a help method to reduce the size of the sendFileToAnalyser function. it is responsible for sending the additional information. the analyser requires the information once.
+*/
 func helpSendInfos(ctx context.Context, ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
 
 	headerArr := []*sender.HeaderArray{}
@@ -146,6 +152,9 @@ func helpSendInfos(ctx context.Context, ltask *CrawlerTaskRequest, stream sender
 	return err
 }
 
+/*
+helpSend is a help method to reduce the size of the sendFileToAnalyser function. it is responsible for sending the http response with a taskid.
+*/
 func helpSend(ctx context.Context, ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
 
 	var lengthByteArray int = len(ltask.getResponseBodyInBytes())
