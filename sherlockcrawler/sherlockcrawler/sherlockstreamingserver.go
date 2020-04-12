@@ -128,6 +128,7 @@ func helpSend(ctx context.Context, ltask *CrawlerTaskRequest, taskid uint64, str
 
 		err = stream.Send(&sender.Chunk{
 			Content: buf,
+			TaskId:  taskid,
 		})
 
 		if err != nil {
