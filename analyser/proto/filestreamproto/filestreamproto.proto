@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package analyserproto;
+package analyserfilestream;
 
 /*
 Receiver represents the file receiver

@@ -1,7 +1,13 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/micro/go-micro"
+	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto/analyser"
+
+	//streamproto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto/filestreamproto"
+	sherlockanalyser "github.com/ob-algdatii-20ss/SherlockGopher/analyser/sherlockanalyser"
 )
 
 const (
@@ -16,31 +22,32 @@ func main() {
 		micro.Name(serviceName),
 	)
 	service.Init()
+
+	AnalyserService := sherlockanalyser.NewAnalyserServiceHandler()
+
+	AnalyserService.InjectDependency(sherlockanalyser.NewAnalyserDependencies())
+
+	err := proto.RegisterAnalyserHandler(service.Server(), AnalyserService)
+
+	if err != nil {
+		fmt.Println(err)
+	} else if lerr := service.Run(); lerr != nil {
+		fmt.Println(lerr)
+	} else {
+		fmt.Printf("Service %s started as intended... ", serviceName)
+	}
+	// FileTransferService.
+
+	streamingservice := micro.NewService(
+		micro.Name(streamingService),
+	)
+
+	streamingservice.Init()
 	/*
-		AnalyserService := sherlockanalyser.NewAnalyserServiceHandler()
-
-		AnalyserService.InjectDependency(sherlockanalyser.NewAnalyserDependencies())
-
-		err := proto.RegisterAnalyserHandler(service.Server(), AnalyserService)
-
-		if err != nil {
-			fmt.Println(err)
-		} else if lerr := service.Run(); lerr != nil {
-			fmt.Println(lerr)
-		} else {
-			fmt.Printf("Service %s started as intended... ", serviceName)
-		}
-		// FileTransferService.
-
-		streamingservice := micro.NewService(
-			micro.Name(streamingService),
-		)
-
-		streamingservice.Init()
-
 		newService := streamreceiver.NewServerGRPC()
 
-		err1 := proto.RegisterReceiverHandler(service.Server(), newService)
+
+		err1 := streamproto.RegisterReceiverHandler(service.Server(), newService)
 		if err1 == nil {
 			if err := service.Run(); err != nil {
 				fmt.Println(err)
@@ -48,5 +55,6 @@ func main() {
 		} else {
 			fmt.Println(err1)
 		}
+
 	*/
 }
