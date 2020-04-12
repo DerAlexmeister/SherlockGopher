@@ -21,6 +21,7 @@ jobs:
                   cd ..
                   cd ./sherlockcrawler
                   go get -v -t -d ./...
+                  cd ..
                   if [ -f Gopkg.toml ]; then
                       curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
                       dep ensure
