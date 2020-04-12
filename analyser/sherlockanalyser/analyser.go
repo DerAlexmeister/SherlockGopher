@@ -4,7 +4,8 @@ package sherlockanalyser
 AnalyserServiceHandler will be AnalyserService representation.
 */
 type AnalyserServiceHandler struct {
-	Dependencies *AnalyserDependency
+	AnalyserQueue *AnalyserQueue
+	Dependencies  *AnalyserDependency
 }
 
 /*
