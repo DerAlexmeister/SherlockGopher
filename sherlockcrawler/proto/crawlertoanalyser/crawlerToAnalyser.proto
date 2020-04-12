@@ -25,4 +25,5 @@ message CrawlTaskCreateRequest {
 
 message CrawlTaskCreateResponse {
     URL_STATUS statuscode = 1;
+    uint64 taskid = 2;
 }

@@ -3,10 +3,10 @@ package sherlockcrawler
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"sync"
 	"time"
 
+	"github.com/asaskevich/govalidator"
 	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyser"
 	protoweb "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertowebserver"
 	"github.com/pkg/errors"
@@ -42,6 +42,13 @@ func (sherlock *Sherlockcrawler) InjectDependency(deps *Sherlockdependencies) {
 }
 
 /*
+getDependency will return a pointer to the dependencies instance of this service.
+*/
+func (sherlock *Sherlockcrawler) getDependency() *Sherlockdependencies {
+	return sherlock.Dependencies
+}
+
+/*
 getQueue will return a pointer to the queue.
 */
 func (sherlock *Sherlockcrawler) getQueue() *CrawlerQueue {
@@ -66,14 +73,19 @@ func (sherlock *Sherlockcrawler) SetSherlockStreamer(server *SherlockStreamingSe
 CreateTask will append the current queue with a task.
 */
 func (sherlock Sherlockcrawler) CreateTask(ctx context.Context, in *proto.CrawlTaskCreateRequest, out *proto.CrawlTaskCreateResponse) error {
-	task := NewTask()
-	task.setAddr(in.GetUrl())
-	if id := (*sherlock.getQueue()).AppendQueue(&task); id > 0 {
-		out.Statuscode = proto.URL_STATUS_ok
-		return nil
+	message := fmt.Sprintf("malformed or invalid url: %s", in.GetUrl())
+	if isvalid := govalidator.IsURL(in.GetUrl()); isvalid {
+		task := NewTask()
+		task.setAddr(in.GetUrl())
+		if id := (*sherlock.getQueue()).AppendQueue(&task); id > 0 {
+			out.Statuscode = proto.URL_STATUS_ok
+			out.Taskid = task.getTaskID()
+			return nil
+		}
 	}
 	out.Statuscode = proto.URL_STATUS_failure
-	return errors.New("cannot create a task for this queue")
+	out.Taskid = 0
+	return errors.New(message)
 }
 
 /*
@@ -145,9 +157,9 @@ ReceiveURL will spawn the first task in the queue in order to start the howl pro
 */
 func (sherlock *Sherlockcrawler) ReceiveURL(ctx context.Context, in *protoweb.SubmitURLRequest, out *protoweb.SubmitURLResponse) error {
 	var lerr error = errors.New("malformed URL, please submit a well-formed one")
-	if u, err := url.Parse(in.GetURL()); err != nil {
+	if isvalid := govalidator.IsURL(in.GetURL()); isvalid {
 		task := NewTask()
-		task.setAddr(string(u.String()))
+		task.setAddr(string(in.GetURL()))
 		sherlock.getQueue().AppendQueue(&task)
 		out.Recieved = true
 		return nil

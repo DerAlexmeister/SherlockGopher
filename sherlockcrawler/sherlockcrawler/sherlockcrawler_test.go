@@ -8,6 +8,118 @@ import (
 	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyser"
 )
 
+const (
+	amountoftasks = 100
+	staticurl     = "www.google.com"
+)
+
+/*
+TestSherlockCrawlerNew will create a new instance of NewSherlockCrawlerService
+and check its getters and setters.
+*/
+func TestSherlockCrawlerNew(t *testing.T) {
+	sherlock := NewSherlockCrawlerService()
+	deps := NewSherlockDependencies()
+	streamingserver := NewStreamingServer()
+
+	sherlock.InjectDependency(deps)
+	sherlock.SetSherlockStreamer(&streamingserver)
+	if queue := sherlock.getQueue(); queue == nil {
+		t.Fatal("queue was nil but should not be ")
+	} else if deps := sherlock.getDependency(); deps == nil {
+		t.Fatal("dependencies was nil but should not be ")
+	} else if sts := sherlock.getSherlockStreamer(); sts == nil {
+		t.Fatal("streamingserver was nil but should not be ")
+	} else {
+		t.Log("successfully created all things needed in the new crawler instance")
+	}
+}
+
+/*
+TestCreateTask will test the CreateTask method of Sherlockcrawler
+and like the Benachmark test below.
+*/
+func TestCreateTask(t *testing.T) {
+	service := NewSherlockCrawlerService()
+	for n := 0; n < amountoftasks; n++ {
+		response := proto.CrawlTaskCreateResponse{}
+		if err := service.CreateTask(context.TODO(), &proto.CrawlTaskCreateRequest{Url: fmt.Sprintf("%s", staticurl)}, &response); err != nil {
+			t.Fatalf("createtask returned an error %s on number %d", err.Error(), n)
+		} else if rescode := response.GetStatuscode(); rescode != proto.URL_STATUS_ok {
+			t.Fatalf("got unexpected status. Expected: %s, Got: %s", proto.URL_STATUS_ok, rescode)
+		} else {
+			t.Logf("Run number %d worked fine.", n)
+		}
+	}
+}
+
+/*
+TestCreateTask will test the CreateTask method of Sherlockcrawler
+and like the Benachmark test below and fails on purpose.
+*/
+func TestTryToCreateTaskAndFail(t *testing.T) {
+	service := NewSherlockCrawlerService()
+	response := proto.CrawlTaskCreateResponse{}
+	if err := service.CreateTask(context.TODO(), &proto.CrawlTaskCreateRequest{Url: fmt.Sprintf("%s", "")}, &response); err == nil {
+		t.Fatal("test should fail but got no error")
+	} else if rescode := response.GetStatuscode(); rescode == proto.URL_STATUS_ok {
+		t.Fatalf("got unexpected status. Expected: %s, Got: %s", proto.URL_STATUS_failure, rescode)
+	} else {
+		t.Log("Test failed as expected.")
+	}
+}
+
+/*
+TestTryToCreateTaskAndFailOnCreatingTaskBecauseOfNilQueue will return an error because of a nilpointer for the queue.
+*/
+func TestTryToCreateTaskAndFailOnCreatingTaskBecauseOfNilQueue(t *testing.T) {
+	service := NewSherlockCrawlerService()
+	service.getQueue().Queue = nil
+	response := proto.CrawlTaskCreateResponse{}
+	if err := service.CreateTask(context.TODO(), &proto.CrawlTaskCreateRequest{Url: fmt.Sprintf("%s", "")}, &response); err == nil {
+		t.Fatalf("test should fail but got no error. Error returned: %s", err.Error())
+	} else if rescode := response.GetStatuscode(); rescode == proto.URL_STATUS_ok {
+		t.Fatalf("got unexpected status. Expected: %s, Got: %s", proto.URL_STATUS_failure, rescode)
+	} else {
+		t.Log("Test failed as expected.")
+	}
+}
+
+/*
+TestCreateTask will test the CreateTask method as well as RemoveFromQueue of Sherlockcrawler
+and like the Benachmark test below.
+*/
+func TestCreateTasksAndRemoveThem(t *testing.T) {
+	service := NewSherlockCrawlerService()
+	for n := 0; n < amountoftasks; n++ {
+		response := proto.CrawlTaskCreateResponse{}
+		if err := service.CreateTask(context.TODO(), &proto.CrawlTaskCreateRequest{Url: fmt.Sprintf("%s", staticurl)}, &response); err != nil {
+			t.Fatalf("createtask returned an error %s on number %d", err.Error(), n)
+		} else if rescode := response.GetStatuscode(); rescode != proto.URL_STATUS_ok {
+			t.Fatalf("got unexpected status. Expected: %s, Got: %s", proto.URL_STATUS_ok, rescode)
+		} else {
+			t.Logf("Run number %d worked fine.", n)
+		}
+	}
+
+	queue := service.getQueue()
+	for _, n := range queue.getAllTaskIds() {
+		result := queue.RemoveFromQueue(n)
+		if !result && queue.ContainsTaskID(n) {
+			t.Fatalf("cannot remove #%d from Queue", n)
+		} else {
+			t.Logf("successfully removed #%d", n)
+		}
+	}
+
+	if len := len(*queue.getThisQueue()); len != 0 {
+		t.Fatalf("queue is not empty. Excpeted: 0, Got: %d", len)
+	} else {
+		t.Log("Queue is empty.")
+	}
+
+}
+
 /*
 BenchmarkCreateTask benchmark test for the createtask function
 to see how many task can be created in a secound.

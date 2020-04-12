@@ -23,7 +23,7 @@ SherlockStreamingServer will be the representation
 of the StreamingServer pushing the files to the Analyser.
 */
 type SherlockStreamingServer struct {
-	Client sender.SenderService //TODO Refactor.
+	Client sender.SenderService
 	Queue  CrawlerQueue
 }
 
@@ -144,7 +144,7 @@ func helpSend(ctx context.Context, ltask *CrawlerTaskRequest, taskid uint64, str
 }
 
 /*
-UploadFile cuts byte array in slices of chunksize and sends them to the analyzer.
+Upload cuts byte array in slices of chunksize and sends them to the analyzer.
 */
 func (c *SherlockStreamingServer) Upload(ctx context.Context) error {
 	for {
