@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyser"
+	protoweb "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertowebserver"
 )
 
 const (
@@ -82,6 +83,47 @@ func TestTryToCreateTaskAndFailOnCreatingTaskBecauseOfNilQueue(t *testing.T) {
 		t.Fatalf("got unexpected status. Expected: %s, Got: %s", proto.URL_STATUS_failure, rescode)
 	} else {
 		t.Log("Test failed as expected.")
+	}
+}
+
+/*
+TestReceiveURL will test the ReceiveURL method and try to send a valid url.
+*/
+func TestReceiveURL(t *testing.T) {
+	//service := NewSherlockCrawlerService()
+	//response := protoweb.SubmitURLResponse{}
+	//if service.ReceiveURL
+}
+
+/*
+TestTryToCreateTaskAndFailOnCreatingTaskBecauseOfNilQueue will return an error because of a nilpointer for the queue.
+*/
+func TestStatusOfQueue(t *testing.T) {
+	service := NewSherlockCrawlerService()
+	response := protoweb.TaskStatusResponse{}
+	var tasks = []*CrawlerTaskRequest{
+		&CrawlerTaskRequest{taskstate: UNDONE}, &CrawlerTaskRequest{taskstate: UNDONE}, &CrawlerTaskRequest{taskstate: UNDONE},
+		&CrawlerTaskRequest{taskstate: FINISHED}, &CrawlerTaskRequest{taskstate: FINISHED},
+		&CrawlerTaskRequest{taskstate: PROCESSING}, &CrawlerTaskRequest{taskstate: PROCESSING},
+		&CrawlerTaskRequest{taskstate: PROCESSING}, &CrawlerTaskRequest{taskstate: PROCESSING},
+		&CrawlerTaskRequest{taskstate: PROCESSING}, &CrawlerTaskRequest{taskstate: PROCESSING},
+		&CrawlerTaskRequest{taskstate: FAILED},
+	}
+	for i, task := range tasks {
+		if id := service.getQueue().AppendQueue(task); id == 0 {
+			t.Fatalf("got a zero id for task at index %d", i)
+		}
+	}
+	if service.StatusOfTaskQueue(context.TODO(), nil, &response); response.GetUndone() != 3 {
+		t.Fatalf("number of undone tasks does not match. Expected: %d, Got %d", 3, response.GetUndone())
+	} else if response.GetFailed() != 1 {
+		t.Fatalf("number of failed tasks does not match. Expected: %d, Got %d", 1, response.GetFailed())
+	} else if response.GetFinished() != 2 {
+		t.Fatalf("number of finished tasks does not match. Expected: %d, Got %d", 2, response.GetFinished())
+	} else if response.GetProcessing() != 6 {
+		t.Fatalf("number of finished tasks does not match. Expected: %d, Got %d", 6, response.GetProcessing())
+	} else {
+		t.Log("Got all states as expected.")
 	}
 }
 
