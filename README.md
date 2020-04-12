@@ -17,7 +17,7 @@ Sherlock Gopher is a distributed System which will crawl over a given website an
 
 ## System architecture.
 
-<p align="center"><img alt="Sherlock Gopher" src="https://github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen/blob/develop/Images/4Ausrufezeichen-Page-1.png" width="350" height="350"></p>
+<p align="center"><img alt="Sherlock Gopher" src="https://github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen/blob/develop/Images/4Ausrufezeichen-Page-1.png" width="250" height="350"></p>
 
 ## Contributors
 
