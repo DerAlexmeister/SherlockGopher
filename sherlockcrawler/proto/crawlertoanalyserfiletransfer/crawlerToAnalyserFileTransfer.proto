@@ -35,7 +35,14 @@ HeaderArray consists of keys and values
 */
 message HeaderArray {
         string Key = 1;
-        string Value = 2;
+        repeated HeaderArrayValue ValueArr = 2;
+}
+
+/*
+HeaderArray consists of keys and values
+*/
+message HeaderArrayValue {
+        string Value = 1;
 }
 
 /*
