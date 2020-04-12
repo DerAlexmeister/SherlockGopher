@@ -38,8 +38,6 @@ type CrawlerService interface {
 	ReceiveURL(ctx context.Context, in *SubmitURLRequest, opts ...client.CallOption) (*SubmitURLResponse, error)
 	// StatusOfTaskQueue will send the status of the tasks.
 	StatusOfTaskQueue(ctx context.Context, in *TaskStatusRequest, opts ...client.CallOption) (*TaskStatusResponse, error)
-	// HasFinished will respond with the status of the entire system.
-	HasFinished(ctx context.Context, in *HasFinishedRequest, opts ...client.CallOption) (*HasFinishedResponse, error)
 }
 
 type crawlerService struct {
@@ -80,16 +78,6 @@ func (c *crawlerService) StatusOfTaskQueue(ctx context.Context, in *TaskStatusRe
 	return out, nil
 }
 
-func (c *crawlerService) HasFinished(ctx context.Context, in *HasFinishedRequest, opts ...client.CallOption) (*HasFinishedResponse, error) {
-	req := c.c.NewRequest(c.name, "Crawler.HasFinished", in)
-	out := new(HasFinishedResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // Server API for Crawler service
 
 type CrawlerHandler interface {
@@ -97,15 +85,12 @@ type CrawlerHandler interface {
 	ReceiveURL(context.Context, *SubmitURLRequest, *SubmitURLResponse) error
 	// StatusOfTaskQueue will send the status of the tasks.
 	StatusOfTaskQueue(context.Context, *TaskStatusRequest, *TaskStatusResponse) error
-	// HasFinished will respond with the status of the entire system.
-	HasFinished(context.Context, *HasFinishedRequest, *HasFinishedResponse) error
 }
 
 func RegisterCrawlerHandler(s server.Server, hdlr CrawlerHandler, opts ...server.HandlerOption) error {
 	type crawler interface {
 		ReceiveURL(ctx context.Context, in *SubmitURLRequest, out *SubmitURLResponse) error
 		StatusOfTaskQueue(ctx context.Context, in *TaskStatusRequest, out *TaskStatusResponse) error
-		HasFinished(ctx context.Context, in *HasFinishedRequest, out *HasFinishedResponse) error
 	}
 	type Crawler struct {
 		crawler
@@ -124,8 +109,4 @@ func (h *crawlerHandler) ReceiveURL(ctx context.Context, in *SubmitURLRequest, o
 
 func (h *crawlerHandler) StatusOfTaskQueue(ctx context.Context, in *TaskStatusRequest, out *TaskStatusResponse) error {
 	return h.CrawlerHandler.StatusOfTaskQueue(ctx, in, out)
-}
-
-func (h *crawlerHandler) HasFinished(ctx context.Context, in *HasFinishedRequest, out *HasFinishedResponse) error {
-	return h.CrawlerHandler.HasFinished(ctx, in, out)
 }

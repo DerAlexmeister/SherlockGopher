@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package crawlerwebserverproto;
 
-//import "google/protobuf/empty.proto";
+//import "google/protobuf/empty.proto"; google.protobuf.Empty
 
 /*
 Status of the Crawler.
@@ -22,29 +22,6 @@ service Crawler {
     // StatusOfTaskQueue will send the status of the tasks.
     rpc StatusOfTaskQueue(TaskStatusRequest) returns (TaskStatusResponse) {}
 
-    // HasFinished will respond with the status of the entire system.
-    rpc HasFinished(HasFinishedRequest) returns (HasFinishedResponse) {}
-}
-
-enum STATUS_OF_THE_ENTIRE_SYSTEM {
-    undefined = 0;
-    done = 1;
-    running = 2;
-    unexpected_exit = 3;
-}
-
-/*
-
-*/
-message HasFinishedRequest {
-
-}
-
-/*
-
-*/
-message HasFinishedResponse {
-    STATUS_OF_THE_ENTIRE_SYSTEM state = 1;
 }
 
 /*
