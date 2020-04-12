@@ -93,7 +93,7 @@ func TestReceiveURL(t *testing.T) {
 	service := NewSherlockCrawlerService()
 	response := protoweb.SubmitURLResponse{}
 	if err := service.ReceiveURL(context.TODO(), &protoweb.SubmitURLRequest{URL: staticurl}, &response); err != nil {
-		t.Fatalf("an error occurred while trying to submit a url. Error: %ds", err.Error())
+		t.Fatalf("an error occurred while trying to submit a url. Error: %s", err.Error())
 	} else if !response.GetRecieved() {
 		t.Fatalf("did not receive the url as expected. Responsefield - Expected: %t, Got, %t - Send error: %s", true, response.GetRecieved(), response.GetError())
 	} else {
@@ -108,7 +108,7 @@ func TestReceiveURLIntendedToFail(t *testing.T) {
 	service := NewSherlockCrawlerService()
 	response := protoweb.SubmitURLResponse{}
 	if err := service.ReceiveURL(context.TODO(), &protoweb.SubmitURLRequest{URL: "!"}, &response); err == nil {
-		t.Fatalf("an error occurred while trying to submit a url. Error: %ds", err.Error())
+		t.Fatalf("an error occurred while trying to submit a url. Error: %s", err.Error())
 	} else if response.GetRecieved() {
 		t.Fatalf("did not receive the url as expected. Responsefield - Expected: %t, Got, %t - Send error: %s", false, response.GetRecieved(), response.GetError())
 	} else {

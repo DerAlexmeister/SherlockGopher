@@ -96,7 +96,6 @@ func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask 
 }
 
 func helpSendErrorCase(ctx context.Context, ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
-	//TODO send errorcase
 	err = stream.SendMsg(&sender.ErrorCase{
 		TaskId:       ltask.getTaskID(),
 		Address:      ltask.getAddr(),
@@ -173,7 +172,7 @@ func helpSend(ctx context.Context, ltask *CrawlerTaskRequest, stream sender.Send
 }
 
 /*
-UploadFile cuts byte array in slices of chunksize and sends them to the analyzer.
+Upload cuts byte array in slices of chunksize and sends them to the analyzer.
 */
 func (c *SherlockStreamingServer) Upload(ctx context.Context) error {
 	for {
