@@ -23,7 +23,7 @@ SherlockStreamingServer will be the representation
 of the StreamingServer pushing the files to the Analyser.
 */
 type SherlockStreamingServer struct {
-	client sender.SenderService //TODO Refactor.
+	Client sender.SenderService //TODO Refactor.
 	Queue  CrawlerQueue
 }
 
@@ -64,19 +64,26 @@ func min(a, b int) int {
 sendFileToAnalyser will send a file to the analyser.
 */
 func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask *CrawlerTaskRequest, taskid uint64) error {
-	stream, err := c.client.Upload(ctx)
+
+	stream, err := c.Client.Upload(ctx)
 	if err != nil {
 		return errors.New("failed to create upload stream for file")
 	}
 
-	err = helpSend(ctx, ltask, taskid, stream)
-	if err != nil {
-		return err
-	}
-
-	var status *sender.UploadStatus
-	if status.Code != sender.UploadStatusCode_Ok {
-		return errors.Errorf("upload failed - msg: %s", status.Message)
+	if ltask.taskerror != nil {
+		err = helpSendErrorCase(ctx, ltask, taskid, stream)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = helpSendInfos(ctx, ltask, taskid, stream)
+		if err != nil {
+			return err
+		}
+		err = helpSend(ctx, ltask, taskid, stream)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = stream.Close()
@@ -88,7 +95,31 @@ func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask 
 	return nil
 }
 
+func helpSendErrorCase(ctx context.Context, ltask *CrawlerTaskRequest, taskid uint64, stream sender.Sender_UploadService) (err error) {
+	//TODO send errorcase
+
+	var status *sender.UploadStatus
+	if status.Code != sender.UploadStatusCode_Ok {
+		return errors.Errorf("upload failed - msg: %s", status.Message)
+	}
+
+	return err
+}
+
+func helpSendInfos(ctx context.Context, ltask *CrawlerTaskRequest, taskid uint64, stream sender.Sender_UploadService) (err error) {
+	//TODO send infocase
+
+	var status *sender.UploadStatus
+	if status.Code != sender.UploadStatusCode_Ok {
+		return errors.Errorf("upload failed - msg: %s", status.Message)
+	}
+
+	return err
+}
+
 func helpSend(ctx context.Context, ltask *CrawlerTaskRequest, taskid uint64, stream sender.Sender_UploadService) (err error) {
+
+	//TODO send additional infos
 
 	var lengthByteArray int = len(ltask.getResponseBodyInBytes())
 
@@ -103,7 +134,13 @@ func helpSend(ctx context.Context, ltask *CrawlerTaskRequest, taskid uint64, str
 			return errors.New("error while streaming")
 		}
 	}
-	return nil
+
+	var status *sender.UploadStatus
+	if status.Code != sender.UploadStatusCode_Ok {
+		return errors.Errorf("upload failed - msg: %s", status.Message)
+	}
+
+	return err
 }
 
 /*
