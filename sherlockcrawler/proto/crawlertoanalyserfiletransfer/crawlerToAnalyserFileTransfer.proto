@@ -16,17 +16,17 @@ Chunk represents a chunk of a http response.
 */
 message Chunk {
         bytes Content = 1;
-        int64 TaskId = 2;
+        uint64 TaskId = 2;
 }
 
 /*
 Infos represent all information in relation to the http response. it sends all information of a CrawlerTaskRequest that need to be sent once.
 */
 message Infos {
-        int64 TaskId = 1;
-        int64 Address = 2;
+        uint64 TaskId = 1;
+        string Address = 2;
         repeated HeaderArray Header = 3;
-        int64 UploadStatusCode = 4;
+        int StatusCode = 4;
         int64 ResponseTime = 5;
 }
 
@@ -42,8 +42,8 @@ message HeaderArray {
 ErrorCase will be sent if there is a Taskerror in a CrawlerTaskRequest. no body will be sent in this case.
 */
 message ErrorCase {
-        int64 TaskId = 1;
-        int64 Address = 2;
+        uint64 TaskId = 1;
+        string Address = 2;
         string TaskError = 3;
         int64 ResponseTime = 4;
 }
