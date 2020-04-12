@@ -173,13 +173,10 @@ func (sherlock *Sherlockcrawler) ReceiveURL(ctx context.Context, in *protoweb.Su
 StatusOfTaskQueue will send the status of the queue.
 */
 func (sherlock *Sherlockcrawler) StatusOfTaskQueue(ctx context.Context, _ *protoweb.TaskStatusRequest, out *protoweb.TaskStatusResponse) error {
-	sherlock.getQueue().getNumberOfStatus()
-	return nil
-}
-
-/*
-HasFinished will send a message to the webserver incase the crawler is done.
-*/
-func (sherlock *Sherlockcrawler) HasFinished(ctx context.Context, in *protoweb.HasFinishedRequest, out *protoweb.HasFinishedResponse) error {
+	undone, processing, finished, failed := sherlock.getQueue().getNumberOfStatus()
+	out.Undone = undone
+	out.Processing = processing
+	out.Finished = finished
+	out.Failed = failed
 	return nil
 }
