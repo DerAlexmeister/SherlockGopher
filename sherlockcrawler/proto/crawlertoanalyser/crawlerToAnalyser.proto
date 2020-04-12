@@ -1,0 +1,29 @@
+// General purpose file for the crawler to connect to the analyser.
+
+syntax = "proto3";
+
+package analyserinterface;
+
+//import "google/protobuf/empty.proto";
+
+enum URL_STATUS {
+    ok = 0;
+    failure = 1;
+}
+
+service AnalyserInterface {
+    
+    // Create a Task which should be crawled by sherlock crawler.
+    rpc CreateTask(CrawlTaskCreateRequest) returns (CrawlTaskCreateResponse) {}
+    
+
+}
+
+message CrawlTaskCreateRequest {
+    string url = 1;
+}
+
+message CrawlTaskCreateResponse {
+    URL_STATUS statuscode = 1;
+    uint64 taskid = 2;
+}

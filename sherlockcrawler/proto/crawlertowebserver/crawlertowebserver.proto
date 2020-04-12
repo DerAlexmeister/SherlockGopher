@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package crawlerwebserverproto;
+
+//import "google/protobuf/empty.proto"; google.protobuf.Empty
+
+/*
+Status of the Crawler.
+*/
+enum ServiceStatus {
+    DONE = 0; // Crawler Finished Working
+}
+
+/*
+Crawler will be the gRPC service for the crawler
+*/
+service Crawler {
+
+    // Receive will take a URLRequest and answer with a statuscode like 200.
+    rpc ReceiveURL(SubmitURLRequest) returns (SubmitURLResponse) {}
+
+    // StatusOfTaskQueue will send the status of the tasks.
+    rpc StatusOfTaskQueue(TaskStatusRequest) returns (TaskStatusResponse) {}
+
+}
+
+/*
+TaskStatusRequest will represent a request for the current status of the tasks.
+*/
+message TaskStatusRequest {
+
+}
+
+/*
+TaskStatusResponse will represent a response for a TaskStatusRequest.
+*/
+message TaskStatusResponse {
+    string website = 1;
+    uint64 undone = 2;
+    uint64 processing = 3;
+    uint64 finished = 4;
+    uint64 failed = 5;
+}
+/*
+SubmitURLRequest will submit a URL.
+*/
+message SubmitURLRequest {
+    string URL = 1; // Add more fields.
+}
+
+/*
+SubmitURLResponse will answer a SubmitURLRequest with a bool to indecate the status of the request.
+*/
+message SubmitURLResponse {
+    bool recieved = 1;
+    string error = 2;
+}
+

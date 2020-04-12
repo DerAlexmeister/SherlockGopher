@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package crawlerproto;
+
+/*
+Sender represents the file sender.
+*/
+service Sender {
+    rpc Upload(stream Chunk) returns (UploadStatus) {}
+    rpc UploadInfos(Infos) returns (UploadStatus) {}
+    rpc UploadErrorCase(ErrorCase) returns (UploadStatus) {}
+}
+
+/*
+Chunk represents a chunk of a http response.
+*/
+message Chunk {
+        bytes Content = 1;
+        uint64 TaskId = 2;
+}
+
+/*
+Infos represent all information in relation to the http response. it sends all information of a CrawlerTaskRequest that need to be sent once.
+*/
+message Infos {
+        uint64 TaskId = 1;
+        string Address = 2;
+        repeated HeaderArray Header = 3;
+        int32 StatusCode = 4;
+        int64 ResponseTime = 5;
+}
+
+/*
+HeaderArray consists of keys and values
+*/
+message HeaderArray {
+        string Key = 1;
+        repeated HeaderArrayValue ValueArr = 2;
+}
+
+/*
+HeaderArray consists of keys and values
+*/
+message HeaderArrayValue {
+        string Value = 1;
+}
+
+/*
+ErrorCase will be sent if there is a Taskerror in a CrawlerTaskRequest. no body will be sent in this case.
+*/
+message ErrorCase {
+        uint64 TaskId = 1;
+        string Address = 2;
+        string TaskError = 3;
+        int64 ResponseTime = 4;
+}
+
+/*
+UploadStatusCode gives information. the receiver sends a ok if he received all chunks.
+*/
+enum UploadStatusCode {
+        Unknown = 0;
+        Ok = 1;
+        Failed = 2;
+}
+
+/*
+UploadStatus is the response from the receiver.
+*/
+message UploadStatus {
+        string Message = 1;
+        UploadStatusCode Code = 2;
+}
