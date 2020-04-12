@@ -3,21 +3,53 @@ syntax = "proto3";
 package crawlerproto;
 
 /*
-Sender represents the file sender
+Sender represents the file sender.
 */
 service Sender {
     rpc Upload(stream Chunk) returns (UploadStatus) {}
+    rpc UploadInfos(Infos) returns (UploadStatus) {}
+    rpc UploadErrorCase(ErrorCase) returns (UploadStatus) {}
 }
 
 /*
-Chunk represents a part of a http response
+Chunk represents a chunk of a http response.
 */
 message Chunk {
         bytes Content = 1;
+        int64 TaskId = 2;
 }
 
 /*
-UploadStatusCode gives information. the receiver sends a ok if he received all chunks
+Infos represent all information in relation to the http response. it sends all information of a CrawlerTaskRequest that need to be sent once.
+*/
+message Infos {
+        int64 TaskId = 1;
+        int64 Address = 2;
+        repeated HeaderArray Header = 3;
+        int64 UploadStatusCode = 4;
+        int64 ResponseTime = 5;
+}
+
+/*
+HeaderArray consists of keys and values
+*/
+message HeaderArray {
+        string Key = 1;
+        string Value = 2;
+}
+
+/*
+ErrorCase will be sent if there is a Taskerror in a CrawlerTaskRequest. no body will be sent in this case.
+*/
+message ErrorCase {
+        int64 TaskId = 1;
+        int64 Address = 2;
+        string TaskError = 3;
+        int64 ResponseTime = 4;
+}
+
+/*
+UploadStatusCode gives information. the receiver sends a ok if he received all chunks.
 */
 enum UploadStatusCode {
         Unknown = 0;
@@ -26,7 +58,7 @@ enum UploadStatusCode {
 }
 
 /*
-UploadStatus is the response from the receiver
+UploadStatus is the response from the receiver.
 */
 message UploadStatus {
         string Message = 1;

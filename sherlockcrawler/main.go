@@ -25,12 +25,12 @@ func main() {
 
 	//TODO missing setters for the Dependencies.
 	crawlerservice.InjectDependency(deps)
-	crawlerservice.SetSherlockStreamer(streamingserver) // Add the current streaminserver to the current sherlock crawler.
+	crawlerservice.SetSherlockStreamer(&streamingserver) // Add the current streaminserver to the current sherlock crawler.
 
 	err := proto.RegisterAnalyserInterfaceHandler(service.Server(), crawlerservice)
 
 	go crawlerservice.ManageTasks()
-	go streamingserver.UploadFile(context.TODO())
+	go streamingserver.Upload(context.TODO())
 
 	if err != nil {
 		fmt.Println(err)

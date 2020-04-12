@@ -69,6 +69,27 @@ func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask 
 		return errors.New("failed to create upload stream for file")
 	}
 
+	err = helpSend(ctx, ltask, taskid, stream)
+	if err != nil {
+		return err
+	}
+
+	var status *sender.UploadStatus
+	if status.Code != sender.UploadStatusCode_Ok {
+		return errors.Errorf("upload failed - msg: %s", status.Message)
+	}
+
+	err = stream.Close()
+	if err != nil {
+		return errors.New("error while closing stream")
+	}
+
+	//TODO remove from queue on success
+	return nil
+}
+
+func helpSend(ctx context.Context, ltask *CrawlerTaskRequest, taskid uint64, stream sender.Sender_UploadService) (err error) {
+
 	var lengthByteArray int = len(ltask.getResponseBodyInBytes())
 
 	for i := 0; i < lengthByteArray; i += getChunkSize() {
@@ -82,27 +103,13 @@ func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask 
 			return errors.New("error while streaming")
 		}
 	}
-
-	var status *sender.UploadStatus
-
-	if status.Code != sender.UploadStatusCode_Ok {
-		return errors.Errorf("upload failed - msg: %s", status.Message)
-	}
-
-	err = stream.Close()
-
-	if err != nil {
-		return errors.New("error while closing stream")
-	}
-
-	//TODO remove from queue on success
 	return nil
 }
 
 /*
 UploadFile cuts byte array in slices of chunksize and sends them to the analyzer.
 */
-func (c *SherlockStreamingServer) UploadFile(ctx context.Context) error {
+func (c *SherlockStreamingServer) Upload(ctx context.Context) error {
 	for {
 		for id, task := range *c.getQueue().getThisQueue() {
 			if err := c.sendFileToAnalyser(ctx, task, id); err != nil {
