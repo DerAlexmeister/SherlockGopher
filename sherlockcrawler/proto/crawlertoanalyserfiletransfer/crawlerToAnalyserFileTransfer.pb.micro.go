@@ -35,6 +35,8 @@ var _ server.Option
 
 type SenderService interface {
 	Upload(ctx context.Context, opts ...client.CallOption) (Sender_UploadService, error)
+	UploadInfos(ctx context.Context, in *Infos, opts ...client.CallOption) (*UploadStatus, error)
+	UploadErrorCase(ctx context.Context, in *ErrorCase, opts ...client.CallOption) (*UploadStatus, error)
 }
 
 type senderService struct {
@@ -91,15 +93,39 @@ func (x *senderServiceUpload) Send(m *Chunk) error {
 	return x.stream.Send(m)
 }
 
+func (c *senderService) UploadInfos(ctx context.Context, in *Infos, opts ...client.CallOption) (*UploadStatus, error) {
+	req := c.c.NewRequest(c.name, "Sender.UploadInfos", in)
+	out := new(UploadStatus)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *senderService) UploadErrorCase(ctx context.Context, in *ErrorCase, opts ...client.CallOption) (*UploadStatus, error) {
+	req := c.c.NewRequest(c.name, "Sender.UploadErrorCase", in)
+	out := new(UploadStatus)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Sender service
 
 type SenderHandler interface {
 	Upload(context.Context, Sender_UploadStream) error
+	UploadInfos(context.Context, *Infos, *UploadStatus) error
+	UploadErrorCase(context.Context, *ErrorCase, *UploadStatus) error
 }
 
 func RegisterSenderHandler(s server.Server, hdlr SenderHandler, opts ...server.HandlerOption) error {
 	type sender interface {
 		Upload(ctx context.Context, stream server.Stream) error
+		UploadInfos(ctx context.Context, in *Infos, out *UploadStatus) error
+		UploadErrorCase(ctx context.Context, in *ErrorCase, out *UploadStatus) error
 	}
 	type Sender struct {
 		sender
@@ -145,4 +171,12 @@ func (x *senderUploadStream) Recv() (*Chunk, error) {
 		return nil, err
 	}
 	return m, nil
+}
+
+func (h *senderHandler) UploadInfos(ctx context.Context, in *Infos, out *UploadStatus) error {
+	return h.SenderHandler.UploadInfos(ctx, in, out)
+}
+
+func (h *senderHandler) UploadErrorCase(ctx context.Context, in *ErrorCase, out *UploadStatus) error {
+	return h.SenderHandler.UploadErrorCase(ctx, in, out)
 }
