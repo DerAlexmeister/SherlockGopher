@@ -119,10 +119,12 @@ func helpSendErrorCase(ctx context.Context, ltask *CrawlerTaskRequest, stream se
 func helpSendInfos(ctx context.Context, ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
 
 	headerArr := []*sender.HeaderArray{}
-	//valueArr := []*sender.HeaderArrayValue{}
+	valueArr := []*sender.HeaderArrayValue{}
 	for k, v := range ltask.getResponseHeader() {
-		//valueArr = append(valueArr, &sender.HeaderArrayValue{Value: v})
-		headerArr = append(headerArr, &sender.HeaderArray{Key: k, ValueArr: v})
+		for _, i := range v {
+			valueArr = append(valueArr, &sender.HeaderArrayValue{Value: i})
+		}
+		headerArr = append(headerArr, &sender.HeaderArray{Key: k, ValueArr: valueArr})
 	}
 
 	err = stream.SendMsg(&sender.Infos{
