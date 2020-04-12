@@ -54,7 +54,7 @@ func BenchmarkCreateTaskAndClearQueue(b *testing.B) {
 		}
 	}
 
-	if len := len(*queue.getCurrentQueue()); len != 0 {
+	if len := len(*queue.getThisQueue()); len != 0 {
 		b.Fatalf("queue is not empty. Excpeted: 0, Got: %d", len)
 	} else {
 		b.Log("Queue is empty.")

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/micro/go-micro"
@@ -19,16 +20,17 @@ func main() {
 	service.Init()
 
 	crawlerservice := sherlock.NewSherlockCrawlerService()
-
 	deps := sherlock.NewSherlockDependencies()
+	streamingserver := sherlock.NewStreamingServer()
 
 	//TODO missing setters for the Dependencies.
-
 	crawlerservice.InjectDependency(deps)
+	crawlerservice.SetSherlockStreamer(streamingserver) // Add the current streaminserver to the current sherlock crawler.
 
 	err := proto.RegisterAnalyserInterfaceHandler(service.Server(), crawlerservice)
 
 	go crawlerservice.ManageTasks()
+	go streamingserver.UploadFile(context.TODO())
 
 	if err != nil {
 		fmt.Println(err)
@@ -38,8 +40,4 @@ func main() {
 		fmt.Printf("Service %s started as intended... ", serviceName)
 	}
 
-	//Filetransferservice.
-
-	filestreamservice := micro.NewService(micro.Name(fileservicename))
-	filestreamservice.Init()
 }

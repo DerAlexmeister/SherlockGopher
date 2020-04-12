@@ -33,9 +33,9 @@ func NewCrawlerQueue() CrawlerQueue {
 }
 
 /*
-getCurrentQueue will return a pointer to the current Queue.
+getThisQueue will return a pointer to the current Queue.
 */
-func (que *CrawlerQueue) getCurrentQueue() *(map[uint64]*CrawlerTaskRequest) {
+func (que *CrawlerQueue) getThisQueue() *(map[uint64]*CrawlerTaskRequest) {
 	return &que.Queue
 }
 
@@ -43,7 +43,7 @@ func (que *CrawlerQueue) getCurrentQueue() *(map[uint64]*CrawlerTaskRequest) {
 ContainsTaskID will check whether or not a id is allready in use or not.
 */
 func (que *CrawlerQueue) ContainsTaskID(id uint64) bool {
-	if _, contains := (*que.getCurrentQueue())[id]; !contains {
+	if _, contains := (*que.getThisQueue())[id]; !contains {
 		return false
 	}
 	return true
@@ -71,7 +71,7 @@ func (que *CrawlerQueue) AppendQueue(task *CrawlerTaskRequest) uint64 {
 	taskid := que.getRandomUserID()
 	if !que.ContainsTaskID(taskid) && task != nil {
 		task.setTaskID(taskid)
-		(*que.getCurrentQueue())[taskid] = task
+		(*que.getThisQueue())[taskid] = task
 		return taskid
 	}
 	return 0
@@ -82,7 +82,7 @@ RemoveFromQueue will remove a task from the queue by a given Taskid.
 */
 func (que *CrawlerQueue) RemoveFromQueue(taskid uint64) bool {
 	if taskid > 0 && que.ContainsTaskID(taskid) {
-		delete((*que.getCurrentQueue()), taskid)
+		delete((*que.getThisQueue()), taskid)
 		return true
 	}
 	return false
@@ -93,7 +93,7 @@ getAllTaskIds will return the ids of all tasks in a slice.
 */
 func (que *CrawlerQueue) getAllTaskIds() []uint64 {
 	var ids []uint64
-	for k := range *que.getCurrentQueue() {
+	for k := range *que.getThisQueue() {
 		ids = append(ids, k)
 	}
 	return ids
@@ -146,7 +146,7 @@ getNumberOfUndoneTasks will return the number of Tasks with statusn undone.
 */
 func (que *CrawlerQueue) getNumberOfStatus() (uint64, uint64, uint64, uint64) {
 	var undone, processing, finished, failed uint64 = 0, 0, 0, 0
-	for _, v := range *que.getCurrentQueue() {
+	for _, v := range *que.getThisQueue() {
 		if state := v.getTaskState(); state == FINISHED {
 			finished++
 		} else if state == PROCESSING {
