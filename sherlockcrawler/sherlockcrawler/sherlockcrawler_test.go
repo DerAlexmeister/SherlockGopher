@@ -90,9 +90,30 @@ func TestTryToCreateTaskAndFailOnCreatingTaskBecauseOfNilQueue(t *testing.T) {
 TestReceiveURL will test the ReceiveURL method and try to send a valid url.
 */
 func TestReceiveURL(t *testing.T) {
-	//service := NewSherlockCrawlerService()
-	//response := protoweb.SubmitURLResponse{}
-	//if service.ReceiveURL
+	service := NewSherlockCrawlerService()
+	response := protoweb.SubmitURLResponse{}
+	if err := service.ReceiveURL(context.TODO(), &protoweb.SubmitURLRequest{URL: staticurl}, &response); err != nil {
+		t.Fatalf("an error occurred while trying to submit a url. Error: %ds", err.Error())
+	} else if !response.GetRecieved() {
+		t.Fatalf("did not receive the url as expected. Responsefield - Expected: %t, Got, %t - Send error: %s", true, response.GetRecieved(), response.GetError())
+	} else {
+		t.Log("Url received as expected")
+	}
+}
+
+/*
+TestReceiveURL will test the ReceiveURL method and try to send a valid url but expect it too fail.
+*/
+func TestReceiveURLIntendedToFail(t *testing.T) {
+	service := NewSherlockCrawlerService()
+	response := protoweb.SubmitURLResponse{}
+	if err := service.ReceiveURL(context.TODO(), &protoweb.SubmitURLRequest{URL: "!"}, &response); err == nil {
+		t.Fatalf("an error occurred while trying to submit a url. Error: %ds", err.Error())
+	} else if response.GetRecieved() {
+		t.Fatalf("did not receive the url as expected. Responsefield - Expected: %t, Got, %t - Send error: %s", false, response.GetRecieved(), response.GetError())
+	} else {
+		t.Log("url was not submited as wanted.")
+	}
 }
 
 /*
