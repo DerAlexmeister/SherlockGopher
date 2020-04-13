@@ -12,5 +12,5 @@ require (
 	github.com/neo4j-drivers/gobolt v1.7.4 // indirect
 	github.com/neo4j/neo4j-go-driver v1.7.4
 	google.golang.org/grpc v1.26.0
-	github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto v1.0.0
+	github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler v1.0.0
 )
