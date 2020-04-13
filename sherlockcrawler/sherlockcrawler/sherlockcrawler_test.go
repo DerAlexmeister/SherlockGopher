@@ -191,7 +191,7 @@ func BenchmarkCreateTask(b *testing.B) {
 	service := NewSherlockCrawlerService()
 	for n := 0; n < b.N; n++ {
 		response := proto.CrawlTaskCreateResponse{}
-		if err := service.CreateTask(context.TODO(), &proto.CrawlTaskCreateRequest{Url: fmt.Sprintf("%d", n)}, &response); err != nil {
+		if err := service.CreateTask(context.TODO(), &proto.CrawlTaskCreateRequest{Url: fmt.Sprintf("%s", staticurl)}, &response); err != nil {
 			b.Fatalf("createtask returned an error %s on number %d", err.Error(), n)
 		} else if rescode := response.GetStatuscode(); rescode != proto.URL_STATUS_ok {
 			b.Fatalf("got unexpected status. Expected: %s, Got: %s", proto.URL_STATUS_ok, rescode)
@@ -210,7 +210,7 @@ func BenchmarkCreateTaskAndClearQueue(b *testing.B) {
 	service := NewSherlockCrawlerService()
 	for n := 0; n < b.N; n++ {
 		response := proto.CrawlTaskCreateResponse{}
-		if err := service.CreateTask(context.TODO(), &proto.CrawlTaskCreateRequest{Url: fmt.Sprintf("%d", n)}, &response); err != nil {
+		if err := service.CreateTask(context.TODO(), &proto.CrawlTaskCreateRequest{Url: fmt.Sprintf("%s", staticurl)}, &response); err != nil {
 			b.Fatalf("createtask returned an error %s on number %d", err.Error(), n)
 		} else if rescode := response.GetStatuscode(); rescode != proto.URL_STATUS_ok {
 			b.Fatalf("got unexpected status. Expected: %s, Got: %s", proto.URL_STATUS_ok, rescode)
