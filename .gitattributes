@@ -1,0 +1,2 @@
+# Protofiles as go-files.
+*.proto  linguist-language=golang

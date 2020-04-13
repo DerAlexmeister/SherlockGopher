@@ -24,13 +24,6 @@ func (analyser AnalyserServiceHandler) InjectDependency(deps *AnalyserDependency
 }
 
 /*
-CreateTask will append the current queue a task.
-*/
-func (analyser AnalyserServiceHandler) CreateTask() {
-
-}
-
-/*
 SendResult will send the result to the crawler.
 */
 func (analyser AnalyserServiceHandler) SendResult() {
