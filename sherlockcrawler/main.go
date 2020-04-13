@@ -11,7 +11,7 @@ import (
 
 const (
 	serviceName     = "crawler-service"
-	fileservicename = "crawler-filestreamingservice"
+	fileservicename = "filestransfer-service-crawler"
 )
 
 func main() {

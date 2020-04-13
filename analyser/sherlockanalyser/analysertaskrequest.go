@@ -42,6 +42,7 @@ type AnalyserTaskRequest struct {
 	crawlerData  *CrawlerData
 }
 
+//TODO comment
 type CrawlerData struct {
 	taskid            uint64 //taskid, send every time.
 	addr              string //addr, once

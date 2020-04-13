@@ -72,9 +72,10 @@ func GetNewDatabaseConnection() (neo4j.Driver, error) {
 
 /*
 CloseDatabaseConnection will close the drivers to the DB.
+Eg. defer localneo.Close()
 */
 func CloseDatabaseConnection(driver *neo4j.Driver) {
-	defer (*driver).Close()
+	(*driver).Close()
 }
 
 /*
