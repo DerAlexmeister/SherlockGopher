@@ -145,7 +145,10 @@ setAddr will set the addr to a given AnalyserTaskRequest.
 func (atask *AnalyserTaskRequest) setAddr(laddr string) {
 	atask.addr = laddr
 	rootEnd := jw.OrdinalIndexOf(laddr, "/", 3)
-	atask.rootAddr = laddr[:rootEnd]
+
+	if rootEnd > 0 {
+		atask.rootAddr = laddr[:rootEnd]
+	}
 }
 
 /*
