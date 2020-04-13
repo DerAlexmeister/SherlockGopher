@@ -4,7 +4,8 @@ package sherlockanalyser
 AnalyserServiceHandler will be AnalyserService representation.
 */
 type AnalyserServiceHandler struct {
-	Dependencies *AnalyserDependency
+	AnalyserQueue *AnalyserQueue
+	Dependencies  *AnalyserDependency
 }
 
 /*
@@ -20,4 +21,18 @@ into the actual instance.
 */
 func (analyser AnalyserServiceHandler) InjectDependency(deps *AnalyserDependency) {
 	analyser.Dependencies = deps
+}
+
+/*
+CreateTask will append the current queue a task.
+*/
+func (analyser AnalyserServiceHandler) CreateTask() {
+
+}
+
+/*
+SendResult will send the result to the crawler.
+*/
+func (analyser AnalyserServiceHandler) SendResult() {
+
 }

@@ -2,8 +2,11 @@ package sherlockanalyser
 
 import (
 	"errors"
+	"net/http"
 	"strings"
+	"time"
 
+	jw "github.com/jwalteri/GO/jwstring"
 	model "github.com/ob-algdatii-20ss/SherlockGopher/analyser/sherlockparser/model"
 )
 
@@ -27,21 +30,42 @@ const (
 AnalyserTaskRequest will be a request made by the analyser.
 */
 type AnalyserTaskRequest struct {
-	taskid      int64  //taskid, send every time.
-	addr        string //addr, once
-	htmlCode    string
-	taskstate   TASKSTATE
-	linkLibrary map[string]string
-	rootAddr    string
-	foundLinks  []string
+	taskid       uint64 //taskid, send every time.
+	addr         string //addr, once
+	htmlCode     string
+	taskstate    TASKSTATE
+	linkLibrary  map[string]string
+	rootAddr     string
+	foundLinks   []string
+	parserTime   int64
+	analyserTime int64
+	crawlerData  *CrawlerData
+}
+
+type CrawlerData struct {
+	taskid            uint64 //taskid, send every time.
+	addr              string //addr, once
+	taskstate         TASKSTATE
+	taskerror         error         //error, send as string incase there is an error then dont send a body
+	taskerrortry      int           //never
+	responseHeader    *http.Header  //header, once (typ map)
+	responseBodyBytes []byte        //body, split
+	statuscode        int           //statuscode, once
+	responseTime      time.Duration //response time, once
 }
 
 /*
 NewTask will return an empty AnalyserTaskRequest.
 */
-func NewTask() AnalyserTaskRequest {
+func NewTask(lcrawlerData CrawlerData) AnalyserTaskRequest {
 	task := AnalyserTaskRequest{}
-	task.taskstate = UNDONE
+	task.setAddr(lcrawlerData.addr)
+	task.setHTMLCode(string(lcrawlerData.responseBodyBytes))
+	task.setTaskID(lcrawlerData.taskid)
+	task.taskstate = lcrawlerData.taskstate
+
+	task.crawlerData = &lcrawlerData
+
 	task.initialze()
 
 	return task
@@ -60,9 +84,16 @@ func (atask *AnalyserTaskRequest) initialze() {
 }
 
 /*
+getCrawlerDada will return the id of a given task.
+*/
+func (atask *AnalyserTaskRequest) getCrawlerDada() *CrawlerData {
+	return atask.crawlerData
+}
+
+/*
 getTaskID will return the id of a given task.
 */
-func (atask *AnalyserTaskRequest) getTaskID() int64 {
+func (atask *AnalyserTaskRequest) getTaskID() uint64 {
 	return atask.taskid
 }
 
@@ -104,7 +135,7 @@ func (atask *AnalyserTaskRequest) getTaskState() TASKSTATE {
 /*
 setTaskID will set the task id of a given task.
 */
-func (atask *AnalyserTaskRequest) setTaskID(lid int64) {
+func (atask *AnalyserTaskRequest) setTaskID(lid uint64) {
 	atask.taskid = lid
 }
 
@@ -113,8 +144,11 @@ setAddr will set the addr to a given AnalyserTaskRequest.
 */
 func (atask *AnalyserTaskRequest) setAddr(laddr string) {
 	atask.addr = laddr
-	rootEnd := atask.ordinalIndexOf(laddr, "/", 3)
-	atask.rootAddr = laddr[:rootEnd]
+	rootEnd := jw.OrdinalIndexOf(laddr, "/", 3)
+
+	if rootEnd > 0 {
+		atask.rootAddr = laddr[:rootEnd]
+	}
 }
 
 /*
@@ -122,44 +156,6 @@ setHTMLCode will set the html code to a given AnalyserTaskRequest.
 */
 func (atask *AnalyserTaskRequest) setHTMLCode(htmlCode string) {
 	atask.htmlCode = htmlCode
-}
-
-/*
-See jwalteri go
-*/
-func (atask *AnalyserTaskRequest) ordinalIndexOf(str string, searchStr string, ordinal int) int {
-	if str == "" {
-		return -2
-	}
-
-	if searchStr == "" {
-		return -3
-	}
-
-	if ordinal <= 0 {
-		return -4
-	}
-
-	ret := -1
-	pos := strings.Index(str, searchStr)
-
-	if pos == -1 {
-		return -1
-	}
-
-	for ordinal > 0 && pos != -1 {
-		str = str[pos+1:]
-		ret += pos + 1
-		ordinal--
-
-		pos = strings.Index(str, searchStr)
-	}
-
-	if ordinal != 0 {
-		return -1
-	}
-
-	return ret
 }
 
 /*
@@ -259,9 +255,17 @@ Execute will search the tree for links and stores the result in the field respon
 func (atask *AnalyserTaskRequest) Execute() bool {
 	atask.taskstate = PROCESSING
 	tree := model.NewHTMLTree(atask.getHTMLCode())
+
+	start := time.Now()
 	tree.Parse()
+	atask.parserTime = time.Since(start).Nanoseconds()
+
 	root := tree.RootNode()
+
+	start = time.Now()
 	atask.traverse(root)
+	atask.analyserTime = time.Since(start).Nanoseconds()
+
 	atask.taskstate = FINISHED
 
 	return true

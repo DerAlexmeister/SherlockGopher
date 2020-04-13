@@ -18,7 +18,7 @@ type AnalyserQueue struct {
 /*
 NewAnalyserQueue will return a new Queue.
 */
-func (que *AnalyserQueue) NewAnalyserQueue() AnalyserQueue {
+func NewAnalyserQueue() AnalyserQueue {
 	return AnalyserQueue{
 		Queue: make(map[int64]*AnalyserTaskRequest),
 	}
@@ -41,32 +41,43 @@ func getMAXTASKS() int64 {
 /*
 ContainsAddress will check whether or not a addr is already in use or not.
 */
-func (que *AnalyserQueue) ContainsAddress(addr int64) bool {
-	if _, contains := (*que.getCurrentQueue())[addr]; !contains {
-		return false
+func (que *AnalyserQueue) ContainsAddress(addr string) (int64, bool) {
+	q := que.getCurrentQueue()
+
+	for key, ele := range *q {
+		if ele.addr == addr {
+			return key, true
+		}
 	}
 
-	return true
+	return -1, false
 }
 
 /*
 containsID will check whether the queue has already a given id in use.
 */
-func (que *AnalyserQueue) containsID(id int64) bool {
-	_, inMap := (*que.getCurrentQueue())[id]
+func (que *AnalyserQueue) ContainsID(id int64) bool {
+	_, inMap := que.Queue[id]
 
 	return inMap
 }
 
 /*
+IsEmpty returns true if queue empty
+*/
+func (que *AnalyserQueue) IsEmpty() bool {
+	return len(que.Queue) == 0
+}
+
+/*
 Function to produce a random taskid.
 */
-func (que *AnalyserQueue) getRandomUserID(length int64) int64 {
+func (que *AnalyserQueue) getRandomTaskID(length int64) int64 {
 	rand.Seed(time.Now().UnixNano())
 
 	for {
 		potantialID := rand.Int63n(length)
-		if !que.containsID(potantialID) {
+		if !que.ContainsID(potantialID) {
 			return potantialID
 		}
 	}
@@ -76,8 +87,8 @@ func (que *AnalyserQueue) getRandomUserID(length int64) int64 {
 AppendQueue will append the current queue with a new AnalyserTaskRequest.
 */
 func (que *AnalyserQueue) AppendQueue(task *AnalyserTaskRequest) bool {
-	taskid := que.getRandomUserID(getMAXTASKS())
-	if !que.ContainsAddress(taskid) {
+	taskid := que.getRandomTaskID(getMAXTASKS())
+	if !que.ContainsID(taskid) {
 		(*que.getCurrentQueue())[taskid] = task
 		return true
 	}
@@ -89,7 +100,7 @@ func (que *AnalyserQueue) AppendQueue(task *AnalyserTaskRequest) bool {
 RemoveFromQueue will remove a task from the queue by a given address.
 */
 func (que *AnalyserQueue) RemoveFromQueue(taskid int64) bool {
-	if !que.ContainsAddress(taskid) {
+	if !que.ContainsID(taskid) {
 		delete((*que.getCurrentQueue()), taskid)
 		return true
 	}

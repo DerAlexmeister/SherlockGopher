@@ -2,6 +2,7 @@ package sherlockanalyser
 
 import (
 	"bufio"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -19,14 +20,22 @@ var testData = []struct {
 func TestAnalyser(t *testing.T) {
 	for _, tt := range testData {
 		t.Run(tt.in, func(t *testing.T) {
-			atask := NewTask()
-
 			htmlcode, _ := ioutil.ReadFile(tt.in)
 			expected, _ := readLines(tt.out)
 
-			atask.setHTMLCode(string(htmlcode))
-			atask.setAddr(tt.addr)
-			atask.setTaskID(1)
+			cdata := CrawlerData{
+				taskid:            1,
+				addr:              tt.addr,
+				taskstate:         PROCESSING,
+				taskerror:         nil,
+				taskerrortry:      0,
+				responseHeader:    nil,
+				responseBodyBytes: htmlcode,
+				statuscode:        200,
+				responseTime:      0,
+			}
+
+			atask := NewTask(cdata)
 			atask.Execute()
 
 			if len(expected) != len(atask.getFoundLinks()) {
@@ -38,6 +47,12 @@ func TestAnalyser(t *testing.T) {
 					t.Errorf("got %q, want %q", ele, expected[i])
 				}
 			}
+
+			fmt.Print("Parser:")
+			fmt.Println(atask.parserTime)
+
+			fmt.Print("Anaylser:")
+			fmt.Println(atask.analyserTime)
 		})
 	}
 }

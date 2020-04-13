@@ -23,7 +23,8 @@ func NewServerGRPC() *ServerGRPC {
 /*
 DownloadFile gets chunks of a html response from the crawler, appends them and returns the result
 */
-func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Receiver_UploadStream) (arr []byte, err error) {
+func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Receiver_UploadStream) (err error) {
+	var arr []byte
 	finished := false
 
 	for !finished {
@@ -34,7 +35,7 @@ func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Receiv
 			if err == io.EOF {
 				finished = true
 			} else {
-				return nil, errors.New("failed unexpectedely while reading chunks from stream")
+				return errors.New("failed unexpectedely while reading chunks from stream")
 			}
 		}
 	}
@@ -44,14 +45,15 @@ func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Receiv
 		Code:    proto.UploadStatusCode_Ok,
 	})
 	if err != nil {
-		return nil, errors.New("failed to send status code")
+		return errors.New("failed to send status code")
 	}
 
 	err = stream.Close()
 
 	if err != nil {
-		return nil, errors.New("error while closing stream")
+		return errors.New("error while closing stream")
 	}
 
-	return arr, nil
+	//TODO werte weitergeben
+	return nil
 }

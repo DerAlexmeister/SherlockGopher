@@ -5,9 +5,7 @@ package analyserfilestream;
 /*
 Receiver represents the file receiver
 */
-service Receiver {
-    rpc Upload(stream Chunk) returns (UploadStatus) {}
-}
+service Receiver {}
 
 /*
 Chunk represents a part of a http response
