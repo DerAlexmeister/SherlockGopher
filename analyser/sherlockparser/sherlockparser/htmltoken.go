@@ -19,53 +19,6 @@ const (
 	PlainText      TokenType = 3
 )
 
-type TagToken struct {
-	tokenType  TokenType
-	tagType    string
-	rawContent string
-}
-
-/*
-Returns the Type of a TagToken.
-*/
-func (tgTk *TagToken) Type() TokenType {
-	return tgTk.tokenType
-}
-
-/*
-Returns the raw content of a TagToken.
-*/
-func (tgTk *TagToken) RawContent() string {
-	return tgTk.rawContent
-}
-
-
-/*
-Returns the TagType of a TagToken
- */
-func (tgTk *TagToken) TagType() string {
-	return tgTk.tagType
-}
-
-type TextToken struct {
-	tokenType  TokenType
-	rawContent string
-}
-
-/*
-Returns the Type of a TextToken
- */
-func (txTk *TextToken) Type() TokenType {
-	return txTk.tokenType
-}
-
-/*
-Returns the raw Content of a TextToken
- */
-func (txTk *TextToken) RawContent() string {
-	return txTk.rawContent
-}
-
 /*
 Returns a pointer to a HtmlToken-slice which is generated based on the input html stored in the HTMLTree.
 */
