@@ -16,7 +16,7 @@ func TestNewAnalyserQueue(t *testing.T) {
 func TestContainsAddress(t *testing.T) {
 	que := getTestQueue()
 
-	if _, ok := que.ContainsAddress("www.1234.de"); !ok {
+	if _, ok, err := que.ContainsAddress("www.1234.de"); err != nil && !ok {
 		t.Error("element is missing")
 	}
 }
@@ -24,7 +24,7 @@ func TestContainsAddress(t *testing.T) {
 func TestContainsID(t *testing.T) {
 	que := getTestQueue()
 
-	if id, ok := que.ContainsAddress("www.1234.de"); ok {
+	if id, ok, err := que.ContainsAddress("www.1234.de"); err == nil && ok {
 		if !que.ContainsID(id) {
 			t.Error("element is missing")
 		}

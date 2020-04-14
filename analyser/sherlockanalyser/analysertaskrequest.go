@@ -22,8 +22,6 @@ const (
 	PROCESSING TASKSTATE = 1
 	//FINISHED will be a task which is successfully completed.
 	FINISHED TASKSTATE = 2
-	//FAILED is a task which was in the state of PROCESSING but failed to complet.
-	FAILED TASKSTATE = 3
 )
 
 /*
@@ -63,8 +61,7 @@ func NewTask(lcrawlerData CrawlerData) AnalyserTaskRequest {
 	task.setAddr(lcrawlerData.addr)
 	task.setHTMLCode(string(lcrawlerData.responseBodyBytes))
 	task.setTaskID(lcrawlerData.taskid)
-	task.taskstate = lcrawlerData.taskstate
-
+	task.taskstate = UNDONE
 	task.crawlerData = &lcrawlerData
 
 	task.initialze()
