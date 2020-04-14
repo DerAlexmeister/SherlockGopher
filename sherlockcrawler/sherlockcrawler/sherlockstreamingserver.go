@@ -71,16 +71,16 @@ func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask 
 	}
 
 	if ltask.taskerror != nil {
-		err = helpSendErrorCase(ctx, ltask, stream)
+		err = helpSendErrorCase(ltask, stream)
 		if err != nil {
 			return err
 		}
 	} else {
-		err = helpSendInfos(ctx, ltask, stream)
+		err = helpSendInfos(ltask, stream)
 		if err != nil {
 			return err
 		}
-		err = helpSend(ctx, ltask, stream)
+		err = helpSend(ltask, stream)
 		if err != nil {
 			return err
 		}
@@ -98,7 +98,7 @@ func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask 
 /*
 helpSendErrorCase is a help method to reduce the size of the sendFileToAnalyser function. it is used in case there is an error.
 */
-func helpSendErrorCase(ctx context.Context, ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
+func helpSendErrorCase(ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
 	err = stream.SendMsg(&sender.ErrorCase{
 		TaskId:       ltask.getTaskID(),
 		Address:      ltask.getAddr(),
@@ -121,7 +121,7 @@ func helpSendErrorCase(ctx context.Context, ltask *CrawlerTaskRequest, stream se
 /*
 helpSendInfos is a help method to reduce the size of the sendFileToAnalyser function. it is responsible for sending the additional information. the analyser requires the information once.
 */
-func helpSendInfos(ctx context.Context, ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
+func helpSendInfos(ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
 
 	headerArr := []*sender.HeaderArray{}
 	valueArr := []*sender.HeaderArrayValue{}
@@ -155,7 +155,7 @@ func helpSendInfos(ctx context.Context, ltask *CrawlerTaskRequest, stream sender
 /*
 helpSend is a help method to reduce the size of the sendFileToAnalyser function. it is responsible for sending the http response with a taskid.
 */
-func helpSend(ctx context.Context, ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
+func helpSend(ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
 
 	var lengthByteArray int = len(ltask.getResponseBodyInBytes())
 
