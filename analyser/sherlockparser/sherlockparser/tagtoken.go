@@ -27,3 +27,7 @@ Returns the TagType of a TagToken
 func (tgTk *TagToken) TagType() string {
 	return tgTk.tagType
 }
+
+func (tgTk *TagToken) AddToRawContent(toAdd string) {
+	tgTk.rawContent = tgTk.rawContent + toAdd
+}

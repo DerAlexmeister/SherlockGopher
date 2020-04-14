@@ -5,6 +5,7 @@ import "strings"
 type HtmlToken interface {
 	Type() TokenType
 	RawContent() string
+	AddToRawContent(toAdd string)
 }
 
 type TokenType int
@@ -25,8 +26,56 @@ Returns a pointer to a HtmlToken-slice which is generated based on the input htm
 func (tree *HTMLTree) tokenize() *[]HtmlToken {
 	element := ""
 	classified := []HtmlToken{}
-
+	textTags := []string{"style", "script", "textarea", "title"}
+	var lastTagType string
+	var lastTokenType TokenType
 	for i := 0; i < len(tree.htmlRaw); i++ {
+		if _, found := find(textTags, lastTagType); found && lastTokenType == StartTag {
+			nextElement := ""
+			addedTextToken := false
+			for l := i; l < len(tree.htmlRaw); l++ {
+				if tree.htmlRaw[l] == '>' {
+					tag := ""
+					for k := len(nextElement) - 1; k >= 0; k-- {
+						if nextElement[k] == '<' {
+							newTag := tree.handleTag(tag)
+
+							if newTag.Type() == EndTag && newTag.TagType() == lastTagType {
+								i = l
+								l = len(tree.htmlRaw)
+								if addedTextToken {
+									classified[len(classified)-1].AddToRawContent(nextElement[:k])
+								} else {
+									classified = append(classified, &TextToken{
+										tokenType:  PlainText,
+										rawContent: nextElement[:k],
+									})
+								}
+								lastTagType = newTag.TagType()
+								lastTokenType = newTag.Type()
+								classified = append(classified, newTag)
+								break
+							} else {
+								nextElement = nextElement + string(tree.htmlRaw[l])
+								classified = append(classified, &TextToken{
+									tokenType:  PlainText,
+									rawContent: nextElement,
+								})
+								addedTextToken = true
+								nextElement = ""
+								break
+							}
+						} else {
+							tag = string(nextElement[k]) + tag
+						}
+					}
+				} else {
+					nextElement = nextElement + string(tree.htmlRaw[l])
+				}
+			}
+			continue
+		}
+
 		if tree.htmlRaw[i] == '<' {
 			if element != "" {
 				element = strings.TrimSpace(element)
@@ -40,7 +89,7 @@ func (tree *HTMLTree) tokenize() *[]HtmlToken {
 			element = ""
 
 			tag := ""
-			if tree.htmlRaw[i+1] == '!' {
+			if tree.htmlRaw[i+1] == '!' { // if charsequence <! found, assume comment or doctype and fastforward until >
 				for l := i + 1; l < len(tree.htmlRaw); l++ {
 					if tree.htmlRaw[l] == '>' {
 						i = l
@@ -51,7 +100,10 @@ func (tree *HTMLTree) tokenize() *[]HtmlToken {
 				for l := i + 1; l < len(tree.htmlRaw); l++ {
 					if tree.htmlRaw[l] == '>' {
 						i = l
-						classified = append(classified, tree.handleTag(tag))
+						newTag := tree.handleTag(tag)
+						lastTagType = newTag.tagType
+						lastTokenType = newTag.tokenType
+						classified = append(classified, newTag)
 						break
 					} else {
 						tag = tag + string(tree.htmlRaw[l])
@@ -67,7 +119,7 @@ func (tree *HTMLTree) tokenize() *[]HtmlToken {
 }
 
 /*
-Returns a pointer to a TagToken extracted from the input string.
+Returns a pointer to a TagToken extracted from the input string
 */
 func (tree *HTMLTree) handleTag(tag string) *TagToken {
 	var token *TagToken
@@ -109,4 +161,3 @@ func find(slice []string, val string) (int, bool) {
 	}
 	return -1, false
 }
-

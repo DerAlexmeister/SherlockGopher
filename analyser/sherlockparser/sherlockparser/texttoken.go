@@ -18,3 +18,7 @@ Returns the raw Content of a TextToken
 func (txTk *TextToken) RawContent() string {
 	return txTk.rawContent
 }
+
+func (txTk *TextToken) AddToRawContent(toAdd string){
+	txTk.rawContent = txTk.rawContent + toAdd
+}
