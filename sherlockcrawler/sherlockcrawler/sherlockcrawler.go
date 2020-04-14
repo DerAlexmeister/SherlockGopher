@@ -137,16 +137,23 @@ func (sherlock *Sherlockcrawler) manageFailedTasks(waitgroup *sync.WaitGroup) {
 }
 
 /*
+runManager will run all tasks related functions on the sherlockcrawlerservice and put them into a go routine.
+*/
+func (sherlock *Sherlockcrawler) runManager() {
+	var waitgroup sync.WaitGroup
+	go sherlock.manageUndoneTasks(&waitgroup)
+	go sherlock.manageFinishedTasks(&waitgroup)
+	go sherlock.manageFailedTasks(&waitgroup)
+	waitgroup.Wait()
+}
+
+/*
 ManageTasks will be a function to check all tasks in a period of time.
 Should run as a go routine. Will work like a cronJob.
 */
-func (sherlock *Sherlockcrawler) ManageTasks() {
+func (sherlock *Sherlockcrawler) ManageTasks() { //TODO kill loop on signal
 	for {
-		var waitgroup sync.WaitGroup
-		go sherlock.manageUndoneTasks(&waitgroup)
-		go sherlock.manageFinishedTasks(&waitgroup)
-		go sherlock.manageFailedTasks(&waitgroup)
-		waitgroup.Wait()
+		sherlock.runManager()
 		fmt.Println(sherlock.getQueue().GetStatusOfQueue())
 		time.Tick(delaytime * time.Millisecond)
 	}
