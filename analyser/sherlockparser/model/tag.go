@@ -2,7 +2,7 @@ package model
 
 type Tag struct {
 	tagType string
-	tagAttributes []TagAttribute
+	tagAttributes []*TagAttribute
 	tagContent string
 }
 
@@ -10,7 +10,7 @@ func (tag *Tag) TagType() string {
 	return tag.tagType
 }
 
-func (tag *Tag) Attributes() []TagAttribute {
+func (tag *Tag) Attributes() []*TagAttribute {
 	return tag.tagAttributes
 }
 

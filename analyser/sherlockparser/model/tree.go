@@ -54,7 +54,7 @@ func (tree *HTMLTree) handleTag(tag string) *TagToken {
 	return token
 }
 
-func (tree *HTMLTree) Tokenize() []HtmlToken {
+func (tree *HTMLTree) tokenize() []HtmlToken {
 	element := ""
 	classified := []HtmlToken{}
 
@@ -72,16 +72,24 @@ func (tree *HTMLTree) Tokenize() []HtmlToken {
 			element = ""
 
 			tag := ""
-			for l := i + 1; l < len(tree.htmlRaw); l++ {
-				if tree.htmlRaw[l] == '>' {
-					i = l
-					classified = append(classified, tree.handleTag(tag))
-					break
-				} else {
-					tag = tag + string(tree.htmlRaw[l])
+			if tree.htmlRaw[i+1] == '!' {
+				for l := i + 1; l < len(tree.htmlRaw); l++ {
+					if tree.htmlRaw[l] == '>' {
+						i = l
+						break
+					}
+				}
+			} else {
+				for l := i + 1; l < len(tree.htmlRaw); l++ {
+					if tree.htmlRaw[l] == '>' {
+						i = l
+						classified = append(classified, tree.handleTag(tag))
+						break
+					} else {
+						tag = tag + string(tree.htmlRaw[l])
+					}
 				}
 			}
-			//element = ""
 		} else {
 			toAdd := string(tree.htmlRaw[i])
 			element = element + toAdd
@@ -91,7 +99,7 @@ func (tree *HTMLTree) Tokenize() []HtmlToken {
 }
 
 func (tree *HTMLTree) Parse() *Node {
-	tokenStream := tree.Tokenize()
+	tokenStream := tree.tokenize()
 	stack := stack.New()
 	isRoot := true
 	tree.rootNode = &Node{
@@ -108,7 +116,7 @@ func (tree *HTMLTree) Parse() *Node {
 				if isRoot {
 					currentNode.tag = Tag{
 						tagType:       currentToken.tagType,
-						tagAttributes: tree.ExtractAttributes(currentToken.rawContent),
+						tagAttributes: tree.extractAttributes(currentToken.rawContent),
 						tagContent:    "",
 					}
 					currentNode.parent = nil
@@ -124,7 +132,7 @@ func (tree *HTMLTree) Parse() *Node {
 
 					currentNode.tag = Tag{
 						tagType:       currentToken.tagType,
-						tagAttributes: tree.ExtractAttributes(currentToken.rawContent),
+						tagAttributes: tree.extractAttributes(currentToken.rawContent),
 						tagContent:    "",
 					}
 					currentNode.parent = parent
@@ -133,24 +141,31 @@ func (tree *HTMLTree) Parse() *Node {
 			case EndTag:
 				if currentNode, ok := stack.Pop().(*Node); ok {
 					if currentNode.tag.tagType != currentToken.tagType {
-						log.Fatalf("Malformed HTML-Document! Expected closing tag %s, but was %s", currentNode.tag.tagType, currentToken.tagType)
-					} else if !ok{
-						log.Fatal() // TODO: Print error
+						matching := false
+						for !matching {
+							if node, ok := stack.Pop().(*Node); ok {
+								fmt.Printf("Malformed HTML-Document! Expected closing tag %s, but was %s \n", currentNode.tag.tagType, currentToken.tagType)
+								currentNode = node
+								matching = node.tag.tagType == currentToken.tagType
+							}
+						}
 					}
+				} else {
+					log.Fatal("Something went wrong while popping from the stack.")
 				}
 				if stack.Len() > 0 {
-				if nextNode, ok := stack.Peek().(*Node); ok {
-					currentNode = nextNode
+					if nextNode, ok := stack.Peek().(*Node); ok {
+						currentNode = nextNode
 
-				} else {
-					log.Fatal() // TODO: Print error
-				}
+					} else {
+						log.Fatal() // TODO: Print error
+					}
 				}
 			case SelfClosingTag:
 				newNode := &Node{
 					tag: Tag{
 						tagType:       currentToken.tagType,
-						tagAttributes: tree.ExtractAttributes(currentToken.rawContent),
+						tagAttributes: tree.extractAttributes(currentToken.rawContent),
 						tagContent:    "",
 					},
 					parent:   currentNode,
@@ -170,19 +185,50 @@ func (tree *HTMLTree) Parse() *Node {
 	return tree.rootNode
 }
 
-func (tree *HTMLTree) ExtractAttributes(tagContent string) []TagAttribute { //TODO: Handle attributes like style="font-size: 1px" whitespace is a problem
-	attributesRaw := strings.Split(tagContent, " ")
-	attributes := make([]TagAttribute, 0)
-	for _, attribute := range attributesRaw {
-		if contained := strings.IndexRune(attribute, '='); contained != -1 {
-			splitAttribute := strings.Split(attribute, "=")
-			attributes = append(attributes, TagAttribute{
-				attributeType: splitAttribute[0],
-				value:         splitAttribute[1],
-			})
+func (tree *HTMLTree) extractAttributes(tagContent string) []*TagAttribute { //TODO: Handle attributes like style="font-size: 1px" whitespace is a problem
+	attributes := make([]*TagAttribute, 0)
+	nonQuotedWhiteSpaces := make([]int, 0)
+
+	for i := 0; i < len(tagContent); i++ {
+		if tagContent[i] == '"' { //forward quoted string
+			for l := i + 1; l < len(tagContent); l++ {
+				if tagContent[l] == '"' {
+					i = l
+					break
+				}
+			}
+		}
+		if tagContent[i] == '\'' {
+			for l := i + 1; l < len(tagContent); l++ {
+				if tagContent[l] == '\'' {
+					i = l
+					break
+				}
+			}
+		}
+		if tagContent[i] == ' ' {
+			nonQuotedWhiteSpaces = append(nonQuotedWhiteSpaces, i)
+		}
+	}
+
+	for i, whitespaceIndex := range nonQuotedWhiteSpaces {
+		if i == (len(nonQuotedWhiteSpaces) - 1) {
+			attributes = append(attributes, tree.processAttribute(tagContent[whitespaceIndex+1:]))
+		} else {
+			attributes = append(attributes, tree.processAttribute(tagContent[whitespaceIndex+1:nonQuotedWhiteSpaces[i+1]]))
 		}
 	}
 	return attributes
+}
+
+func (tree *HTMLTree) processAttribute(attributeRaw string) *TagAttribute {
+	attributeSplit := strings.Split(attributeRaw, "=") //TODO: Kann eventuell ein Problem werden wenn = in gequotetem String enthalten sein darf, abhilfe -> nach ersten = suchen
+	attribute := &TagAttribute{}
+	attribute.attributeType = attributeSplit[0]
+	if len(attributeSplit) == 2 {
+		attribute.value = attributeSplit[1] //TODO: eventuell " bzw. ' trimmen, mit johnny abklären
+	}
+	return attribute
 }
 
 func (tree *HTMLTree) ParseRuneByRune() *Node {
