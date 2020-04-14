@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"io"
+	"reflect"
 
 	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyserfiletransfer"
+	crawl "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/sherlockcrawler"
 )
 
 /*
@@ -23,7 +25,39 @@ func NewServerGRPC() *ServerGRPC {
 /*
 DownloadFile gets chunks of a html response from the crawler, appends them and returns the result
 */
-func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Sender_UploadStream) (err error) {
+func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Sender_UploadStream) error {
+	var task crawl.CrawlerTaskRequest
+
+	rec, err := stream.Recv()
+	switch reflect.TypeOf(rec) {
+	case *proto.Infos:
+		task.setTaskID(rec.TaskId)
+		task.setAddr(rec.Address)
+		task.setResponseHeader(rec.Header)
+		task.setStatusCode(rec.StatusCode)
+		task.setResponseTime(rec.ResponseTime)
+
+		err = stream.SendMsg(&proto.UploadStatus{
+			Code: proto.UploadStatusCode_Ok,
+		})
+		if err != nil {
+			return errors.New("failed to send status code")
+		}
+	case *proto.ErrorCase:
+		task.setTaskID(rec.TaskId)
+		task.setAddr(rec.Address)
+		task.setTaskError(errors.New(rec.TaskError))
+		task.setResponseTime(rec.ResponseTime)
+
+		err = stream.SendMsg(&proto.UploadStatus{
+			Code: proto.UploadStatusCode_Ok,
+		})
+		if err != nil {
+			return errors.New("failed to send status code")
+		}
+		return nil
+	}
+
 	var arr []byte
 	finished := false
 
@@ -49,6 +83,6 @@ func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Sender
 
 	defer stream.Close()
 
-	//TODO werte weitergeben
+	//TODO werte weitergeben: arr und task
 	return nil
 }

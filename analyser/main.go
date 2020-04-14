@@ -56,5 +56,5 @@ func main() {
 	)
 
 	streamingservice.Init()
-	streamclient := crawlerproto.NewSenderService(name, service.Client())
+	//streamclient := crawlerproto.NewSenderService(name, service.Client())
 
