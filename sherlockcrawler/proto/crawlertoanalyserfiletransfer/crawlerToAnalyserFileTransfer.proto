@@ -59,8 +59,8 @@ message ErrorCase {
 UploadStatusCode gives information. the receiver sends a ok if he received all chunks.
 */
 enum UploadStatusCode {
-        Ok = 1;
-        Failed = 2;
+        Ok = 0;
+        Failed = 1;
 }
 
 /*

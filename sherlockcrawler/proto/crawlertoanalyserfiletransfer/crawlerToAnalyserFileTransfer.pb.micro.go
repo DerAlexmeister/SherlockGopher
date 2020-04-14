@@ -35,8 +35,8 @@ var _ server.Option
 
 type SenderService interface {
 	Upload(ctx context.Context, opts ...client.CallOption) (Sender_UploadService, error)
-	UploadInfos(ctx context.Context, in *Infos, opts ...client.CallOption) (*UploadStatus, error)
-	UploadErrorCase(ctx context.Context, in *ErrorCase, opts ...client.CallOption) (*UploadStatus, error)
+	UploadInfos(ctx context.Context, in *Infos, opts ...client.CallOption) (Sender_UploadInfosService, error)
+	UploadErrorCase(ctx context.Context, in *ErrorCase, opts ...client.CallOption) (Sender_UploadErrorCaseService, error)
 }
 
 type senderService struct {
@@ -71,6 +71,7 @@ type Sender_UploadService interface {
 	RecvMsg(interface{}) error
 	Close() error
 	Send(*Chunk) error
+	Recv() (*UploadStatus, error)
 }
 
 type senderServiceUpload struct {
@@ -93,39 +94,116 @@ func (x *senderServiceUpload) Send(m *Chunk) error {
 	return x.stream.Send(m)
 }
 
-func (c *senderService) UploadInfos(ctx context.Context, in *Infos, opts ...client.CallOption) (*UploadStatus, error) {
-	req := c.c.NewRequest(c.name, "Sender.UploadInfos", in)
-	out := new(UploadStatus)
-	err := c.c.Call(ctx, req, out, opts...)
+func (x *senderServiceUpload) Recv() (*UploadStatus, error) {
+	m := new(UploadStatus)
+	err := x.stream.Recv(m)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	return m, nil
 }
 
-func (c *senderService) UploadErrorCase(ctx context.Context, in *ErrorCase, opts ...client.CallOption) (*UploadStatus, error) {
-	req := c.c.NewRequest(c.name, "Sender.UploadErrorCase", in)
-	out := new(UploadStatus)
-	err := c.c.Call(ctx, req, out, opts...)
+func (c *senderService) UploadInfos(ctx context.Context, in *Infos, opts ...client.CallOption) (Sender_UploadInfosService, error) {
+	req := c.c.NewRequest(c.name, "Sender.UploadInfos", &Infos{})
+	stream, err := c.c.Stream(ctx, req, opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	if err := stream.Send(in); err != nil {
+		return nil, err
+	}
+	return &senderServiceUploadInfos{stream}, nil
+}
+
+type Sender_UploadInfosService interface {
+	SendMsg(interface{}) error
+	RecvMsg(interface{}) error
+	Close() error
+	Recv() (*UploadStatus, error)
+}
+
+type senderServiceUploadInfos struct {
+	stream client.Stream
+}
+
+func (x *senderServiceUploadInfos) Close() error {
+	return x.stream.Close()
+}
+
+func (x *senderServiceUploadInfos) SendMsg(m interface{}) error {
+	return x.stream.Send(m)
+}
+
+func (x *senderServiceUploadInfos) RecvMsg(m interface{}) error {
+	return x.stream.Recv(m)
+}
+
+func (x *senderServiceUploadInfos) Recv() (*UploadStatus, error) {
+	m := new(UploadStatus)
+	err := x.stream.Recv(m)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *senderService) UploadErrorCase(ctx context.Context, in *ErrorCase, opts ...client.CallOption) (Sender_UploadErrorCaseService, error) {
+	req := c.c.NewRequest(c.name, "Sender.UploadErrorCase", &ErrorCase{})
+	stream, err := c.c.Stream(ctx, req, opts...)
+	if err != nil {
+		return nil, err
+	}
+	if err := stream.Send(in); err != nil {
+		return nil, err
+	}
+	return &senderServiceUploadErrorCase{stream}, nil
+}
+
+type Sender_UploadErrorCaseService interface {
+	SendMsg(interface{}) error
+	RecvMsg(interface{}) error
+	Close() error
+	Recv() (*UploadStatus, error)
+}
+
+type senderServiceUploadErrorCase struct {
+	stream client.Stream
+}
+
+func (x *senderServiceUploadErrorCase) Close() error {
+	return x.stream.Close()
+}
+
+func (x *senderServiceUploadErrorCase) SendMsg(m interface{}) error {
+	return x.stream.Send(m)
+}
+
+func (x *senderServiceUploadErrorCase) RecvMsg(m interface{}) error {
+	return x.stream.Recv(m)
+}
+
+func (x *senderServiceUploadErrorCase) Recv() (*UploadStatus, error) {
+	m := new(UploadStatus)
+	err := x.stream.Recv(m)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // Server API for Sender service
 
 type SenderHandler interface {
 	Upload(context.Context, Sender_UploadStream) error
-	UploadInfos(context.Context, *Infos, *UploadStatus) error
-	UploadErrorCase(context.Context, *ErrorCase, *UploadStatus) error
+	UploadInfos(context.Context, *Infos, Sender_UploadInfosStream) error
+	UploadErrorCase(context.Context, *ErrorCase, Sender_UploadErrorCaseStream) error
 }
 
 func RegisterSenderHandler(s server.Server, hdlr SenderHandler, opts ...server.HandlerOption) error {
 	type sender interface {
 		Upload(ctx context.Context, stream server.Stream) error
-		UploadInfos(ctx context.Context, in *Infos, out *UploadStatus) error
-		UploadErrorCase(ctx context.Context, in *ErrorCase, out *UploadStatus) error
+		UploadInfos(ctx context.Context, stream server.Stream) error
+		UploadErrorCase(ctx context.Context, stream server.Stream) error
 	}
 	type Sender struct {
 		sender
@@ -146,6 +224,7 @@ type Sender_UploadStream interface {
 	SendMsg(interface{}) error
 	RecvMsg(interface{}) error
 	Close() error
+	Send(*UploadStatus) error
 	Recv() (*Chunk, error)
 }
 
@@ -165,6 +244,10 @@ func (x *senderUploadStream) RecvMsg(m interface{}) error {
 	return x.stream.Recv(m)
 }
 
+func (x *senderUploadStream) Send(m *UploadStatus) error {
+	return x.stream.Send(m)
+}
+
 func (x *senderUploadStream) Recv() (*Chunk, error) {
 	m := new(Chunk)
 	if err := x.stream.Recv(m); err != nil {
@@ -173,10 +256,72 @@ func (x *senderUploadStream) Recv() (*Chunk, error) {
 	return m, nil
 }
 
-func (h *senderHandler) UploadInfos(ctx context.Context, in *Infos, out *UploadStatus) error {
-	return h.SenderHandler.UploadInfos(ctx, in, out)
+func (h *senderHandler) UploadInfos(ctx context.Context, stream server.Stream) error {
+	m := new(Infos)
+	if err := stream.Recv(m); err != nil {
+		return err
+	}
+	return h.SenderHandler.UploadInfos(ctx, m, &senderUploadInfosStream{stream})
 }
 
-func (h *senderHandler) UploadErrorCase(ctx context.Context, in *ErrorCase, out *UploadStatus) error {
-	return h.SenderHandler.UploadErrorCase(ctx, in, out)
+type Sender_UploadInfosStream interface {
+	SendMsg(interface{}) error
+	RecvMsg(interface{}) error
+	Close() error
+	Send(*UploadStatus) error
+}
+
+type senderUploadInfosStream struct {
+	stream server.Stream
+}
+
+func (x *senderUploadInfosStream) Close() error {
+	return x.stream.Close()
+}
+
+func (x *senderUploadInfosStream) SendMsg(m interface{}) error {
+	return x.stream.Send(m)
+}
+
+func (x *senderUploadInfosStream) RecvMsg(m interface{}) error {
+	return x.stream.Recv(m)
+}
+
+func (x *senderUploadInfosStream) Send(m *UploadStatus) error {
+	return x.stream.Send(m)
+}
+
+func (h *senderHandler) UploadErrorCase(ctx context.Context, stream server.Stream) error {
+	m := new(ErrorCase)
+	if err := stream.Recv(m); err != nil {
+		return err
+	}
+	return h.SenderHandler.UploadErrorCase(ctx, m, &senderUploadErrorCaseStream{stream})
+}
+
+type Sender_UploadErrorCaseStream interface {
+	SendMsg(interface{}) error
+	RecvMsg(interface{}) error
+	Close() error
+	Send(*UploadStatus) error
+}
+
+type senderUploadErrorCaseStream struct {
+	stream server.Stream
+}
+
+func (x *senderUploadErrorCaseStream) Close() error {
+	return x.stream.Close()
+}
+
+func (x *senderUploadErrorCaseStream) SendMsg(m interface{}) error {
+	return x.stream.Send(m)
+}
+
+func (x *senderUploadErrorCaseStream) RecvMsg(m interface{}) error {
+	return x.stream.Recv(m)
+}
+
+func (x *senderUploadErrorCaseStream) Send(m *UploadStatus) error {
+	return x.stream.Send(m)
 }
