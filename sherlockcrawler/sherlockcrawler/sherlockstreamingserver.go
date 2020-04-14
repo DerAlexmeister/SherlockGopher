@@ -162,7 +162,7 @@ func helpSend(ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (er
 	for i := 0; i < lengthByteArray; i += getChunkSize() {
 		buf := ltask.getResponseBodyInBytes()[i:min(i+getChunkSize(), lengthByteArray)]
 
-		err = stream.Send(&sender.Chunk{
+		err = stream.SendMsg(&sender.Chunk{
 			Content: buf,
 			TaskId:  ltask.getTaskID(),
 		})
@@ -171,12 +171,6 @@ func helpSend(ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (er
 			return errors.New("error while streaming")
 		}
 	}
-
-	var status *sender.UploadStatus
-	if status.Code != sender.UploadStatusCode_Ok {
-		return errors.Errorf("upload failed - msg: %s", status.Message)
-	}
-
 	return err
 }
 

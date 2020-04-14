@@ -5,7 +5,7 @@ import (
 	"errors"
 	"io"
 
-	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto/filestreamproto"
+	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyserfiletransfer"
 )
 
 /*
@@ -23,7 +23,10 @@ func NewServerGRPC() *ServerGRPC {
 /*
 DownloadFile gets chunks of a html response from the crawler, appends them and returns the result
 */
-func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Receiver_UploadStream) (err error) {
+func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Sender_UploadStream) (err error) {
+	//errorcase oder infos
+
+	//File erhalten
 	var arr []byte
 	finished := false
 
@@ -40,20 +43,21 @@ func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Receiv
 		}
 	}
 
-	err = stream.SendMsg(&proto.UploadStatus{
-		Message: "Upload received with success",
-		Code:    proto.UploadStatusCode_Ok,
-	})
-	if err != nil {
-		return errors.New("failed to send status code")
-	}
-
 	err = stream.Close()
 
 	if err != nil {
 		return errors.New("error while closing stream")
 	}
 
-	//TODO werte weitergeben
 	return nil
 }
+
+func (handler *ServerGRPC) UploadInfos(ctx context.Context, in *proto.Infos, out *proto.UploadStatus) error {
+
+}
+
+func (handler *ServerGRPC) UploadErrorCase(ctx context.Context, in *proto.ErrorCase, out *proto.UploadStatus) error {
+
+}
+
+//TODO werte weitergeben

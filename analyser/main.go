@@ -8,7 +8,6 @@ import (
 	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto/analyser"
 	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyser"
 
-	//streamproto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto/filestreamproto"
 	sherlockanalyser "github.com/ob-algdatii-20ss/SherlockGopher/analyser/sherlockanalyser"
 )
 
@@ -57,18 +56,5 @@ func main() {
 	)
 
 	streamingservice.Init()
-	/*
-		newService := streamreceiver.NewServerGRPC()
+	streamclient := crawlerproto.NewSenderService(name, service.Client())
 
-
-		err1 := streamproto.RegisterReceiverHandler(service.Server(), newService)
-		if err1 == nil {
-			if err := service.Run(); err != nil {
-				fmt.Println(err)
-			}
-		} else {
-			fmt.Println(err1)
-		}
-
-	*/
-}
