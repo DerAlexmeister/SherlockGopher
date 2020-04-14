@@ -24,9 +24,6 @@ func NewServerGRPC() *ServerGRPC {
 DownloadFile gets chunks of a html response from the crawler, appends them and returns the result
 */
 func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Sender_UploadStream) (err error) {
-	//errorcase oder infos
-
-	//File erhalten
 	var arr []byte
 	finished := false
 
@@ -43,21 +40,15 @@ func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Sender
 		}
 	}
 
-	err = stream.Close()
-
+	err = stream.SendMsg(&proto.UploadStatus{
+		Code: proto.UploadStatusCode_Ok,
+	})
 	if err != nil {
-		return errors.New("error while closing stream")
+		return errors.New("failed to send status code")
 	}
 
+	defer stream.Close()
+
+	//TODO werte weitergeben
 	return nil
 }
-
-func (handler *ServerGRPC) UploadInfos(ctx context.Context, in *proto.Infos, out *proto.UploadStatus) error {
-
-}
-
-func (handler *ServerGRPC) UploadErrorCase(ctx context.Context, in *proto.ErrorCase, out *proto.UploadStatus) error {
-
-}
-
-//TODO werte weitergeben

@@ -7,8 +7,8 @@ Sender represents the file sender.
 */
 service Sender {
     rpc Upload(stream Chunk) returns (stream UploadStatus) {}
-    rpc UploadInfos(Infos) returns (stream UploadStatus) {}
-    rpc UploadErrorCase(ErrorCase) returns (stream UploadStatus) {}
+    rpc UploadInfos(stream Infos) returns (stream UploadStatus) {}
+    rpc UploadErrorCase(stream ErrorCase) returns (stream UploadStatus) {}
 }
 
 /*

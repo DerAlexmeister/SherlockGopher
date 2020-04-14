@@ -98,7 +98,7 @@ func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask 
 /*
 helpSendErrorCase is a help method to reduce the size of the sendFileToAnalyser function. it is used in case there is an error.
 */
-func helpSendErrorCase(ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
+func UploadErrorCase(ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
 	err = stream.SendMsg(&sender.ErrorCase{
 		TaskId:       ltask.getTaskID(),
 		Address:      ltask.getAddr(),
@@ -111,8 +111,9 @@ func helpSendErrorCase(ltask *CrawlerTaskRequest, stream sender.Sender_UploadSer
 	}
 
 	var status *sender.UploadStatus
+	status, err = stream.Recv()
 	if status.Code != sender.UploadStatusCode_Ok {
-		return errors.Errorf("upload error case failed - msg: %s", status.Message)
+		return errors.New("errorcase upload failed")
 	}
 
 	return err
@@ -121,7 +122,7 @@ func helpSendErrorCase(ltask *CrawlerTaskRequest, stream sender.Sender_UploadSer
 /*
 helpSendInfos is a help method to reduce the size of the sendFileToAnalyser function. it is responsible for sending the additional information. the analyser requires the information once.
 */
-func helpSendInfos(ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
+func UploadInfos(ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
 
 	headerArr := []*sender.HeaderArray{}
 	valueArr := []*sender.HeaderArrayValue{}
@@ -145,8 +146,9 @@ func helpSendInfos(ltask *CrawlerTaskRequest, stream sender.Sender_UploadService
 	}
 
 	var status *sender.UploadStatus
+	status, err = stream.Recv()
 	if status.Code != sender.UploadStatusCode_Ok {
-		return errors.Errorf("upload infos failed - msg: %s", status.Message)
+		return errors.New("info upload failed")
 	}
 
 	return err
@@ -171,6 +173,13 @@ func helpSend(ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (er
 			return errors.New("error while streaming")
 		}
 	}
+
+	var status *sender.UploadStatus
+	status, err = stream.Recv()
+	if status.Code != sender.UploadStatusCode_Ok {
+		return errors.New("file upload failed")
+	}
+
 	return err
 }
 
