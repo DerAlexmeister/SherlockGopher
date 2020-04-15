@@ -1,4 +1,4 @@
-package streamreceiver
+package sherlockanalyser
 
 import (
 	"context"
@@ -6,9 +6,7 @@ import (
 	"io"
 	"reflect"
 
-	analyser "github.com/ob-algdatii-20ss/SherlockGopher/analyser/sherlockanalyser"
 	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyserfiletransfer"
-	crawl "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/sherlockcrawler"
 )
 
 /*
@@ -39,16 +37,16 @@ func NewServerGRPC(lqueue *analyser.AnalyserQueue) *ServerGRPC {
 DownloadFile gets chunks of a html response from the crawler, appends them and returns the result
 */
 func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Sender_UploadStream) error {
-	var task crawl.CrawlerTaskRequest
+	var task CrawlerData
 
 	rec, err := stream.Recv()
 	switch reflect.TypeOf(rec) {
 	case *proto.Infos:
-		task.setTaskID(rec.TaskId)
-		task.setAddr(rec.Address)
-		task.setResponseHeader(rec.Header)
-		task.setStatusCode(rec.StatusCode)
-		task.setResponseTime(rec.ResponseTime)
+		task.setCTaskID(rec.TaskId)
+		task.setCAddr(rec.Address)
+		task.setCResponseHeader(rec.Header)
+		task.setCStatusCode(rec.StatusCode)
+		task.setCResponseTime(rec.ResponseTime)
 
 		err = stream.SendMsg(&proto.UploadStatus{
 			Code: proto.UploadStatusCode_Ok,
@@ -57,10 +55,10 @@ func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Sender
 			return errors.New("failed to send status code")
 		}
 	case *proto.ErrorCase:
-		task.setTaskID(rec.TaskId)
-		task.setAddr(rec.Address)
-		task.setTaskError(errors.New(rec.TaskError))
-		task.setResponseTime(rec.ResponseTime)
+		task.setCTaskID(rec.TaskId)
+		task.setCAddr(rec.Address)
+		task.setCTaskError(errors.New(rec.TaskError))
+		task.setCResponseTime(rec.ResponseTime)
 
 		err = stream.SendMsg(&proto.UploadStatus{
 			Code: proto.UploadStatusCode_Ok,
@@ -95,6 +93,7 @@ func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Sender
 	}
 
 	defer stream.Close()
+	task.setCResponseBody(arr)
 
 	//TODO werte weitergeben: arr und task
 	return nil
