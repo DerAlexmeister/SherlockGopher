@@ -6,6 +6,7 @@ import (
 	"io"
 	"reflect"
 
+	analyser "github.com/ob-algdatii-20ss/SherlockGopher/analyser/sherlockanalyser"
 	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyserfiletransfer"
 	crawl "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/sherlockcrawler"
 )
@@ -13,13 +14,25 @@ import (
 /*
 ServerGRPC receives a byte array from the crawler
 */
-type ServerGRPC struct{}
+type ServerGRPC struct {
+	Queue      *analyser.AnalyserQueue
+	Dependency *ServerDependency
+}
+
+/*
+ServerDependency will be all dependencys for the ServerGRPC.
+*/
+type ServerDependency struct {
+	Crawler func()
+}
 
 /*
 NewServerGRPC returns a new ServerGRPC
 */
-func NewServerGRPC() *ServerGRPC {
-	return &ServerGRPC{}
+func NewServerGRPC(lqueue *analyser.AnalyserQueue) *ServerGRPC {
+	return &ServerGRPC{
+		Queue: lqueue,
+	}
 }
 
 /*

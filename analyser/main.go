@@ -35,7 +35,6 @@ func main() {
 			})
 		}
 		fmt.Println("Could not get a session to talk to the neo4j db. Service will shutdown.")
-		//os.Exit(3)
 	} else {
 		fmt.Println("Could not reach the neo4j DB. Is the DB up?")
 	}

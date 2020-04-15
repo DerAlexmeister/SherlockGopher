@@ -71,12 +71,12 @@ func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask 
 	}
 
 	if ltask.taskerror != nil {
-		err = helpSendErrorCase(ltask, stream)
+		err = UploadErrorCase(ltask, stream)
 		if err != nil {
 			return err
 		}
 	} else {
-		err = helpSendInfos(ltask, stream)
+		err = UploadInfos(ltask, stream)
 		if err != nil {
 			return err
 		}
@@ -96,7 +96,7 @@ func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask 
 }
 
 /*
-helpSendErrorCase is a help method to reduce the size of the sendFileToAnalyser function. it is used in case there is an error.
+UploadErrorCase is a help method to reduce the size of the sendFileToAnalyser function. it is used in case there is an error.
 */
 func UploadErrorCase(ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
 	err = stream.SendMsg(&sender.ErrorCase{
@@ -120,7 +120,7 @@ func UploadErrorCase(ltask *CrawlerTaskRequest, stream sender.Sender_UploadServi
 }
 
 /*
-helpSendInfos is a help method to reduce the size of the sendFileToAnalyser function. it is responsible for sending the additional information. the analyser requires the information once.
+UploadInfos is a help method to reduce the size of the sendFileToAnalyser function. it is responsible for sending the additional information. the analyser requires the information once.
 */
 func UploadInfos(ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
 
