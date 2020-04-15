@@ -22,8 +22,6 @@ const (
 	PROCESSING TASKSTATE = 1
 	//FINISHED will be a task which is successfully completed.
 	FINISHED TASKSTATE = 2
-	//FAILED is a task which was in the state of PROCESSING but failed to complet.
-	FAILED TASKSTATE = 3
 )
 
 /*
@@ -46,33 +44,31 @@ type AnalyserTaskRequest struct {
 CrawlerData contains the data send by the crawler.
 */
 type CrawlerData struct {
-	taskid            uint64        
-	addr              string        
-	taskerror         error         
-	responseHeader    *http.Header  
-	responseBodyBytes []byte        
-	statuscode        int           
-	responseTime      time.Duration 
+	taskid            uint64
+	addr              string
+	taskerror         error
+	responseHeader    *http.Header
+	responseBodyBytes []byte
+	statuscode        int
+	responseTime      time.Duration
 }
 
 /*
 NewTask will return an empty AnalyserTaskRequest.
 */
 func NewTask(lcrawlerData CrawlerData) AnalyserTaskRequest {
-	if CrawlerData.taskerror != nil {
-		task := AnalyserTaskRequest{}
+	task := AnalyserTaskRequest{}
+	if lcrawlerData.getCTaskError() == nil { //
 
 		task.crawlerData = &lcrawlerData
 		task.setAddr(lcrawlerData.addr)
 		task.setHTMLCode(string(lcrawlerData.responseBodyBytes))
-	
+
 		task.initialze()
 	} else {
 		task.setAddr(lcrawlerData.addr)
-		task.setCTaskError(lcrawlerData.taskerror)
-		task.responseTime(lcrawlerData.responseTime)
 	}
-	
+
 	return task
 }
 
@@ -301,14 +297,14 @@ func (ctask *CrawlerData) getCTaskError() error {
 getCResponseHeader will return the Header of the Response.
 */
 func (ctask *CrawlerData) getCResponseHeader() http.Header {
-	return *(creq.responseHeader)
+	return *(ctask.responseHeader)
 }
 
 /*
 getCResponseBody will return the Header of the Response.
 */
-func (ctask *CrawlerData) getCResponseBody() string {
-	return ctask.responseBody
+func (ctask *CrawlerData) getCResponseBody() []byte {
+	return ctask.responseBodyBytes
 }
 
 /*
@@ -325,53 +321,51 @@ func (ctask *CrawlerData) getCResponseTime() time.Duration {
 	return ctask.responseTime
 }
 
-
 /*
 setCTaskID will set the id of a given task.
 */
-func (ctask *CrawlerData) setCTaskID(lid uint64){
-	return ctask.taskid = lid
+func (ctask *CrawlerData) setCTaskID(lid uint64) {
+	ctask.taskid = lid
 }
 
 /*
 setCAddr setter for the address.
 */
 func (ctask *CrawlerData) setCAddr(laddr string) {
-	return ctask.addr = laddr
+	ctask.addr = laddr
 }
 
 /*
 setCTask will set an error which was caused by the http package.
 */
 func (ctask *CrawlerData) setCTaskError(lerror error) {
-	return ctask.taskerror = lerror
+	ctask.taskerror = lerror
 }
 
 /*
 setCResponseHeader will set the Header of the Response.
 */
 func (ctask *CrawlerData) setCResponseHeader(lheader *http.Header) {
-	return *(creq.responseHeader)
+	*(ctask.responseHeader) = *lheader
 }
 
 /*
 setCResponseBody will set the Header of the Response.
 */
-func (ctask *CrawlerData) setCResponseBody(lbody []byte) string {
-	return ctask.responseBodyBytes = lbody
+func (ctask *CrawlerData) setCResponseBody(lbody []byte) {
+	ctask.responseBodyBytes = lbody
 }
 
 /*
 setCStatusCode will set the statuscode.
 */
 func (ctask *CrawlerData) setCStatusCode(lstatuscode int) {
-	return ctask.statuscode = lstatuscode
+	ctask.statuscode = lstatuscode
 }
 
 /*
 setCResponseTime will set the time.
 */
 func (ctask *CrawlerData) setCResponseTime(ltime time.Duration) {
-	return ctask.responseTime = ltime
+	ctask.responseTime = ltime
 }
-
