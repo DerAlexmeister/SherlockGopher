@@ -89,6 +89,7 @@ AppendQueue will append the current queue with a new AnalyserTaskRequest.
 func (que *AnalyserQueue) AppendQueue(task *AnalyserTaskRequest) bool {
 	taskid := que.getRandomTaskID(getMAXTASKS())
 	if !que.ContainsID(taskid) {
+		// Hier TASKID einzufügen
 		(*que.getCurrentQueue())[taskid] = task
 		return true
 	}

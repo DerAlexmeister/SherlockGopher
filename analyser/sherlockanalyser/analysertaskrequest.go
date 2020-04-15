@@ -42,30 +42,37 @@ type AnalyserTaskRequest struct {
 	crawlerData  *CrawlerData
 }
 
-//TODO comment
+/*
+CrawlerData contains the data send by the crawler.
+*/
 type CrawlerData struct {
-	taskid            uint64        //taskid, send every time.
-	addr              string        //addr, once
-	taskerror         error         //error, send as string incase there is an error then dont send a body
-	responseHeader    *http.Header  //header, once (typ map)
-	responseBodyBytes []byte        //body, split
-	statuscode        int           //statuscode, once
-	responseTime      time.Duration //response time, once
+	taskid            uint64        
+	addr              string        
+	taskerror         error         
+	responseHeader    *http.Header  
+	responseBodyBytes []byte        
+	statuscode        int           
+	responseTime      time.Duration 
 }
 
 /*
 NewTask will return an empty AnalyserTaskRequest.
 */
 func NewTask(lcrawlerData CrawlerData) AnalyserTaskRequest {
-	task := AnalyserTaskRequest{}
-	task.setAddr(lcrawlerData.addr)
-	task.setHTMLCode(string(lcrawlerData.responseBodyBytes))
-	task.setTaskID(lcrawlerData.taskid)
+	if CrawlerData.taskerror != nil {
+		task := AnalyserTaskRequest{}
 
-	task.crawlerData = &lcrawlerData
-
-	task.initialze()
-
+		task.crawlerData = &lcrawlerData
+		task.setAddr(lcrawlerData.addr)
+		task.setHTMLCode(string(lcrawlerData.responseBodyBytes))
+	
+		task.initialze()
+	} else {
+		task.setAddr(lcrawlerData.addr)
+		task.setCTaskError(lcrawlerData.taskerror)
+		task.responseTime(lcrawlerData.responseTime)
+	}
+	
 	return task
 }
 
