@@ -18,6 +18,13 @@ type ServerGRPC struct {
 }
 
 /*
+getCAddr getter for the address.
+*/
+func (s ServerGRPC) getQueue() *analyser.AnalyserQueue {
+	return s.Queue
+}
+
+/*
 ServerDependency will be all dependencys for the ServerGRPC.
 */
 type ServerDependency struct {
@@ -66,6 +73,7 @@ func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Sender
 		if err != nil {
 			return errors.New("failed to send status code")
 		}
+		handler.getQueue().AppendQueue(NewTask(task))
 		return nil
 	}
 
@@ -93,8 +101,9 @@ func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Sender
 	}
 
 	defer stream.Close()
-	task.setCResponseBody(arr)
 
-	//TODO werte weitergeben: arr und task
+	task.setCResponseBody(arr)
+	handler.getQueue().AppendQueue(NewTask(task))
+
 	return nil
 }
