@@ -101,7 +101,7 @@ func (tree *HTMLTree) Parse() *Node {
 				}
 				currentNode.children = append(currentNode.Children(), newNode)
 			default:
-				log.Fatalf("Type mismatch! Expected Start, End, or SelfClosingTag, but was %s", currentToken.Type())
+				log.Fatalf("Type mismatch! Expected Start, End, or SelfClosingTag, but was %s", string(currentToken.Type()))
 			}
 
 		case *TextToken:

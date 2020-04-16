@@ -63,11 +63,16 @@ func (tree *HTMLTree) extractAttributes(tagContent string) []*TagAttribute {
 Returns a pointer to a TagAttribute which may contain several attributes from a single tag based on the input string.
 */
 func (tree *HTMLTree) processAttribute(attributeRaw string) *TagAttribute {
-	attributeSplit := strings.Split(attributeRaw, "=") //TODO: Kann eventuell ein Problem werden wenn = in gequotetem String enthalten sein darf, abhilfe -> nach ersten = suchen
+
+	/*if index, ok := findFirst(attributeRaw, '='); ok {
+		strings.SplitN()
+	}*/
+	attributeSplit := strings.SplitN(attributeRaw, "=", 2) //TODO: Kann eventuell ein Problem werden wenn = in gequotetem String enthalten sein darf, abhilfe -> nach ersten = suchen
 	attribute := &TagAttribute{}
 	attribute.attributeType = attributeSplit[0]
 	if len(attributeSplit) == 2 {
-		attribute.value = attributeSplit[1] //TODO: eventuell " bzw. ' trimmen, mit johnny abklären
+		trimmed := strings.Trim(attributeSplit[1], "\"")
+		attribute.value = strings.Trim(trimmed, "'")
 	}
 	return attribute
 }

@@ -161,3 +161,12 @@ func find(slice []string, val string) (int, bool) {
 	}
 	return -1, false
 }
+
+func findFirst(soi string, character rune)(int, bool){
+	for i, elem := range soi {
+		if elem == character {
+			return i, true
+		}
+	}
+	return -1, false
+}
