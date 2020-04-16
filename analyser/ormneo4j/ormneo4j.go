@@ -22,6 +22,9 @@ const (
 
 	//DROPGRAPH the entire graph.
 	DROPGRAPH string = "MATCH (n) DETACH DELETE n"
+
+	//CONTAINS will check whether or not a node is already in use.
+	CONTAINS string = "MATCH (x) WHERE x.name = \"%s\" RETURN x"
 )
 
 const (
