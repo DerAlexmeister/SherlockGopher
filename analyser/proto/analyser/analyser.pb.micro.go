@@ -34,6 +34,10 @@ var _ server.Option
 // Client API for Analyser service
 
 type AnalyserService interface {
+	// Create a Task which should be analyzed by sherlock analyser.
+	CreateTask(ctx context.Context, in *AnalyserTaskCreateRequest, opts ...client.CallOption) (*AnalyserTaskCreateResponse, error)
+	// StatusOfTaskQueue will send the status of the tasks.
+	StatusOfTaskQueue(ctx context.Context, in *TaskStatusRequest, opts ...client.CallOption) (*TaskStatusResponse, error)
 }
 
 type analyserService struct {
@@ -54,13 +58,39 @@ func NewAnalyserService(name string, c client.Client) AnalyserService {
 	}
 }
 
+func (c *analyserService) CreateTask(ctx context.Context, in *AnalyserTaskCreateRequest, opts ...client.CallOption) (*AnalyserTaskCreateResponse, error) {
+	req := c.c.NewRequest(c.name, "Analyser.CreateTask", in)
+	out := new(AnalyserTaskCreateResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *analyserService) StatusOfTaskQueue(ctx context.Context, in *TaskStatusRequest, opts ...client.CallOption) (*TaskStatusResponse, error) {
+	req := c.c.NewRequest(c.name, "Analyser.StatusOfTaskQueue", in)
+	out := new(TaskStatusResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Analyser service
 
 type AnalyserHandler interface {
+	// Create a Task which should be analyzed by sherlock analyser.
+	CreateTask(context.Context, *AnalyserTaskCreateRequest, *AnalyserTaskCreateResponse) error
+	// StatusOfTaskQueue will send the status of the tasks.
+	StatusOfTaskQueue(context.Context, *TaskStatusRequest, *TaskStatusResponse) error
 }
 
 func RegisterAnalyserHandler(s server.Server, hdlr AnalyserHandler, opts ...server.HandlerOption) error {
 	type analyser interface {
+		CreateTask(ctx context.Context, in *AnalyserTaskCreateRequest, out *AnalyserTaskCreateResponse) error
+		StatusOfTaskQueue(ctx context.Context, in *TaskStatusRequest, out *TaskStatusResponse) error
 	}
 	type Analyser struct {
 		analyser
@@ -71,4 +101,12 @@ func RegisterAnalyserHandler(s server.Server, hdlr AnalyserHandler, opts ...serv
 
 type analyserHandler struct {
 	AnalyserHandler
+}
+
+func (h *analyserHandler) CreateTask(ctx context.Context, in *AnalyserTaskCreateRequest, out *AnalyserTaskCreateResponse) error {
+	return h.AnalyserHandler.CreateTask(ctx, in, out)
+}
+
+func (h *analyserHandler) StatusOfTaskQueue(ctx context.Context, in *TaskStatusRequest, out *TaskStatusResponse) error {
+	return h.AnalyserHandler.StatusOfTaskQueue(ctx, in, out)
 }

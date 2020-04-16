@@ -30,7 +30,7 @@ func main() {
 		if session, sessionerror := sherlockneo.GetSession(&driver); sessionerror == nil {
 			AnalyserService.InjectDependency(&sherlockanalyser.AnalyserDependency{
 				Crawler: func() crawlerproto.AnalyserInterfaceService {
-					return crawlerproto.NewAnalyserInterfaceService("crawler-service", service.Client())
+					return crawlerproto.NewAnalyserInterfaceService("crawler-service", service.Client()) // TODO: FIX BY DERALEXX
 				}, Neo4J: &session,
 			})
 		}
@@ -39,7 +39,7 @@ func main() {
 		fmt.Println("Could not reach the neo4j DB. Is the DB up?")
 	}
 
-	err := proto.RegisterAnalyserHandler(service.Server(), AnalyserService)
+	err := proto.RegisterAnalyserHandler(service.Server(), AnalyserService) // TODO: FIX BY DERALEXX
 
 	if err != nil {
 		fmt.Println(err)
