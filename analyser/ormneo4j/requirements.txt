@@ -1,0 +1,7 @@
+neo4j==1.7.6
+neo4j-driver==1.7.6
+neobolt==1.7.17
+neotime==1.7.4
+pkg-resources==0.0.0
+pytz==2019.3
+six==1.14.0
