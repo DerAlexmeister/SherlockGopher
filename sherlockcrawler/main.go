@@ -5,6 +5,7 @@ import (
 
 	"github.com/micro/go-micro"
 	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyser"
+	fileproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyserfiletransfer"
 	sherlock "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/sherlockcrawler"
 )
 
@@ -36,17 +37,14 @@ func main() {
 		fmt.Printf("Service %s started as intended... ", serviceName)
 	}
 
+	go crawlerservice.ManageTasks() //Maybe a waitgroup needed.
+
 	//Filestreaming Service.
 
-	//streamingService := micro.NewService(
-	//	micro.Name(fileservicename),
-	//)
+	streamingService := micro.NewService()
 
-	//service.Init()
+	streamingService.Init()
 
-	//fileproto.RegisterSenderHandler(streamingService.Server(), streamingserver)
-
-	go crawlerservice.ManageTasks() //Maybe a waitgroup needed.
-	//go streamingserver.Upload(context.TODO())
+	fileproto.NewSenderService(fileservicename, streamingService.Client())
 
 }
