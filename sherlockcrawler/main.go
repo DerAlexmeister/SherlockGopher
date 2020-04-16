@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/micro/go-micro"
@@ -29,9 +28,6 @@ func main() {
 
 	err := proto.RegisterAnalyserInterfaceHandler(service.Server(), crawlerservice)
 
-	go crawlerservice.ManageTasks()
-	go streamingserver.Upload(context.TODO())
-
 	if err != nil {
 		fmt.Println(err)
 	} else if lerr := service.Run(); lerr != nil {
@@ -39,5 +35,18 @@ func main() {
 	} else {
 		fmt.Printf("Service %s started as intended... ", serviceName)
 	}
+
+	//Filestreaming Service.
+
+	//streamingService := micro.NewService(
+	//	micro.Name(fileservicename),
+	//)
+
+	//service.Init()
+
+	//fileproto.RegisterSenderHandler(streamingService.Server(), streamingserver)
+
+	go crawlerservice.ManageTasks() //Maybe a waitgroup needed.
+	//go streamingserver.Upload(context.TODO())
 
 }

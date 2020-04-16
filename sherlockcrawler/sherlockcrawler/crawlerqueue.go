@@ -28,7 +28,7 @@ NewCrawlerQueue will return a new Queue.
 */
 func NewCrawlerQueue() CrawlerQueue {
 	return CrawlerQueue{
-		Queue: make(map[uint64]*CrawlerTaskRequest),
+		Queue: map[uint64]*CrawlerTaskRequest{},
 	}
 }
 

@@ -71,7 +71,7 @@ func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask 
 	}
 
 	if ltask.taskerror != nil {
-		err = UploadErrorCase(ltask, stream)
+		err = c.UploadErrorCase(ltask, stream)
 		if err != nil {
 			return err
 		}
@@ -98,7 +98,7 @@ func (c *SherlockStreamingServer) sendFileToAnalyser(ctx context.Context, ltask 
 /*
 UploadErrorCase is a help method to reduce the size of the sendFileToAnalyser function. it is used in case there is an error.
 */
-func UploadErrorCase(ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
+func (c *SherlockStreamingServer) UploadErrorCase(ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (err error) {
 	err = stream.SendMsg(&sender.ErrorCase{
 		TaskId:       ltask.getTaskID(),
 		Address:      ltask.getAddr(),
@@ -186,7 +186,7 @@ func helpSend(ltask *CrawlerTaskRequest, stream sender.Sender_UploadService) (er
 /*
 Upload cuts byte array in slices of chunksize and sends them to the analyzer.
 */
-func (c *SherlockStreamingServer) Upload(ctx context.Context) error {
+func (c SherlockStreamingServer) Upload(ctx context.Context, stream sender.Sender_UploadStream) error {
 	for {
 		for _, task := range *c.getQueue().getThisQueue() {
 			if err := c.sendFileToAnalyser(ctx, task); err != nil {
