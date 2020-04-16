@@ -7,11 +7,6 @@ Sender represents the file sender.
 */
 service Sender {
     rpc Upload(stream Chunk) returns (stream UploadStatus) {}
-
-    //rpc Stream(stream Request) returns (stream Response) 
-
-    rpc UploadInfos(stream Infos) returns (stream UploadStatus) {}
-    rpc UploadErrorCase(stream ErrorCase) returns (stream UploadStatus) {}
 }
 
 /*
@@ -20,17 +15,11 @@ Chunk represents a chunk of a http response.
 message Chunk {
         bytes Content = 1;
         uint64 TaskId = 2;
-}
-
-/*
-Infos represent all information in relation to the http response. it sends all information of a CrawlerTaskRequest that need to be sent once.
-*/
-message Infos {
-        uint64 TaskId = 1;
-        string Address = 2;
-        repeated HeaderArray Header = 3;
-        int32 StatusCode = 4;
-        int64 ResponseTime = 5;
+        string Address = 3;
+        string TaskError = 4;
+        repeated HeaderArray Header = 5;
+        int32 StatusCode = 6;
+        int64 ResponseTime = 7;
 }
 
 /*
@@ -46,16 +35,6 @@ HeaderArray consists of keys and values
 */
 message HeaderArrayValue {
         string Value = 1;
-}
-
-/*
-ErrorCase will be sent if there is a Taskerror in a CrawlerTaskRequest. no body will be sent in this case.
-*/
-message ErrorCase {
-        uint64 TaskId = 1;
-        string Address = 2;
-        string TaskError = 3;
-        int64 ResponseTime = 4;
 }
 
 /*
