@@ -6,9 +6,7 @@ support delevopment of the webserverservice and the frontendservice.
 '''
 
 # TODO 
-# Merge to nodes 
 # Add the Header
-
 
 import random
 import os
@@ -20,9 +18,13 @@ URL = "bolt://localhost:7687"
 USER = "neo4j"
 PASS = "test"
 
+dropme = False
+
 statements = {
-    "create" :  "UNWIND {props} as prop CREATE (a:Website {address:prop.address, statuscode:prop.statuscode, responsetime:prop.responsetime, Header:prop.header, status:prop.status})",
-    "merge" : ""
+    "constrains": "CREATE CONSTRAINT ON (c:Website) ASSERT c.address IS UNIQUE",
+    "create" :  "UNWIND {props} as prop CREATE (a:Website {address:prop.address, statuscode:prop.statuscode, responsetime:prop.responsetime, Header:prop.header, status:prop.status});",
+    "merge" : "MATCH (f:Website), (s:Website) WHERE f.address = {} AND s.address = {} MERGE (f)-[r:Links]->(s);",
+    "drop": "MATCH (n) DETACH DELETE n",
 }
 
 class Neo4JInstance():
@@ -40,6 +42,7 @@ class Neo4JInstance():
         self._driver.close()
 
 def findStatement(statement):
+    ''' Function to find a querystatement in the dict. '''
     try:
         return statements[str(statement)]
     except Exception as error:
@@ -73,21 +76,22 @@ def getRandomNumber(start, stop):
     '''
     return random.randrange(start, stop)
 
-#"Dont not how the header will work at this point :("
-
 def createNodes(tx, args):
+    ''' CreateNodes function to execute the creation and transmit/commit it into the neo4jdb. '''
     tx.run(findStatement("create"), props=args)
 
 def add_constraints(tx):
-    tx.run("CREATE CONSTRAINT ON (c:Website) ASSERT c.address IS UNIQUE")
+    ''' add_constraints function add constrains like the primarykey.'''
+    tx.run(findStatement("constrains"))
 
 def addConstrainsToDB(driver):
-     with driver.session() as session:
+    ''' Function to run the neo4j function add_constraints '''
+    with driver.session() as session:
         session.write_transaction(add_constraints)
 
-
 def addNewNodes(driver):
-    for i in range(0, 10000):
+    ''' addNewNodes will pseudorandom add some nodes '''
+    for i in range(0, 100):
         with driver.session() as session:
             if i % 4 == 0: # unverified node 
                 session.write_transaction(createNodes,{
@@ -114,20 +118,60 @@ def addNewNodes(driver):
 
                 })
 
-def runStatements(driver):
-    '''  '''
+def create_relationships(tx, args):
+    ''' create_relationships function merge exisiting nodes in order to create relationships.'''
+    tx.run(findStatement("merge").format(args['a'],args['b']))
+
+def addRelationshipBetweenNodes(driver): 
+    ''' Function to execute the create_relationships to create pseudo random relationships. '''
     try:
-        addConstrainsToDB(driver)
-        addNewNodes(driver)
+        for i in range(0, 2000):
+            with driver.session() as session:
+                session.write_transaction(create_relationships,
+                {   
+                    "a":str(getRandomNumber(0, 101)),
+                    "b":str(getRandomNumber(0, 101)),
+                })
+                session.write_transaction(create_relationships,
+                {
+                    "a": str(i),  
+                    "b":str(getRandomNumber(0, 101)),
+                })
+                print("Entry number {} has now a relationship".format(i))
+    except Exception as error:
+        printError("addRelationshipBetweenNodes", error)
+
+def dropTable(tx):
+    ''' Function to drop the entire DB. '''
+    tx.run(findStatement("drop"))
+
+def dropDB(driver):
+    ''' Will drop the whole table. BE CAREFUL '''
+    try:
+        with driver.session() as session: session.write_transaction(dropTable)
+    except Exception as error:
+        printError("dropDB", error)
+
+def runStatements(driver):
+    global dropme
+    try:
+        if not dropme:
+            printmessage("Starting to fill in the Database")
+            addConstrainsToDB(driver)
+            addNewNodes(driver)
+            addRelationshipBetweenNodes(driver)
+            printmessage("Finished - Database has now 100 nodes and 2000 relationships.")
+        else: 
+            dropDB(driver)
+            printmessage("Dropped the entire Database.")
     except Exception as error:
         printError("runStatements", error)
             
 def main():
     ''' Skript entrypoint. '''
-    printmessage("Starting to fill in the Database")
     neo4jinst = Neo4JInstance(getURL(), getUSER(), getPASS())
-    #print(neo4jinst._driver)
     runStatements(neo4jinst._driver)
+    
 
 if __name__ == "__main__":
     main()
