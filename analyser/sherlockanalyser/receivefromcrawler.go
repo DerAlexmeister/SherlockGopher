@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"reflect"
 
 	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyserfiletransfer"
 )
@@ -43,12 +42,14 @@ func NewServerGRPC(lqueue *analyser.AnalyserQueue) *ServerGRPC {
 /*
 DownloadFile gets chunks of a html response from the crawler, appends them and returns the result
 */
-func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Sender_UploadStream) error {
+func (handler *ServerGRPC) Upload(ctx context.Context, stream proto.Sender_UploadStream) error {
 	var task CrawlerData
+	var arr []byte
+	finished := false
 
 	rec, err := stream.Recv()
-	switch reflect.TypeOf(rec) {
-	case *proto.Infos:
+	switch {
+	case rec.TaskError == nil && rec.StatusCode != nil:
 		task.setCTaskID(rec.TaskId)
 		task.setCAddr(rec.Address)
 		task.setCResponseHeader(rec.Header)
@@ -61,7 +62,7 @@ func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Sender
 		if err != nil {
 			return errors.New("failed to send status code")
 		}
-	case *proto.ErrorCase:
+	case rec.TaskError != nil:
 		task.setCTaskID(rec.TaskId)
 		task.setCAddr(rec.Address)
 		task.setCTaskError(errors.New(rec.TaskError))
@@ -75,34 +76,31 @@ func (handler *ServerGRPC) DownloadFile(ctx context.Context, stream proto.Sender
 		}
 		handler.getQueue().AppendQueue(NewTask(task))
 		return nil
-	}
+	default:
+		for !finished {
+			arr = append(arr, chunk.Content...)
 
-	var arr []byte
-	finished := false
-
-	for !finished {
-		chunk, err := stream.Recv()
-		arr = append(arr, chunk.Content...)
-
-		if err != nil {
-			if err == io.EOF {
-				finished = true
-			} else {
-				return errors.New("failed unexpectedely while reading chunks from stream")
+			if err != nil {
+				if err == io.EOF {
+					finished = true
+				} else {
+					return errors.New("failed unexpectedely while reading chunks from stream")
+				}
 			}
+			chunk, err := stream.Recv()
 		}
-	}
+		task.setCResponseBody(arr)
 
-	err = stream.SendMsg(&proto.UploadStatus{
-		Code: proto.UploadStatusCode_Ok,
-	})
-	if err != nil {
-		return errors.New("failed to send status code")
+		err = stream.SendMsg(&proto.UploadStatus{
+			Code: proto.UploadStatusCode_Ok,
+		})
+		if err != nil {
+			return errors.New("failed to send status code")
+		}
 	}
 
 	defer stream.Close()
 
-	task.setCResponseBody(arr)
 	handler.getQueue().AppendQueue(NewTask(task))
 
 	return nil

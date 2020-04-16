@@ -27,10 +27,10 @@ func main() {
 	crawlerservice.InjectDependency(deps)
 	crawlerservice.SetSherlockStreamer(&streamingserver) // Add the current streaminserver to the current sherlock crawler.
 
-	err := proto.RegisterAnalyserInterfaceHandler(service.Server(), crawlerservice)
+	err := proto.RegisterAnalyserInterfaceHandler(service.Server(), crawlerservice) //ändern
 
 	go crawlerservice.ManageTasks()
-	go streamingserver.Upload(context.TODO())
+	go streamingserver.Upload(context.TODO()) //ändern
 
 	if err != nil {
 		fmt.Println(err)
