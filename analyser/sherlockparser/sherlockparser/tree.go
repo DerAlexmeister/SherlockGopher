@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/golang-collections/collections/stack"
 	"log"
-	"strings"
 )
 
 type HTMLTree struct {
@@ -70,28 +69,26 @@ func (tree *HTMLTree) Parse() *Node {
 				}
 				stack.Push(currentNode)
 			case EndTag:
-				if currentNode, ok := stack.Pop().(*Node); ok {
-					if currentNode.Tag().TagType() != currentToken.TagType() {
-						matching := false
+				if nextNode, ok := stack.Pop().(*Node); ok { // TODO: Abchecken wie es mit currentNode aussieht, durchdebuggen
+					if nextNode.Tag().TagType() != currentToken.TagType() {
+						fmt.Printf("Expected Closing Tag for CurrentNode %s, but got Closing Tag for CurrentToken: %s", currentNode.Tag().TagType(), currentToken.TagType())
+						/*matching := false
 						for !matching {
 							if node, ok := stack.Pop().(*Node); ok {
 								fmt.Printf("Malformed HTML-Document! Expected closing tag %s, but was %s \n", currentNode.Tag().TagType(), currentToken.TagType())
 								currentNode = node
 								matching = node.Tag().TagType() == currentToken.TagType()
 							}
-						}
+						}*/
+					} else if stack.Len() > 0 {
+						currentNode = nextNode.Parent()
+					} else {
+						currentNode = tree.RootNode()
 					}
 				} else {
 					log.Fatal("Something went wrong while popping from the stack.")
 				}
-				if stack.Len() > 0 {
-					if nextNode, ok := stack.Peek().(*Node); ok {
-						currentNode = nextNode
 
-					} else {
-						log.Fatal() // TODO: Print error
-					}
-				}
 			case SelfClosingTag:
 				newNode := &Node{
 					tag: &Tag{
@@ -116,55 +113,4 @@ func (tree *HTMLTree) Parse() *Node {
 	return tree.rootNode
 }
 
-/*
-Returns a pointer to a TagAttribute-Slice generated based on the input string.
-*/
-func (tree *HTMLTree) extractAttributes(tagContent string) []*TagAttribute { //TODO: Handle attributes like style="font-size: 1px" whitespace is a problem
-	attributes := make([]*TagAttribute, 0)
-	nonQuotedWhiteSpaces := make([]int, 0)
-
-	for i := 0; i < len(tagContent); i++ {
-		if tagContent[i] == '"' { //forward quoted string
-			for l := i + 1; l < len(tagContent); l++ {
-				if tagContent[l] == '"' {
-					i = l
-					break
-				}
-			}
-		}
-		if tagContent[i] == '\'' {
-			for l := i + 1; l < len(tagContent); l++ {
-				if tagContent[l] == '\'' {
-					i = l
-					break
-				}
-			}
-		}
-		if tagContent[i] == ' ' {
-			nonQuotedWhiteSpaces = append(nonQuotedWhiteSpaces, i)
-		}
-	}
-
-	for i, whitespaceIndex := range nonQuotedWhiteSpaces {
-		if i == (len(nonQuotedWhiteSpaces) - 1) {
-			attributes = append(attributes, tree.processAttribute(tagContent[whitespaceIndex+1:]))
-		} else {
-			attributes = append(attributes, tree.processAttribute(tagContent[whitespaceIndex+1:nonQuotedWhiteSpaces[i+1]]))
-		}
-	}
-	return attributes
-}
-
-/*
-Returns a pointer to a TagAttribute which may contain several attributes from a single tag based on the input string.
-*/
-func (tree *HTMLTree) processAttribute(attributeRaw string) *TagAttribute {
-	attributeSplit := strings.Split(attributeRaw, "=") //TODO: Kann eventuell ein Problem werden wenn = in gequotetem String enthalten sein darf, abhilfe -> nach ersten = suchen
-	attribute := &TagAttribute{}
-	attribute.attributeType = attributeSplit[0]
-	if len(attributeSplit) == 2 {
-		attribute.value = attributeSplit[1] //TODO: eventuell " bzw. ' trimmen, mit johnny abklären
-	}
-	return attribute
-}
 
