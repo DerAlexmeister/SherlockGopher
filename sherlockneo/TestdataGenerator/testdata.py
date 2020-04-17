@@ -175,7 +175,7 @@ def addNewNodes(driver):
                 }
                 for elem in list(headerfield.items()): props[elem[0]] = elem[1]
                 session.write_transaction(createJs,props)
-            if i % 8 == 0: # Img 
+            elif i % 8 == 0: # Img 
                 props = {
                     "Address": i,
                     "Statuscode": getRandomNumber(200, 505),
