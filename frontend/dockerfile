@@ -1,13 +1,13 @@
 # Dockerfile for the frontend.
 
 FROM golang:1.14 as build
-WORKDIR /app 
+WORKDIR /app
 ADD . . 
-RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o frontend . 
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o frontend ./frontend
 
 FROM alpine:latest
 COPY --from=build /app/frontend /app/
-COPY views /app/views
+COPY /frontend/views /app/views
 WORKDIR /app 
 EXPOSE 8080
-ENTRYPOINT [ "./frontend" ] 
+ENTRYPOINT [ "./frontend/frontend" ] 

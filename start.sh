@@ -5,7 +5,7 @@ image_name = dockerfile
 countweb = 0
 
 echo "Start Docker Script"
-docker run --name testneo4j -p7474:7474 -p7687:7687 -d -v $HOME/neo4j/data:/data -v $HOME/neo4j/logs:/logs -v $HOME/neo4j/import:/var/lib/neo4j/import -v $HOME/neo4j/plugins:/plugins --env NEO4J_AUTH=neo4j/test neo4j:latest
+sudo docker run --name neo4j3.5 -p7474:7474 -p7687:7687 -d -v $HOME/neo4j/data:/data -v $HOME/neo4j/logs:/logs -v $HOME/neo4j/import:/var/lib/neo4j/import -v $HOME/neo4j/plugins:/plugins --env NEO4J_AUTH=neo4j/test neo4j:3.5
 
 case $1 in
     frontend)
@@ -31,7 +31,7 @@ case $1 in
             fi
             cd $container_name
             echo "rebuild docker container and image for $container_name"
-            docker build -t $image_name .
+            sudo docker build -f ./$container_name/dockerfile .
             docker run -d ${web[$countweb]} --name $container_name $image_name
             echo "start docker container and image for $container_name"
             docker start $container_name
@@ -71,7 +71,7 @@ do
 
     else
         echo "docker container and image for $container_name are missing, building content..."
-        docker build -t $image_name .
+        sudo docker build -f ./$container_name/dockerfile .
         docker run -d ${web[$countweb]} --name $container_name $image_name
         docker start $container_name
     fi
