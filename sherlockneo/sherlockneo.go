@@ -1,4 +1,4 @@
-package ormneo4j
+package sherlockneo
 
 import (
 	"fmt"
@@ -36,10 +36,11 @@ const (
 	RETURNALL string = "MATCH (n) RETURN n"
 
 	//CONNECTBYLINK will connect two given nodes by a link relationship.
-	CONNECTBYLINK string = "MATCH (f:Website), (s:Website) WHERE f.address = \"%s\" AND s.address = \"%s\" MERGE (f)-[r:Links]->(s);"
+	CONNECTBYLINK string = "MATCH (f:Website), (s:Website) WHERE f.address = \"%s\" AND s.address = \"%s\" MERGE (f)-[:]->(s);"
 
 	//STARTERKIDOFNODE Will return a subset of nodes connected directly to a given node.
-	STARTERKIDOFNODE string = "MATCH (a:Website)-[r:Links]->(b:Website) WHERE a.address = \"%s\" RETURN a, b"
+	STARTERKIDOFNODE string = "MATCH (a)-[:]->(b) WHERE a.address = \"%s\" RETURN a, b"
+	// Vlt. mit Limit.
 )
 
 const (
