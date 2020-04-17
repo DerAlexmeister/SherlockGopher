@@ -1,4 +1,4 @@
-module github.com/ob-algdatii-20ss/SherlockGopher/frontend
+module github.com/ob-algdatii-20ss/SherlockGopher
 
 go 1.14
 
