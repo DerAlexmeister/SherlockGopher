@@ -39,6 +39,8 @@ statements = {
     "mergeimg" : "MATCH (f:Website), (s:Image) WHERE f.Address = {} AND s.Address = {} AND s.Filetype = \"Image\" MERGE (f)-[r:Shows]->(s);",
     "mergejs" : "MATCH (f:Website), (s:StyleSheet) WHERE f.Address = {} AND s.Address = {} AND s.Filetype = \"CSS\" MERGE (f)-[r:Requires]->(s);",
     "drop": "MATCH (n) DETACH DELETE n",
+    "couternodes": "MATCH (n) RETURN count(n) as count",
+    "counterrelationships" : "MATCH ()-[r]->() RETURN count(r) as count",
 }
 
 class Neo4JInstance():
@@ -175,7 +177,7 @@ def addNewNodes(driver):
                 }
                 for elem in list(headerfield.items()): props[elem[0]] = elem[1]
                 session.write_transaction(createJs,props)
-            elif i % 8 == 0: # Img 
+            elif i % 2 == 0 or i % 5 == 0 : # Img 
                 props = {
                     "Address": i,
                     "Statuscode": getRandomNumber(200, 505),
@@ -219,7 +221,7 @@ def getRandomWebsiteNumberAddress(start, stop):
     which are not html so css/image/javascript. 
     '''
     x = random.randrange(start, stop)
-    if x % 8 == 0 or x % 3 == 0 or x % 7 == 0: return getRandomWebsiteNumberAddress(start, stop)
+    if x % 2 == 0 or x % 3 == 0 or x % 7 == 0 or x % 5 == 0 : return getRandomWebsiteNumberAddress(start, stop)
     elif x is None: return getRandomWebsiteNumberAddress(start, stop)
     else: return x
 

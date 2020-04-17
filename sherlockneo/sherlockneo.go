@@ -43,6 +43,13 @@ const (
 	// Vlt. mit Limit.
 )
 
+/*
+getStarterKidOfNode will return the query for a small subset of nodes.
+*/
+func getStarterKidOfNode() string {
+	return STARTERKIDOFNODE
+}
+
 const (
 	//Magicconstant.
 
@@ -126,3 +133,18 @@ func RunStatement(session *neo4j.Session, statment string, args map[string]inter
 	}
 	return result, nil
 }
+
+/*
+GetNeoSnipped will return a subset of nodes and relationships.
+Submit a target as parameter and the result will be the subset.
+*/
+func GetNeoSnipped(session *neo4j.Session, target string) (neo4j.Result, error) {
+	args := make(map[string]interface{})
+	result, err := RunStatement(session, fmt.Sprintf(getStarterKidOfNode(), target), args)
+	if err != nil {
+		return nil, fmt.Errorf("An error occurred while trying to execute the StarterKidOfNode statement. Error: %s", err.Error())
+	}
+	return result, nil
+}
+
+//func DropEntireGFraph() (neo4j.Result, error)
