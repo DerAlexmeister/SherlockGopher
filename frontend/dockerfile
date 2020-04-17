@@ -10,4 +10,4 @@ COPY --from=build /app/frontend /app/
 COPY /frontend/views /app/views
 WORKDIR /app 
 EXPOSE 8080
-ENTRYPOINT [ "./frontend/frontend" ] 
+ENTRYPOINT [ "./frontend" ] 
