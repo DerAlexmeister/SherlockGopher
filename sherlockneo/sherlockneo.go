@@ -8,14 +8,12 @@ import (
 )
 
 // TODO
-// - Querys GETTER
-// - Function to turn a result into json and return it
-// - Implementing the stuff defined in Graph
+
 // - Add missing Querys from Python Skript
 // - merge this branch and the webserver branch in order to build the rest api
 // - Write the first tests
 // - Mocking for neo4j with neoism possible?
-// - Add querys for info like amout of nodes of type image, js, css etc.
+// - Drop constrains
 
 const (
 	//ADDRESS of the Neo4j Dockercontainer.
@@ -108,31 +106,6 @@ func RunStatement(session *neo4j.Session, statment string, args map[string]inter
 	result, err := (*session).Run(statment, args)
 	if err != nil {
 		return nil, fmt.Errorf("An error occured while trying to run the cypherstatement. Error: %s", err)
-	}
-	return result, nil
-}
-
-/*
-GetNeoSnipped will return a subset of nodes and relationships.
-Submit a target as parameter and the result will be the subset.
-*/
-func GetNeoSnipped(session *neo4j.Session, target string) (neo4j.Result, error) {
-	args := make(map[string]interface{})
-	result, err := RunStatement(session, fmt.Sprintf(getStarterKidOfNode(), target), args)
-	if err != nil {
-		return nil, fmt.Errorf("An error occurred while trying to execute the StarterKidOfNode statement. Error: %s", err.Error())
-	}
-	return result, nil
-}
-
-/*
-DropEntireGraph will drop the entrie graph. Be careful incase you use this one.
-*/
-func DropEntireGraph(session *neo4j.Session) (neo4j.Result, error) {
-	args := make(map[string]interface{})
-	result, err := RunStatement(session, fmt.Sprintf(getStarterKidOfNode()), args)
-	if err != nil {
-		return nil, fmt.Errorf("An error occurred while trying to execute the droptable statement. Error: %s", err.Error())
 	}
 	return result, nil
 }
