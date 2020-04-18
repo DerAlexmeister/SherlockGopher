@@ -6,7 +6,6 @@ import (
 
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
-	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertowebserver"
 )
 
 /*
@@ -46,11 +45,11 @@ func (server *CrawlWebServer) Helloping(context *gin.Context) {
 }
 
 type TaskStatusResponse struct {
-    website string
-    undone int
-    processing int
-    finished int
-    failed int
+	website    string
+	undone     int
+	processing int
+	finished   int
+	failed     int
 }
 
 /*
@@ -59,29 +58,35 @@ RecieveURL will handle the requested url which should be crawled.
 func (server *CrawlWebServer) ReceiveURL(context *gin.Context) {
 	var url = NewRequestedURL()
 	context.BindJSON(url)
-	context.JSON(http.StatusOK, gin.H{
-		"Status": "Fine",
-	}) //Send fine as response.
-	fmt.Println(url)
 
-	if url.URL != "" && govalidator.IsURL(url.URL) {
-		sherlockcrawlerService := server.dependencies.
-		in := &crawlerproto.TaskStatusRequest{}
-		response, err := sherlockcrawlerService.StatusOfTaskQueue(context, in)
-
-		if (err == nil && response != nil) {
-			context.JSON(http.StatusOK, gin.H{
-				"Website": response.Website,
-				"Undone": response.Undone,
-				"Processing": response.Processing,
-				"Finished": response.Finished,
-				"Failed": response.Failed,
-			}) 
-		}
-
-	
+	if govalidator.IsURL(url.URL) {
+		context.JSON(http.StatusOK, gin.H{
+			"Status": "Fine",
+		}) //Send fine as response.
+		fmt.Println(url)
 	}
 	//TODO check if url is empty or a well formed url.
 	//TODO send to crawler.
 }
 
+/*if url.URL != "" && govalidator.IsURL(url.URL) {
+	sherlockcrawlerService := server.dependencies.
+	in_crawler := &crawlerproto.TaskStatusRequest{}
+	response_crawler, err_crawler := sherlockcrawlerService.StatusOfTaskQueue(context, in_crawler)
+
+	sherlockanalyserService := server.dependencies.
+	in_analyser := &crawlerproto.TaskStatusRequest{}
+	response_analyser, err_analyser := sherlockcrawlerService.StatusOfTaskQueue(context, in)
+
+	if (err_crawler == nil && response_crawler != nil) {
+		context.JSON(http.StatusOK, gin.H{
+			"Website": response_crawler.Website,
+			"Undone": response_crawler.Undone,
+			"Processing": response_crawler.Processing,
+			"Finished": response_crawler.Finished,
+			"Failed": response_crawler.Failed,
+		})
+	}
+
+
+}*/
