@@ -41,6 +41,10 @@ statements = {
     "drop": "MATCH (n) DETACH DELETE n",
     "couternodes": "MATCH (n) RETURN count(n) as count",
     "counterrelationships" : "MATCH ()-[r]->() RETURN count(r) as count",
+    "countcss" : "MATCH (n) WHERE n.Filetype = \"CSS\" RETURN count(n) as count",
+    "countjs" : "MATCH (n) WHERE n.Filetype = \"Javascript\" RETURN count(n) as count",
+    "countimg" : "MATCH (n) WHERE n.Filetype = \"Image\" RETURN count(n) as count",
+    "countsites" : "MATCH (n) WHERE n.Filetype = \"HTML\" RETURN count(n) as count",
 }
 
 class Neo4JInstance():
