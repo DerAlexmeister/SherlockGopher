@@ -263,7 +263,7 @@ func (creq *CrawlerTaskRequest) MakeRequestAndStoreResponse(waitgroup *sync.Wait
 	creq.setTaskError(nil)
 	creq.setTaskState(FINISHED)
 	if waitgroup != nil {
-		waitgroup.Done()
+		defer waitgroup.Done()
 	}
 	return true
 }

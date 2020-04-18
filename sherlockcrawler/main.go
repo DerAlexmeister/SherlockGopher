@@ -1,11 +1,11 @@
 package main
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/micro/go-micro"
 	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyser"
+	fileproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyserfiletransfer"
 	sherlock "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/sherlockcrawler"
 )
 
@@ -27,10 +27,7 @@ func main() {
 	crawlerservice.InjectDependency(deps)
 	crawlerservice.SetSherlockStreamer(&streamingserver) // Add the current streaminserver to the current sherlock crawler.
 
-	err := proto.RegisterAnalyserInterfaceHandler(service.Server(), crawlerservice)
-
-	go crawlerservice.ManageTasks()
-	go streamingserver.Upload(context.TODO())
+	err := proto.RegisterAnalyserInterfaceHandler(service.Server(), crawlerservice) //ändern
 
 	if err != nil {
 		fmt.Println(err)
@@ -39,5 +36,15 @@ func main() {
 	} else {
 		fmt.Printf("Service %s started as intended... ", serviceName)
 	}
+
+	go crawlerservice.ManageTasks() //Maybe a waitgroup needed.
+
+	//Filestreaming Service.
+
+	streamingService := micro.NewService()
+
+	streamingService.Init()
+
+	fileproto.NewSenderService(fileservicename, streamingService.Client())
 
 }

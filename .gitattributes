@@ -1,2 +1,8 @@
 # Protofiles as go-files.
 *.proto  linguist-language=golang
+
+# .sum as go-files.
+*.sum  linguist-language=golang
+
+# .mod as go-files.
+*.mod  linguist-language=golang

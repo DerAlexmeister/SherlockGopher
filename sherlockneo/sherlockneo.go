@@ -1,10 +1,19 @@
-package ormneo4j
+package sherlockneo
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/neo4j/neo4j-go-driver/neo4j"
 )
+
+// TODO
+
+// - Add missing Querys from Python Skript
+// - merge this branch and the webserver branch in order to build the rest api
+// - Write the first tests
+// - Mocking for neo4j with neoism possible?
+// - Drop constrains
 
 const (
 	//ADDRESS of the Neo4j Dockercontainer.
@@ -15,13 +24,6 @@ const (
 
 	//PASSWORD will be the password of the neo4j db.
 	PASSWORD string = "test" //Standard password change this in production.
-)
-
-const (
-	//Cypherstatements.
-
-	//DROPGRAPH the entire graph.
-	DROPGRAPH string = "MATCH (n) DETACH DELETE n"
 )
 
 const (
@@ -91,9 +93,10 @@ func GetSession(driver *neo4j.Driver) (neo4j.Session, error) {
 
 /*
 CloseSession will close a session to the DB.
+Eg. defer localneo.Close()
 */
 func CloseSession(session *neo4j.Session) {
-	defer (*session).Close()
+	(*session).Close()
 }
 
 /*
@@ -105,4 +108,27 @@ func RunStatement(session *neo4j.Session, statment string, args map[string]inter
 		return nil, fmt.Errorf("An error occured while trying to run the cypherstatement. Error: %s", err)
 	}
 	return result, nil
+}
+
+/*
+JsonfiyNeo will try to turn a given neo4j result into json.
+It will return a byte array containing the formated json-output.
+If an err occurred the byte array is nil
+*/
+func JsonfiyNeo(res neo4j.Result) ([]byte, error) {
+	sliceofrecords := []map[string]interface{}{}
+	for res.Next() {
+		recor := make(map[string]interface{})
+		for _, element := range res.Record().Keys() {
+			if value, contains := res.Record().Get(element); contains {
+				recor[element] = value
+			}
+		}
+		sliceofrecords = append(sliceofrecords, recor)
+	}
+	jsonData, err := json.Marshal(sliceofrecords)
+	if err != nil {
+		return nil, err
+	}
+	return jsonData, nil
 }

@@ -13,7 +13,7 @@ import (
 )
 
 //Time to wait in milliseconds after checking for the tasks again.
-const delaytime = 10
+const delaytime = 20
 
 /*
 Sherlockcrawler will be the Crawlerservice.
@@ -22,6 +22,22 @@ type Sherlockcrawler struct {
 	Queue            CrawlerQueue //Queue with all tasks
 	Dependencies     *Sherlockdependencies
 	SherlockStreamer *SherlockStreamingServer
+}
+
+/*
+Sherlockdependencies is an type to manage all dependencies of sherlockcrawler.
+*/
+type Sherlockdependencies struct {
+	Webserver func() //Webserver for gRPC
+	Analyser  func() //Analyser for gRPC
+}
+
+/*
+NewSherlockDependencies will return a new sherlockdependencies instance to put it in the dependencies
+in a sherlockcrawler object.
+*/
+func NewSherlockDependencies() *Sherlockdependencies {
+	return &Sherlockdependencies{}
 }
 
 /*
@@ -93,27 +109,28 @@ manageUndoneTasks will manage all undone tasks and start them.
 */
 func (sherlock *Sherlockcrawler) manageUndoneTasks(waitgroup *sync.WaitGroup) {
 	var localwaitgroup sync.WaitGroup
-	for _, v := range *sherlock.getQueue().getThisQueue() {
+	for _, v := range *(*sherlock.getQueue()).getThisQueue() {
 		if v.getTaskState() == UNDONE {
-			go v.MakeRequestAndStoreResponse(&localwaitgroup)
 			localwaitgroup.Add(1)
+			go v.MakeRequestAndStoreResponse(&localwaitgroup)
 		}
 	}
-	waitgroup.Done()
+	localwaitgroup.Wait()
+	defer waitgroup.Done()
 }
 
 /*
 manageFinishedTasks will managed all finished tasks.
 */
 func (sherlock *Sherlockcrawler) manageFinishedTasks(waitgroup *sync.WaitGroup) {
-	for k, v := range *sherlock.getQueue().getThisQueue() {
+	for k, v := range *(*sherlock.getQueue()).getThisQueue() {
 		if v.getTaskState() == FINISHED {
-			if append := sherlock.getSherlockStreamer().getQueue().AppendQueue(v); append > 0 {
-				sherlock.getQueue().RemoveFromQueue(k)
+			if append := (*(*sherlock.getSherlockStreamer()).getQueue()).AppendQueue(v); append > 0 {
+				(*sherlock.getQueue()).RemoveFromQueue(k)
 			}
 		}
 	}
-	waitgroup.Done()
+	defer waitgroup.Done()
 }
 
 /*
@@ -121,30 +138,36 @@ manageFailedTasks manage all tasks which failed.
 */
 func (sherlock *Sherlockcrawler) manageFailedTasks(waitgroup *sync.WaitGroup) {
 	var localwaitgroup sync.WaitGroup
-	for k, v := range *sherlock.getQueue().getThisQueue() {
-		if v.getTaskState() == FINISHED {
+	for k, v := range *(*sherlock.getQueue()).getThisQueue() {
+		if v.getTaskState() == FAILED {
 			if v.getTrysError() < 3 {
-				go v.MakeRequestAndStoreResponse(&localwaitgroup)
 				localwaitgroup.Add(1)
+				go v.MakeRequestAndStoreResponse(&localwaitgroup)
 			} else {
-				if append := sherlock.getSherlockStreamer().getQueue().AppendQueue(v); append > 0 {
-					sherlock.getQueue().RemoveFromQueue(k)
+				if append := (*(*sherlock.getSherlockStreamer()).getQueue()).AppendQueue(v); append > 0 {
+					(*sherlock.getQueue()).RemoveFromQueue(k)
 				}
 			}
 		}
 	}
-	waitgroup.Done()
+	localwaitgroup.Wait()
+	defer waitgroup.Done()
 }
 
 /*
 runManager will run all tasks related functions on the sherlockcrawlerservice and put them into a go routine.
 */
 func (sherlock *Sherlockcrawler) runManager() {
-	var waitgroup sync.WaitGroup
-	go sherlock.manageUndoneTasks(&waitgroup)
-	go sherlock.manageFinishedTasks(&waitgroup)
-	go sherlock.manageFailedTasks(&waitgroup)
-	waitgroup.Wait()
+	var localwaitgroup sync.WaitGroup
+	localwaitgroup.Add(1)
+	go sherlock.manageUndoneTasks(&localwaitgroup)
+	localwaitgroup.Wait()
+	localwaitgroup.Add(1)
+	go sherlock.manageFinishedTasks(&localwaitgroup)
+	localwaitgroup.Wait()
+	localwaitgroup.Add(1)
+	go sherlock.manageFailedTasks(&localwaitgroup)
+	localwaitgroup.Wait()
 }
 
 /*
