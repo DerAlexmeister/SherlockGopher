@@ -40,8 +40,28 @@ func main() {
 
 	router := gin.Default()
 
-	router.GET("/helloping", webServerService.Helloping)
+	//Get Requests.
+	router.GET("/areyouthere", webServerService.Helloping)
+
+	//POST Requests.
 	router.POST("/search", webServerService.RecieveURL)
+
+	//DONT implement this yet.
+	controller := router.Group("/controller/v1")
+	controller.GET("/stop")   //will stop the cralwer and the analyser
+	controller.GET("/pause")  //will pause the cralwer and the analyser.
+	controller.GET("/resume") //will resume the cralwer and the analyser.
+	controller.GET("/clean")  //will clean the the cralwer and the analyser works like stop but will clean the queues.
+
+	//Monitor Group.
+	monitorapi := router.Group("/monitor/v1") //missing handler
+	monitorapi.GET("/meta")                   // Get all meta information about the crawler and the analyser.
+
+	//Graph Group.
+	graphsapi := router.Group("/graph/v1")
+	graphsapi.GET("/meta")     // Get all meta information about neo4j.
+	graphsapi.GET("/all")      // Will return the entire graph, maybe build a stream.
+	graphsapi.POST("/snipped") // Snipped search, submit a target to get a snipped.
 
 	router.Run(getAddress())
 
