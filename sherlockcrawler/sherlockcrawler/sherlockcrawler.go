@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/asaskevich/govalidator"
+	"github.com/asaskevich/govalidator" //For URL Checking
 	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyser"
 	protoweb "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertowebserver"
 	"github.com/pkg/errors"

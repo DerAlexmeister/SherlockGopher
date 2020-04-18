@@ -50,7 +50,10 @@ func (server *CrawlWebServer) RecieveURL(context *gin.Context) {
 	var url = NewRequestedURL()
 	context.BindJSON(url)
 	context.JSON(http.StatusOK, gin.H{
-		"status": "Fine",
-	})
-	fmt.Println(url) //TODO check if url is empty or a well formed url.
+		"Status": "Fine",
+	}) //Send fine as response.
+	fmt.Println(url)
+
+	//TODO check if url is empty or a well formed url.
+	//TODO send to crawler.
 }

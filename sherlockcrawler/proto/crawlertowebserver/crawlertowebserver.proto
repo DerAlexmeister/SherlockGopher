@@ -41,6 +41,7 @@ message TaskStatusResponse {
     uint64 finished = 4;
     uint64 failed = 5;
 }
+
 /*
 SubmitURLRequest will submit a URL.
 */
