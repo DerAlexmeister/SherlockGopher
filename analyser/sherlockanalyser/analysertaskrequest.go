@@ -15,16 +15,20 @@ TASKSTATE will be a type representing the current TASKSTATE of the task.
 type TASKSTATE int
 
 const (
-	//UNDONE will be a task untouch.
+	//UNDONE: A task has not been started yet.
 	UNDONE TASKSTATE = 0
-	//PROCESSING will be a task currently working on.
+
+	//PROCESSING: A task has been started.
 	PROCESSING TASKSTATE = 1
-	//SENDRESULT will be a task which is ready to be sent.
-	SENDRESULT TASKSTATE = 2
-	//CRAWLERROR will be a task which is not analyzed but added in neo4j
-	CRAWLERROR TASKSTATE = 3
-	//FINISHED will be a task which is completed.
-	FINISHED
+
+	//SAVING: A task is saving data to NEO4J.
+	SAVING TASKSTATE = 2
+
+	//SENDTOCRAWLER: A task is sending data to the crawler.
+	SENDTOCRAWLER TASKSTATE = 3
+
+	//FINISHED: A task is finished and ready to be remove from the queue.
+	FINISHED TASKSTATE = 4
 )
 
 /*
