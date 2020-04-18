@@ -59,13 +59,19 @@ func (server *CrawlWebServer) ReceiveURL(context *gin.Context) {
 	var url = NewRequestedURL()
 	context.BindJSON(url)
 
+	//check if url is empty or a well formed url.
 	if govalidator.IsURL(url.URL) {
 		context.JSON(http.StatusOK, gin.H{
 			"Status": "Fine",
 		}) //Send fine as response.
 		fmt.Println(url)
+		//send to crawler
+	} else {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"Status": "Url was empty or malformed",
+		}) //Send fine as response.
 	}
-	//TODO check if url is empty or a well formed url.
+
 	//TODO send to crawler.
 }
 

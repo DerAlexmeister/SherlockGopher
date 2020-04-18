@@ -4,13 +4,16 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/web"
+	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertowebserver"
 	webserver "github.com/ob-algdatii-20ss/SherlockGopher/webserver/webserver"
 )
 
 const (
-	servicename string = "CrawlWebServer" // Name of the Service
-	address     string = "0.0.0.0:8081"   // Address of the Webserver
+	servicename        string = "sherlockwebserver" // Name of the Service
+	serviceNameCrawler string = "crawler-service"   //Name of the cralwer
+	address            string = "0.0.0.0:8081"      // Address of the Webserver
 )
 
 /*
@@ -29,14 +32,22 @@ func getAddress() string {
 
 func main() {
 	service := web.NewService(web.Name(getServiceName()))
-
 	err := service.Init()
-
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	grpcservice := micro.NewService(micro.Name(servicename))
+	grpcerr := service.Init()
+	if grpcerr != nil {
+		log.Fatal(err)
+	}
 	webServerService := webserver.New()
+	webServerService.SetCrawlerServiceDependency(&webserver.SherlockWebServerDependency{
+		Crawler: func() crawlerproto.CrawlerService {
+			return crawlerproto.NewCrawlerService(serviceNameCrawler, grpcservice.Client())
+		},
+	})
 
 	router := gin.Default()
 
