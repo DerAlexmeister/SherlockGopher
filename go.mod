@@ -14,4 +14,6 @@ require (
 	github.com/micro/go-micro/v2 v2.3.0
 	github.com/neo4j-drivers/gobolt v1.7.4 // indirect
 	github.com/neo4j/neo4j-go-driver v1.7.4
+	github.com/gin-gonic/gin v1.6.0
+	github.com/go-log/log v0.1.0
 )
