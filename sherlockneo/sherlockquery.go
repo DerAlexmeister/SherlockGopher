@@ -10,7 +10,16 @@ const (
 	contains string = "MATCH (x) WHERE x.name = \"%s\" RETURN x"
 
 	//addnode will add a node into the neo4j DB.
-	addnode string = "UNWIND {props} as prop CREATE (a:Website {address:prop.address, statuscode:prop.statuscode, responsetime:prop.responsetime, Header:prop.header, status:prop.status});"
+	addnode string = "UNWIND {props} as prop MERGE (c:Website {Address: prop.Address}) SET c += {props}"
+
+	//addnodecss will add a node of the type stylesheet into the db.
+	addnodecss string = "UNWIND {props} as prop MERGE (c:StyleSheet {Address: prop.Address}) SET c += {props}"
+
+	//addnodejs will add a node of the type javascript into the db.
+	addnodejs string = "UNWIND {props} as prop MERGE (c:Javascript {Address: prop.Address}) SET c += {props}"
+
+	//addnodeimg will add a node of the type image into the db.
+	addnodeimg string = "UNWIND {props} as prop MERGE (c:Image {Address: prop.Address}) SET c += {props}"
 
 	//constrains will be the constrains for a DB type html.
 	constrains string = "CREATE CONSTRAINT ON (c:Website) ASSERT c.address IS UNIQUE"
@@ -28,7 +37,16 @@ const (
 	returnall string = "MATCH (n) RETURN n"
 
 	//connectbylink will connect two given nodes by a link relationship.
-	connectbylink string = "MATCH (f:Website), (s:Website) WHERE f.address = \"%s\" AND s.address = \"%s\" MERGE (f)-[:]->(s);"
+	connectbylink string = "MATCH (f:Website), (s:Website) WHERE f.Address = \"%s\" AND s.Address = \"%s\" AND s.Filetype = \"HTML\" MERGE (f)-[r:Links]->(s);"
+
+	//connectbyRequireCSS will connect a website with a stylesheet instance by the relationship requires.
+	connectbyRequireCSS string = "MATCH (f:Website), (s:StyleSheet) WHERE f.Address = \"%s\" AND s.Address = \"%s\" AND s.Filetype = \"CSS\" MERGE (f)-[r:Requires]->(s);"
+
+	//connectbyRequireJS will connect a website with a javascript instance by the relationship requires.
+	connectbyRequireJS string = "MATCH (f:Website), (s:Javascript) WHERE f.Address = \"%s\" AND s.Address = \"%s\" AND s.Filetype = \"Javascript\" MERGE (f)-[r:Requires]->(s);"
+
+	//connectbyRequireShows will connect a website with a image instance by the relationship shows.
+	connectbyShows string = "MATCH (f:Website), (s:Image) WHERE f.Address = \"%s\" AND s.Address = \"%s\" AND s.Filetype = \"Image\" MERGE (f)-[r:Shows]->(s);"
 
 	//starterkidofnode Will return a subset of nodes connected directly to a given node.
 	starterkidofnode string = "MATCH (a)-[:]->(b) WHERE a.address = \"%s\" RETURN a, b" // TODO Vlt. mit Limit.
@@ -50,6 +68,9 @@ const (
 
 	//countnumberofhtml will count the number of HTML sites in the db.
 	countnumberofhtml string = "MATCH (n) WHERE n.Filetype = \"HTML\" RETURN count(n) as count"
+
+	//responseTimeInTableAndStatusCode will be for each website the responsetime and the code so easy to put in a table.
+	responseTimeInTableAndStatusCode string = "MATCH (n) RETURN n.Address, n.Responsetime, n.Statuscode"
 )
 
 /*
@@ -141,4 +162,11 @@ GetCountHtmlsNodes will return the query to get the number of nodes of type html
 */
 func GetCountHtmlsNodes() string {
 	return countnumberofhtml
+}
+
+/*
+GetResponseTimeInTableAndStatusCode will return the query to get for each address the statuscode and the RTT.
+*/
+func GetResponseTimeInTableAndStatusCode() string {
+	return responseTimeInTableAndStatusCode
 }

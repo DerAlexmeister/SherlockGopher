@@ -5,11 +5,6 @@ Simple skript to produce testdata and put it in the neo4j db in order to
 support delevopment of the webserverservice and the frontendservice.
 '''
 
-# TODO 
-# Add the Header
-# require als relationship
-# 
-
 import random
 import os
 import sys
@@ -22,9 +17,6 @@ PASS = "test"
 
 dropme = False
 
-#"UNWIND {props} as prop CREATE (c:Website {Address:prop.Address}) SET c += {props}",
-#"create" :  "UNWIND {props} as prop CREATE (a:Address {Address:prop.Address, statuscode:prop.statuscode, responsetime:prop.responsetime, Header:prop.header, status:prop.status});",
-
 statements = {
     "constrains": "CREATE CONSTRAINT ON (c:Website) ASSERT c.Address IS UNIQUE",
     "constrainsimg": "CREATE CONSTRAINT ON (c:Image) ASSERT c.Address IS UNIQUE",
@@ -34,10 +26,10 @@ statements = {
     "createimg" :  "UNWIND {props} as prop MERGE (c:Image {Address: prop.Address}) SET c += {props}",
     "createcss" :  "UNWIND {props} as prop MERGE (c:StyleSheet {Address: prop.Address}) SET c += {props}",
     "createjs" :  "UNWIND {props} as prop MERGE (c:Javascript {Address: prop.Address}) SET c += {props}",
-    "mergehtml" : "MATCH (f:Website), (s:Website) WHERE f.Address = {} AND s.Address = {} AND s.Filetype = \"HTML\" MERGE (f)-[r:Links]->(s);",
-    "mergecss" : "MATCH (f:Website), (s:Javascript) WHERE f.Address = {} AND s.Address = {} AND s.Filetype = \"Javascript\" MERGE (f)-[r:Requires]->(s);",
-    "mergeimg" : "MATCH (f:Website), (s:Image) WHERE f.Address = {} AND s.Address = {} AND s.Filetype = \"Image\" MERGE (f)-[r:Shows]->(s);",
-    "mergejs" : "MATCH (f:Website), (s:StyleSheet) WHERE f.Address = {} AND s.Address = {} AND s.Filetype = \"CSS\" MERGE (f)-[r:Requires]->(s);",
+    "mergehtml" : "MATCH (f:Website), (s:Website) WHERE f.Address = \"{}\" AND s.Address = \"{}\" AND s.Filetype = \"HTML\" MERGE (f)-[r:Links]->(s);",
+    "mergejs" : "MATCH (f:Website), (s:Javascript) WHERE f.Address = \"{}\" AND s.Address = \"{}\" AND s.Filetype = \"Javascript\" MERGE (f)-[r:Requires]->(s);",
+    "mergeimg" : "MATCH (f:Website), (s:Image) WHERE f.Address = \"{}\" AND s.Address = \"{}\" AND s.Filetype = \"Image\" MERGE (f)-[r:Shows]->(s);",
+    "mergecss" : "MATCH (f:Website), (s:StyleSheet) WHERE f.Address = \"{}\" AND s.Address = \"{}\" AND s.Filetype = \"CSS\" MERGE (f)-[r:Requires]->(s);",
     "drop": "MATCH (n) DETACH DELETE n",
     "couternodes": "MATCH (n) RETURN count(n) as count",
     "counterrelationships" : "MATCH ()-[r]->() RETURN count(r) as count",
@@ -144,7 +136,7 @@ def addNewNodes(driver):
         with driver.session() as session:
             if i % 4 == 0: # unverified node 
                 props = {
-                    "Address": i,
+                    "Address": str(i),
                     "Statuscode": getRandomNumber(200, 505),
                     "Responsetime": getRandomNumber(1, 2000),
                     "Status": "unverified",
@@ -154,7 +146,7 @@ def addNewNodes(driver):
                 session.write_transaction(createNodes,props)
             elif i % 10 == 0: # error node
                 session.write_transaction(createNodes, {
-                    "Address": i,
+                    "Address": str(i),
                     "Statuscode": str(0),
                     "Responsetime": getRandomNumber(1, 2000),
                     "Status": "unverified",
@@ -163,7 +155,7 @@ def addNewNodes(driver):
                 })
             elif i % 7 == 0: # css
                 props = {
-                    "Address": i,
+                    "Address": str(i),
                     "Statuscode": getRandomNumber(200, 505),
                     "Responsetime": getRandomNumber(1, 2000),
                     "Status": "unverified",
@@ -173,7 +165,7 @@ def addNewNodes(driver):
                 session.write_transaction(createCss,props)
             elif i % 3 == 0: # javascript
                 props = {
-                    "Address": i,
+                    "Address": str(i),
                     "Statuscode": getRandomNumber(200, 505),
                     "Responsetime": getRandomNumber(1, 2000),
                     "Status": "unverified",
@@ -183,7 +175,7 @@ def addNewNodes(driver):
                 session.write_transaction(createJs,props)
             elif i % 2 == 0 or i % 5 == 0 : # Img 
                 props = {
-                    "Address": i,
+                    "Address": str(i),
                     "Statuscode": getRandomNumber(200, 505),
                     "Responsetime": getRandomNumber(1, 2000),
                     "Status": "unverified",
@@ -193,7 +185,7 @@ def addNewNodes(driver):
                 session.write_transaction(createImg,props)
             else:                
                 props = {
-                    "Address": i,
+                    "Address": "{}".format(str(i)),
                     "Statuscode": getRandomNumber(200, 505),
                     "Responsetime": getRandomNumber(1, 2000),
                     "Status": "unverified",
@@ -284,6 +276,7 @@ def dropDB(driver):
         printError("dropDB", error)
 
 def runStatements(driver):
+    ''' Will run all statements. '''
     global dropme
     try:
         if not dropme:
