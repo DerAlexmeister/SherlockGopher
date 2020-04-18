@@ -64,14 +64,12 @@ func getTestQueue() AnalyserQueue {
 
 func getTestData(id uint64) CrawlerData {
 	return CrawlerData{
-		taskid:            id,
+		taskId:            id,
 		addr:              "www." + strconv.FormatUint(id, 10) + ".de",
-		taskstate:         PROCESSING,
-		taskerror:         nil,
-		taskerrortry:      0,
+		taskError:         nil,
 		responseHeader:    nil,
 		responseBodyBytes: []byte("html"),
-		statuscode:        200,
+		statusCode:        200,
 		responseTime:      0,
 	}
 }

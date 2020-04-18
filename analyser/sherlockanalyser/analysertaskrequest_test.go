@@ -24,14 +24,12 @@ func TestAnalyser(t *testing.T) {
 			expected, _ := readLines(tt.out)
 
 			cdata := CrawlerData{
-				taskid:            1,
+				taskId:            1,
 				addr:              tt.addr,
-				taskstate:         PROCESSING,
-				taskerror:         nil,
-				taskerrortry:      0,
+				taskError:         nil,
 				responseHeader:    nil,
 				responseBodyBytes: htmlcode,
-				statuscode:        200,
+				statusCode:        200,
 				responseTime:      0,
 			}
 

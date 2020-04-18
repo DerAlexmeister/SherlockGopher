@@ -61,7 +61,7 @@ func (que *AnalyserQueue) IsEmpty() bool {
 }
 
 /*
-Function to produce a random taskid.
+Function to produce a random taskId.
 */
 func (que *AnalyserQueue) getRandomTaskID() uint64 {
 	rand.Seed(time.Now().UnixNano())
