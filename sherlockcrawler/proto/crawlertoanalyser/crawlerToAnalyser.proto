@@ -15,7 +15,6 @@ service AnalyserInterface {
     
     // Create a Task which should be crawled by sherlock crawler.
     rpc CreateTask(CrawlTaskCreateRequest) returns (CrawlTaskCreateResponse) {}
-    
 
 }
 

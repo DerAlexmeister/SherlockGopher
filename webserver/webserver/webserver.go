@@ -5,12 +5,28 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertowebserver"
 )
 
 /*
-CrawlWebServer will be the webserver being the man in the middle between the frontend and the backend.
+SherlockWebserver will be the webserver being the man in the middle between the frontend and the backend.
 */
-type CrawlWebServer struct {
+type SherlockWebserver struct {
+	Dependency *SherlockWebServerDependency
+}
+
+/*
+SherlockWebServerDependency will be all dependencies needed for the Webserver to run.
+*/
+type SherlockWebServerDependency struct {
+	Crawler func() crawlerproto.CrawlerService
+}
+
+/*
+SetCrawlerServiceDependency will set the dependency for the sherlockwebserver package.
+*/
+func (server *SherlockWebserver) SetCrawlerServiceDependency(deps *SherlockWebServerDependency) {
+	server.Dependency = deps
 }
 
 /*
@@ -28,16 +44,16 @@ func NewRequestedURL() *RequestedURL {
 }
 
 /*
-New will return a new instance of the CrawlWebServer
+New will return a new instance of the SherlockWebserver
 */
-func New() *CrawlWebServer {
-	return &CrawlWebServer{}
+func New() *SherlockWebserver {
+	return &SherlockWebserver{}
 }
 
 /*
 Helloping Ping will return just for testing purposes a pong. Like PING PONG.
 */
-func (server *CrawlWebServer) Helloping(context *gin.Context) {
+func (server *SherlockWebserver) Helloping(context *gin.Context) {
 	context.JSON(200, map[string]string{
 		"message": "Pong",
 	})
@@ -46,7 +62,7 @@ func (server *CrawlWebServer) Helloping(context *gin.Context) {
 /*
 RecieveURL will handle the requested url which should be crawled.
 */
-func (server *CrawlWebServer) RecieveURL(context *gin.Context) {
+func (server *SherlockWebserver) RecieveURL(context *gin.Context) {
 	var url = NewRequestedURL()
 	context.BindJSON(url)
 	context.JSON(http.StatusOK, gin.H{
