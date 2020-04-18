@@ -38,8 +38,8 @@ func (tree *HTMLTree) Parse() *Node {
 		children: nil,
 	}
 	currentNode := tree.rootNode
-	for i := 0; i < len(*tokenStream); i++ {
-		switch currentToken := (*tokenStream)[i].(type) {
+	for i := 0; i < len(tokenStream); i++ {
+		switch currentToken := tokenStream[i].(type) {
 		case *TagToken:
 			switch currentToken.Type() {
 			case StartTag:

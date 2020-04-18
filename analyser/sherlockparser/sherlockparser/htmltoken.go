@@ -6,6 +6,7 @@ type HtmlToken interface {
 	Type() TokenType
 	RawContent() string
 	AddToRawContent(toAdd string)
+	ToString() string
 }
 
 type TokenType int
@@ -23,7 +24,7 @@ const (
 /*
 Returns a pointer to a HtmlToken-slice which is generated based on the input html stored in the HTMLTree.
 */
-func (tree *HTMLTree) tokenize() *[]HtmlToken {
+func (tree *HTMLTree) tokenize() []HtmlToken {
 	element := ""
 	classified := []HtmlToken{}
 	textTags := []string{"style", "script", "textarea", "title"}
@@ -46,10 +47,13 @@ func (tree *HTMLTree) tokenize() *[]HtmlToken {
 								if addedTextToken {
 									classified[len(classified)-1].AddToRawContent(nextElement[:k])
 								} else {
-									classified = append(classified, &TextToken{
-										tokenType:  PlainText,
-										rawContent: nextElement[:k],
-									})
+									textToken := nextElement[:k]
+									if textToken != "" {
+										classified = append(classified, &TextToken{
+											tokenType:  PlainText,
+											rawContent: nextElement[:k],
+										})
+									}
 								}
 								lastTagType = newTag.TagType()
 								lastTokenType = newTag.Type()
@@ -115,7 +119,7 @@ func (tree *HTMLTree) tokenize() *[]HtmlToken {
 			element = element + toAdd
 		}
 	}
-	return &classified
+	return classified
 }
 
 /*
@@ -133,7 +137,7 @@ func (tree *HTMLTree) handleTag(tag string) *TagToken {
 			tagType:    tagType,
 			rawContent: tagRaw,
 		}
-	} else if tagRaw[0] == '/' {
+	} else if len(tagRaw) > 0 && tagRaw[0] == '/' {
 		token = &TagToken{
 			tokenType:  EndTag,
 			tagType:    tagType[1:],
@@ -162,7 +166,7 @@ func find(slice []string, val string) (int, bool) {
 	return -1, false
 }
 
-func findFirst(soi string, character rune)(int, bool){
+func findFirst(soi string, character rune) (int, bool) {
 	for i, elem := range soi {
 		if elem == character {
 			return i, true

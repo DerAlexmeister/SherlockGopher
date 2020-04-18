@@ -1,5 +1,7 @@
 package sherlockparser
 
+import "fmt"
+
 type TextToken struct {
 	tokenType  TokenType
 	rawContent string
@@ -19,6 +21,16 @@ func (txTk *TextToken) RawContent() string {
 	return txTk.rawContent
 }
 
-func (txTk *TextToken) AddToRawContent(toAdd string){
+/*
+Adds a string to the rawContent variable.
+*/
+func (txTk *TextToken) AddToRawContent(toAdd string) {
 	txTk.rawContent = txTk.rawContent + toAdd
+}
+
+/*
+   Returns the string representation of the struct. Only used for testing.
+*/
+func (txTk *TextToken) ToString() string {
+	return fmt.Sprintf("Type:%d RawContent:%s", txTk.Type(), txTk.RawContent())
 }
