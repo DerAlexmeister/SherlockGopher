@@ -167,7 +167,7 @@ func (sherlock *Sherlockcrawler) runManager() {
 	localwaitgroup.Wait()
 	localwaitgroup.Add(1)
 	go sherlock.manageFailedTasks(&localwaitgroup)
-	defer localwaitgroup.Done()
+	localwaitgroup.Wait()
 }
 
 /*
