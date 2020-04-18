@@ -1,10 +1,21 @@
 package sherlockneo
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/neo4j/neo4j-go-driver/neo4j"
 )
+
+// TODO
+// - Querys GETTER
+// - Function to turn a result into json and return it
+// - Implementing the stuff defined in Graph
+// - Add missing Querys from Python Skript
+// - merge this branch and the webserver branch in order to build the rest api
+// - Write the first tests
+// - Mocking for neo4j with neoism possible?
+// - Add querys for info like amout of nodes of type image, js, css etc.
 
 const (
 	//ADDRESS of the Neo4j Dockercontainer.
@@ -16,39 +27,6 @@ const (
 	//PASSWORD will be the password of the neo4j db.
 	PASSWORD string = "test" //Standard password change this in production.
 )
-
-const (
-	//Cypherstatements.
-
-	//DROPGRAPH the entire graph.
-	DROPGRAPH string = "MATCH (n) DETACH DELETE n"
-
-	//CONTAINS will check whether or not a node is already in use.
-	CONTAINS string = "MATCH (x) WHERE x.name = \"%s\" RETURN x"
-
-	//ADDNODE will add a node into the neo4j DB.
-	ADDNODE string = "UNWIND {props} as prop CREATE (a:Website {address:prop.address, statuscode:prop.statuscode, responsetime:prop.responsetime, Header:prop.header, status:prop.status});"
-
-	//CONSTRAINS will be the constrains for a DB.
-	CONSTRAINS string = "CREATE CONSTRAINT ON (c:Website) ASSERT c.address IS UNIQUE"
-
-	//RETURNALL will return all nodes and their relationsships in the db.
-	RETURNALL string = "MATCH (n) RETURN n"
-
-	//CONNECTBYLINK will connect two given nodes by a link relationship.
-	CONNECTBYLINK string = "MATCH (f:Website), (s:Website) WHERE f.address = \"%s\" AND s.address = \"%s\" MERGE (f)-[:]->(s);"
-
-	//STARTERKIDOFNODE Will return a subset of nodes connected directly to a given node.
-	STARTERKIDOFNODE string = "MATCH (a)-[:]->(b) WHERE a.address = \"%s\" RETURN a, b"
-	// Vlt. mit Limit.
-)
-
-/*
-getStarterKidOfNode will return the query for a small subset of nodes.
-*/
-func getStarterKidOfNode() string {
-	return STARTERKIDOFNODE
-}
 
 const (
 	//Magicconstant.
@@ -147,4 +125,37 @@ func GetNeoSnipped(session *neo4j.Session, target string) (neo4j.Result, error) 
 	return result, nil
 }
 
-//func DropEntireGFraph() (neo4j.Result, error)
+/*
+DropEntireGraph will drop the entrie graph. Be careful incase you use this one.
+*/
+func DropEntireGraph(session *neo4j.Session) (neo4j.Result, error) {
+	args := make(map[string]interface{})
+	result, err := RunStatement(session, fmt.Sprintf(getStarterKidOfNode()), args)
+	if err != nil {
+		return nil, fmt.Errorf("An error occurred while trying to execute the droptable statement. Error: %s", err.Error())
+	}
+	return result, nil
+}
+
+/*
+JsonfiyNeo will try to turn a given neo4j result into json.
+It will return a byte array containing the formated json-output.
+If an err occurred the byte array is nil
+*/
+func JsonfiyNeo(res neo4j.Result) ([]byte, error) {
+	sliceofrecords := []map[string]interface{}{}
+	for res.Next() {
+		recor := make(map[string]interface{})
+		for _, element := range res.Record().Keys() {
+			if value, contains := res.Record().Get(element); contains {
+				recor[element] = value
+			}
+		}
+		sliceofrecords = append(sliceofrecords, recor)
+	}
+	jsonData, err := json.Marshal(sliceofrecords)
+	if err != nil {
+		return nil, err
+	}
+	return jsonData, nil
+}
