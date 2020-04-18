@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/micro/go-micro"
-	sherlockneo "github.com/ob-algdatii-20ss/SherlockGopher/analyser/ormneo4j"
+	//sherlockneo "github.com/ob-algdatii-20ss/SherlockGopher/analyser/ormneo4j"
 	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto/analyser"
 	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyser"
 
