@@ -88,7 +88,7 @@ func TestSendAndReceive(t *testing.T) {
 	cl := proto.NewSenderService("go.micro.srv.stream", cservice.Client())
 	err := streamServer.sendFileToAnalyser(cl)
 
-	time.Sleep(3)
+	time.Sleep(200 * time.Millisecond)
 	aTestQ := serverGrpc.Queue
 	if err != nil || aTestQ.IsEmpty() {
 		t.Fatal("Streaming failed")
@@ -125,7 +125,7 @@ func TestSendAndReceiveErrorCase(t *testing.T) {
 	cl := proto.NewSenderService("go.micro.srv.stream", cservice.Client())
 	err := streamServer.sendFileToAnalyser(cl)
 
-	time.Sleep(3)
+	time.Sleep(200 * time.Millisecond)
 	aTestQ := serverGrpc.Queue
 	if err != nil || aTestQ.IsEmpty() {
 		t.Fatal("Streaming ErrorCase failed")
