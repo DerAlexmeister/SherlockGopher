@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
+	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertowebserver"
 )
 
 /*
@@ -43,10 +45,18 @@ func (server *CrawlWebServer) Helloping(context *gin.Context) {
 	})
 }
 
+type TaskStatusResponse struct {
+    website string
+    undone int
+    processing int
+    finished int
+    failed int
+}
+
 /*
 RecieveURL will handle the requested url which should be crawled.
 */
-func (server *CrawlWebServer) RecieveURL(context *gin.Context) {
+func (server *CrawlWebServer) ReceiveURL(context *gin.Context) {
 	var url = NewRequestedURL()
 	context.BindJSON(url)
 	context.JSON(http.StatusOK, gin.H{
@@ -54,6 +64,24 @@ func (server *CrawlWebServer) RecieveURL(context *gin.Context) {
 	}) //Send fine as response.
 	fmt.Println(url)
 
+	if url.URL != "" && govalidator.IsURL(url.URL) {
+		sherlockcrawlerService := server.dependencies.
+		in := &crawlerproto.TaskStatusRequest{}
+		response, err := sherlockcrawlerService.StatusOfTaskQueue(context, in)
+
+		if (err == nil && response != nil) {
+			context.JSON(http.StatusOK, gin.H{
+				"Website": response.Website,
+				"Undone": response.Undone,
+				"Processing": response.Processing,
+				"Finished": response.Finished,
+				"Failed": response.Failed,
+			}) 
+		}
+
+	
+	}
 	//TODO check if url is empty or a well formed url.
 	//TODO send to crawler.
 }
+
