@@ -31,7 +31,7 @@ func main() {
 			AnalyserService.InjectDependency(&sherlockanalyser.AnalyserDependency{
 				Crawler: func() crawlerproto.AnalyserInterfaceService {
 					return crawlerproto.NewAnalyserInterfaceService("crawler-service", service.Client()) // TODO: FIX BY DERALEXX
-				}, Neo4J: &session,
+				}//, Neo4J: &session,
 			})
 		}
 		fmt.Println("Could not get a session to talk to the neo4j db. Service will shutdown.")

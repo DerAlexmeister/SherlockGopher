@@ -1,1 +1,23 @@
-// Protofile for the webserver and analyser
+syntax = "proto3";
+
+package analysertowebserver;
+
+service Analyser {
+    // StatusOfTaskQueue will send the status of the tasks.
+    rpc StatusOfTaskQueue(TaskStatusRequest) returns (TaskStatusResponse) {}
+
+}
+
+message TaskStatusRequest {
+
+}
+
+message TaskStatusResponse {
+    string website = 1;
+    uint64 undone = 2;
+    uint64 processing = 3;
+    uint64 crawlerError = 4;
+    uint64 saving = 5;
+    uint64 sendToCrawler = 6;
+    uint64 finished = 7;
+}
