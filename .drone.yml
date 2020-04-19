@@ -6,24 +6,48 @@ platform:
   os: linux
 
 steps:
-    - name: test
-      image: golang:1.14
+    - name: install
       commands:
           - apt install pkg-config
           - wget https://github.com/neo4j-drivers/seabolt/releases/download/v1.7.4/seabolt-1.7.4-Linux-ubuntu-18.04.deb
           - apt install -f ./seabolt-1.7.4-Linux-ubuntu-18.04.deb
+          - rm ./seabolt-1.7.4-Linux-ubuntu-18.04.deb
           - export PKG_CONFIG_PATH="/usr/local/share/pkgconfig"
           - export PKG_CONFIG_PATH=/seabolt/build/dist/share/pkgconfig
           - export LD_LIBRARY_PATH=/seabolt/build/dist/lib64
           - export C_INCLUDE_PATH=/seabolt/build/dist/includ
           - go get github.com/neo4j/neo4j-go-driver/neo4j
-          - ls -la
-          - cd sherlockcrawler
-          - cd sherlockcrawler
-          - ls -la
+    - name: test sherlockcrawler
+      image: golang:1.14
+      commands:
+          - cd sherlockcrawler/sherlockcrawler
           - go test
           - cd ..
-          - go build
+          - go build -o sherlockcrawlermain
+    - name: test analyser
+      image: golang:1.14
+      commands:
+          - cd ../analyser/sherlockanalyser
+          - go test
+          - cd ..
+          - go build -o analysermain
+    - name: test frontend
+      image: golang:1.14
+      commands:
+          - cd ../frontend
+          - go build -o frontendmain
+    - name: test neo
+      image: golang:1.14
+      commands:
+          - cd ../sherlockneo
+          - go test
+    - name: test webserver
+      image: golang:1.14
+      commands:
+          - cd ../webserver/webserver
+          - go test
+          - cd ..
+          - go build -o webservermain
     - name: lint
       image: golangci/golangci-lint
       commands:
