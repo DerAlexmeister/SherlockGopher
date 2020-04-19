@@ -3,12 +3,13 @@ package sherlockanalyser
 import (
 	"context"
 	"fmt"
+	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto/analysertowebserver"
 	"sync"
 	"time"
-
-	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto/analyser"
-	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyser"
 )
+
+//Time to wait in milliseconds after checking for the tasks again.
+const delaytime = 20
 
 /*
 AnalyserServiceHandler will be AnalyserService representation.
@@ -16,13 +17,6 @@ AnalyserServiceHandler will be AnalyserService representation.
 type AnalyserServiceHandler struct {
 	AnalyserQueue *AnalyserQueue
 	Dependencies  *AnalyserDependency
-}
-
-/*
-NewAnalyserServiceHandler will return an new AnalyserServiceHandler instance.
-*/
-func NewAnalyserServiceHandler() *AnalyserServiceHandler {
-	return &AnalyserServiceHandler{}
 }
 
 /*
@@ -34,39 +28,69 @@ func (analyser AnalyserServiceHandler) InjectDependency(deps *AnalyserDependency
 }
 
 /*
-SendResult will send the result to the crawler.
+NewAnalyserServiceHandler will return an new AnalyserServiceHandler instance.
 */
-func (analyser AnalyserServiceHandler) SendResult() {
-
+func NewAnalyserServiceHandler() *AnalyserServiceHandler {
+	que := NewAnalyserQueue()
+	return &AnalyserServiceHandler{
+		AnalyserQueue: &que,
+		Dependencies:  nil,
+	}
 }
 
 /*
-manageUndoneTasks manage all tasks which are undone.
+getDependency will return a pointer to the dependencies instance of this service.
 */
-func (analyser *AnalyserServiceHandler) manageUndoneTasks(waitgroup *sync.WaitGroup) {
-	var localwaitgroup sync.WaitGroup
+func (analyser *AnalyserServiceHandler) getDependency() *AnalyserDependency {
+	return analyser.Dependencies
+}
 
-	for _, v := range *analyser.AnalyserQueue.getCurrentQueue() {
-		if v.State() == FINISHED {
-			go v.Execute()
-			localwaitgroup.Add(1)
+/*
+getQueue will return a pointer to the queue.
+*/
+func (analyser *AnalyserServiceHandler) getQueue() *AnalyserQueue {
+	return analyser.AnalyserQueue
+}
+
+/*
+manageUndoneTasks will manage all undone tasks and start them.
+*/
+func (analyser *AnalyserServiceHandler) manageUndoneTasks(waitGroup *sync.WaitGroup) {
+	var localWaitGroup sync.WaitGroup
+	for _, v := range *(*analyser.getQueue()).getThisQueue() {
+		if v.State() == UNDONE {
+			localWaitGroup.Add(1)
+			go v.Execute(&localWaitGroup)
 		}
 	}
-
-	waitgroup.Done()
+	localWaitGroup.Wait()
+	defer waitGroup.Done()
 }
 
-//Time to wait in milliseconds after checking for the tasks again.
-const delaytime = 10
+/*
+manageFinishedTasks will managed all finished tasks.
+*/
+func (analyser *AnalyserServiceHandler) manageFinishedTasks(waitGroup *sync.WaitGroup) {
+	for k, v := range *(*analyser.getQueue()).getThisQueue() {
+		if v.State() == FINISHED {
+			(*analyser.getQueue()).RemoveFromQueue(k)
+		}
+	}
+	defer waitGroup.Done()
+}
 
 /*
-runManager will run all tasks related functions on the sherlockcrawlerservice and put them into a go routine.
+runManager will run all tasks related functions on the analyserServiceHandler and put them into a go routine.
 */
 func (analyser *AnalyserServiceHandler) runManager() {
-	var waitgroup sync.WaitGroup
-	go analyser.manageUndoneTasks(&waitgroup)
-	go analyser.manageFinishedTasks(&waitgroup)
-	waitgroup.Wait()
+	var localWaitGroup sync.WaitGroup
+	localWaitGroup.Add(1)
+	go analyser.manageUndoneTasks(&localWaitGroup)
+	localWaitGroup.Wait()
+	localWaitGroup.Add(1)
+	go analyser.manageFinishedTasks(&localWaitGroup)
+	localWaitGroup.Wait()
+	localWaitGroup.Add(1)
 }
 
 /*
@@ -82,47 +106,15 @@ func (analyser *AnalyserServiceHandler) ManageTasks() { //TODO kill loop on sign
 }
 
 /*
-manageFinishedTasks will managed all finished tasks.
-*/
-func (analyser *AnalyserServiceHandler) manageFinishedTasks(waitgroup *sync.WaitGroup) {
-	for _, v := range *analyser.AnalyserQueue.getCurrentQueue() {
-		if v.State() == FINISHED {
-			analyser.SendResultToCrawler(v)
-		}
-	}
-	waitgroup.Done()
-}
-
-/*
-SendResultToCrawler sends the found links to the crawler.
-*/
-func (analyser *AnalyserServiceHandler) SendResultToCrawler(task *analyserTaskRequest) {
-	serv := analyser.Dependencies.Crawler()
-
-	for _, link := range task.FoundLinks() {
-		message := &crawlerproto.CrawlTaskCreateRequest{
-			Url: link,
-		}
-
-		res, err := serv.CreateTask(context.TODO(), message)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		if res.Statuscode == crawlerproto.URL_STATUS_ok {
-			analyser.AnalyserQueue.RemoveFromQueue(task.Id())
-		}
-
-	}
-}
-
-/*
 StatusOfTaskQueue will send the status of the queue.
 */
 func (analyser *AnalyserServiceHandler) StatusOfTaskQueue(ctx context.Context, _ *proto.TaskStatusRequest, out *proto.TaskStatusResponse) error {
-	undone, processing, finished := analyser.AnalyserQueue.getNumberOfStatus()
+	undone, processing, crawlerError, saving, sendToCrawler, finished := analyser.getQueue().getNumberOfStatus()
 	out.Undone = undone
 	out.Processing = processing
+	out.CrawlerError = crawlerError
+	out.Saving = saving
+	out.SendToCrawler = sendToCrawler
 	out.Finished = finished
 	return nil
 }
