@@ -3,18 +3,14 @@ name: default
 
 platform:
   arch: amd64
+  os: linux
 
 steps:
-    - name: test analyser
+    - name:
       image: golang:1.14
       commands:
-          - cd analyser/sherlockanalser
-          - go test
-          - go build
-    - name: test crawler
-      image: golang:1.14
-        commands:
-          - cd sherlockcrawler/sherlockcrawler
+          - neo4j start
+          - sleep 5
           - go test
           - go build
     - name: lint
