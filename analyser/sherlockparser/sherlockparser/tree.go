@@ -26,9 +26,9 @@ func NewHTMLTree(html string) *HTMLTree {
 }
 
 /*
-Returns a pointer to the Root-Node of the parsed HTMLTree.
+Returns a pointer to the Root-Node of the parsed HTMLTree. Set verbose to true for info about malformed HTML-Documents.
 */
-func (tree *HTMLTree) Parse() *Node {
+func (tree *HTMLTree) Parse(verbose bool) *Node {
 	tokenStream := tree.tokenize()
 	stack := stack.New()
 	isRoot := true
@@ -69,17 +69,9 @@ func (tree *HTMLTree) Parse() *Node {
 				}
 				stack.Push(currentNode)
 			case EndTag:
-				if nextNode, ok := stack.Pop().(*Node); ok { // TODO: Abchecken wie es mit currentNode aussieht, durchdebuggen
+				if nextNode, ok := stack.Pop().(*Node); ok {
 					if nextNode.Tag().TagType() != currentToken.TagType() {
-						fmt.Printf("Expected Closing Tag for CurrentNode %s, but got Closing Tag for CurrentToken: %s", currentNode.Tag().TagType(), currentToken.TagType())
-						/*matching := false
-						for !matching {
-							if node, ok := stack.Pop().(*Node); ok {
-								fmt.Printf("Malformed HTML-Document! Expected closing tag %s, but was %s \n", currentNode.Tag().TagType(), currentToken.TagType())
-								currentNode = node
-								matching = node.Tag().TagType() == currentToken.TagType()
-							}
-						}*/
+						if verbose {fmt.Printf("Expected Closing Tag for CurrentNode %s, but got Closing Tag for CurrentToken: %s", currentNode.Tag().TagType(), currentToken.TagType())}
 					} else if stack.Len() > 0 {
 						currentNode = nextNode.Parent()
 					} else {

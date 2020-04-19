@@ -28,7 +28,7 @@ func (tree *HTMLTree) extractAttributes(tagContent string) []*TagAttribute {
 	nonQuotedWhiteSpaces := make([]int, 0)
 
 	for i := 0; i < len(tagContent); i++ {
-		if tagContent[i] == '"' { //forward quoted string
+		if tagContent[i] == '"' { //fast forward quoted string
 			for l := i + 1; l < len(tagContent); l++ {
 				if tagContent[l] == '"' {
 					i = l
@@ -67,7 +67,7 @@ func (tree *HTMLTree) processAttribute(attributeRaw string) *TagAttribute {
 	/*if index, ok := findFirst(attributeRaw, '='); ok {
 		strings.SplitN()
 	}*/
-	attributeSplit := strings.SplitN(attributeRaw, "=", 2) //TODO: Kann eventuell ein Problem werden wenn = in gequotetem String enthalten sein darf, abhilfe -> nach ersten = suchen
+	attributeSplit := strings.SplitN(attributeRaw, "=", 2)
 	attribute := &TagAttribute{}
 	attribute.attributeType = attributeSplit[0]
 	if len(attributeSplit) == 2 {
