@@ -44,3 +44,5 @@ func (server *SherlockWebserver) GraphMetaV1(context *gin.Context) {
 	meta = append(meta, images, css, js, html, rels, nodes)
 	context.JSON(http.StatusOK, meta)
 }
+
+//func (server *SherlockWebserver) GraphMetaV1(context *gin.Context)

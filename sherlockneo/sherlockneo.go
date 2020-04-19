@@ -7,12 +7,10 @@ import (
 )
 
 // TODO
-
-// - Add missing Querys from Python Skript
-// - merge this branch and the webserver branch in order to build the rest api
 // - Write the first tests
 // - Mocking for neo4j with neoism possible?
 // - Drop constrains
+// - RunStatement for only write query from analyser to neo4j.
 
 const (
 	//ADDRESS of the Neo4j Dockercontainer.
@@ -102,6 +100,7 @@ func CloseSession(session *neo4j.Session) {
 GetAllNodesAndProperties will return all nodes an their properties.
 */
 func GetAllNodesAndProperties(session *neo4j.Session, args map[string]interface{}) ([]map[string]interface{}, error) {
+	//TODO
 	var results []map[string]interface{}
 	result, _ := (*session).Run(GetReturnAll(), args)
 	for result.Next() {
@@ -121,7 +120,7 @@ func GetAllNodesAndProperties(session *neo4j.Session, args map[string]interface{
 GetAllNodesAndTheirRelationships will return all nodes with address and the rels to other nodes.
 */
 func GetAllNodesAndTheirRelationships(session *neo4j.Session, args map[string]interface{}) ([]map[string]string, error) {
-	results, _ := (*session).Run(returnallrels, args)
+	results, _ := (*session).Run(GetAllRels(), args)
 	var tojson []map[string]string
 	for results.Next() {
 		elem := make(map[string]string)
@@ -242,5 +241,15 @@ func GetAmountOfImages(session *neo4j.Session, args map[string]interface{}) ([]m
 		}
 		tojson = append(tojson, elem)
 	}
+	return tojson, nil
+}
+
+/*
+GetPerformenceOfSite will return the performence index of each site like address, rTT and statuscode.
+*/
+func GetPerformenceOfSite(session *neo4j.Session, args map[string]interface{}) ([]map[string]int64, error) {
+	var tojson []map[string]int64
+	performence, _ := (*session).Run(GetResponseTimeInTableAndStatusCode(), args)
+	fmt.Println(performence)
 	return tojson, nil
 }

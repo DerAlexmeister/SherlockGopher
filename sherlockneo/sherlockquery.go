@@ -163,3 +163,10 @@ GetResponseTimeInTableAndStatusCode will return the query to get for each addres
 func GetResponseTimeInTableAndStatusCode() string {
 	return responseTimeInTableAndStatusCode
 }
+
+/*
+GetAllRels will return the query to get all relationships.
+*/
+func GetAllRels() string {
+	return returnallrels
+}
