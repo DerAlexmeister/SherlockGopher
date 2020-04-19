@@ -7,10 +7,10 @@ import (
 )
 
 /*
-AnalyserQueue will be the queue of the current AnalyserTaskRequest.
+AnalyserQueue will be the queue of the current analyserTaskRequest.
 */
 type AnalyserQueue struct {
-	Queue map[uint64]*AnalyserTaskRequest
+	Queue map[uint64]*analyserTaskRequest
 }
 
 /*
@@ -18,14 +18,14 @@ NewAnalyserQueue will return a new Queue.
 */
 func NewAnalyserQueue() AnalyserQueue {
 	return AnalyserQueue{
-		Queue: make(map[uint64]*AnalyserTaskRequest),
+		Queue: make(map[uint64]*analyserTaskRequest),
 	}
 }
 
 /*
 getCurrentQueue will return a pointer to the current Queue.
 */
-func (que *AnalyserQueue) getCurrentQueue() *(map[uint64]*AnalyserTaskRequest) {
+func (que *AnalyserQueue) getCurrentQueue() *map[uint64]*analyserTaskRequest {
 	return &que.Queue
 }
 
@@ -36,7 +36,7 @@ func (que *AnalyserQueue) ContainsAddress(addr string) (uint64, bool, error) {
 	q := que.getCurrentQueue()
 
 	for key, ele := range *q {
-		if ele.addr == addr {
+		if ele.WorkAddr() == addr {
 			return key, true, nil
 		}
 	}
@@ -75,9 +75,9 @@ func (que *AnalyserQueue) getRandomTaskID() uint64 {
 }
 
 /*
-AppendQueue will append the current queue with a new AnalyserTaskRequest.
+AppendQueue will append the current queue with a new analyserTaskRequest.
 */
-func (que *AnalyserQueue) AppendQueue(task *AnalyserTaskRequest) bool {
+func (que *AnalyserQueue) AppendQueue(task *analyserTaskRequest) bool {
 	taskid := que.getRandomTaskID()
 	if !que.ContainsID(taskid) {
 		// Hier TASKID einzufügen
@@ -129,7 +129,7 @@ getNumberOfUndoneTasks will return the number of Tasks with status undone, proce
 func (que *AnalyserQueue) getNumberOfStatus() (uint64, uint64, uint64) {
 	var undone, processing, finished uint64 = 0, 0, 0
 	for _, v := range *que.getCurrentQueue() {
-		if state := v.getTaskState(); state == FINISHED {
+		if state := v.State(); state == FINISHED {
 			finished++
 		} else if state == PROCESSING {
 			processing++

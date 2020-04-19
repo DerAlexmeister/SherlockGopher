@@ -26,7 +26,7 @@ func NewAnalyserServiceHandler() *AnalyserServiceHandler {
 }
 
 /*
-InjectDependency will inject the dependencies for the a sherlockcrawler instance
+InjectDependency will inject the dependencies for the a analyser instance
 into the actual instance.
 */
 func (analyser AnalyserServiceHandler) InjectDependency(deps *AnalyserDependency) {
@@ -47,7 +47,7 @@ func (analyser *AnalyserServiceHandler) manageUndoneTasks(waitgroup *sync.WaitGr
 	var localwaitgroup sync.WaitGroup
 
 	for _, v := range *analyser.AnalyserQueue.getCurrentQueue() {
-		if v.getTaskState() == FINISHED {
+		if v.State() == FINISHED {
 			go v.Execute()
 			localwaitgroup.Add(1)
 		}
@@ -86,7 +86,7 @@ manageFinishedTasks will managed all finished tasks.
 */
 func (analyser *AnalyserServiceHandler) manageFinishedTasks(waitgroup *sync.WaitGroup) {
 	for _, v := range *analyser.AnalyserQueue.getCurrentQueue() {
-		if v.getTaskState() == FINISHED {
+		if v.State() == FINISHED {
 			analyser.SendResultToCrawler(v)
 		}
 	}
@@ -96,10 +96,10 @@ func (analyser *AnalyserServiceHandler) manageFinishedTasks(waitgroup *sync.Wait
 /*
 SendResultToCrawler sends the found links to the crawler.
 */
-func (analyser *AnalyserServiceHandler) SendResultToCrawler(task *AnalyserTaskRequest) {
+func (analyser *AnalyserServiceHandler) SendResultToCrawler(task *analyserTaskRequest) {
 	serv := analyser.Dependencies.Crawler()
 
-	for _, link := range task.foundLinks {
+	for _, link := range task.FoundLinks() {
 		message := &crawlerproto.CrawlTaskCreateRequest{
 			Url: link,
 		}
@@ -110,7 +110,7 @@ func (analyser *AnalyserServiceHandler) SendResultToCrawler(task *AnalyserTaskRe
 		}
 
 		if res.Statuscode == crawlerproto.URL_STATUS_ok {
-			analyser.AnalyserQueue.RemoveFromQueue(task.getTaskID())
+			analyser.AnalyserQueue.RemoveFromQueue(task.Id())
 		}
 
 	}

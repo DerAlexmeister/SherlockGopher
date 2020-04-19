@@ -1,7 +1,10 @@
 package sherlockanalyser
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyser"
 	"strings"
 	"time"
 
@@ -21,14 +24,17 @@ const (
 	//PROCESSING: A task has been started.
 	PROCESSING TASKSTATE = 1
 
+	//CRAWLERERROR: A task contains a crawler error.
+	CRAWLERERROR TASKSTATE = 2
+
 	//SAVING: A task is saving data to NEO4J.
-	SAVING TASKSTATE = 2
+	SAVING TASKSTATE = 3
 
 	//SENDTOCRAWLER: A task is sending data to the crawler.
-	SENDTOCRAWLER TASKSTATE = 3
+	SENDTOCRAWLER TASKSTATE = 4
 
 	//FINISHED: A task is finished and ready to be remove from the queue.
-	FINISHED TASKSTATE = 4
+	FINISHED TASKSTATE = 5
 )
 
 /*
@@ -45,6 +51,15 @@ type analyserTaskRequest struct {
 	parserTime   int64
 	analyserTime int64
 	crawlerData  *CrawlerData
+	Dependencies  *AnalyserDependency
+}
+
+/*
+InjectDependency will inject the dependencies for the a analyser instance
+into the actual instance.
+*/
+func (analyserTask *analyserTaskRequest) InjectDependency(deps *AnalyserDependency) {
+	analyserTask.Dependencies = deps
 }
 
 /*
@@ -164,7 +179,7 @@ SetWorkAddr sets the work address.
 Identifies and sets the root address.
 */
 func (analyserTask *analyserTaskRequest) SetWorkAddr(workAddr string) {
-	analyserTask.SetWorkAddr(workAddr)
+	analyserTask.workAddr = workAddr
 	rootEnd := jw.OrdinalIndexOf(workAddr, "/", 3)
 
 	if rootEnd > 0 {
@@ -199,19 +214,7 @@ NewTask returns a new task initialized by crawler data
 */
 func NewTask(cdata CrawlerData) analyserTaskRequest {
 	task := analyserTaskRequest{}
-
-	if cdata.getTaskError() == nil {
-		task.SetCrawlerData(&cdata)
-		task.SetWorkAddr(cdata.getAddr())
-		task.SetHtml(string(cdata.getResponseBody()))
-
-		task.initializeLinkTags()
-
-		task.SetState(UNDONE)
-	} else {
-		task.SetWorkAddr(cdata.getAddr())
-		task.SetState(CRAWLERROR)
-	}
+	task.SetCrawlerData(&cdata)
 
 	return task
 }
@@ -252,8 +255,7 @@ func (analyserTask *analyserTaskRequest) classifyNode(node *model.Node) {
 			if attributeType == attribute.AttributeType() {
 				// TODO: REMOVE bugHunter
 				val := analyserTask.bugHunter(attribute.Value())
-				analyserTask.SetFoundLinks(append(analyserTask.FoundLinks(), val))
-				//analyserTask.handleLink(analyserTask.bugHunter(attribute.Value()))
+				analyserTask.handleLink(val)
 			}
 		}
 	}
@@ -271,35 +273,31 @@ func (analyserTask *analyserTaskRequest) bugHunter(link string) string {
 }
 
 /*
-prettyPrintLink pretty prints a link.
+verifyLink pretty prints a link.
 E.g.:
 	Input: 	"/stuff/blub"
 	Output:	"https://randamonium.bay/stuff/blub"
 */
-func (analyserTask *analyserTaskRequest) prettyPrintLink(link string) (string, error) {
+func (analyserTask *analyserTaskRequest) verifyLink(link string) (string, error) {
 	if link == "" {
 		return "", errors.New("it's not a link")
 	}
 
-	// TODO: REMOVE bugHunter
-	link = analyserTask.bugHunter(link)
-
 	if link[0] == '/' {
 		return analyserTask.RootAddr() + link, nil
-	}
-
+	} else
 	if !strings.HasPrefix(link, "www") && !strings.HasPrefix(link, "http") {
 		return "", errors.New("it's not a link")
+	} else {
+		return link, nil
 	}
-
-	return link, nil
 }
 
 /*
 handleLink Verifies whether link is valid (add to NEO4J and send to crawler) or not
 */
 func (analyserTask *analyserTaskRequest) handleLink(link string) {
-	if link, err := analyserTask.prettyPrintLink(link); err == nil {
+	if link, err := analyserTask.verifyLink(link); err == nil {
 		if !analyserTask.containedInNEO4J(link) {
 			analyserTask.foundLinks = append(analyserTask.foundLinks, link)
 			analyserTask.addToNEO4J(link)
@@ -325,20 +323,69 @@ func (analyserTask *analyserTaskRequest) addToNEO4J(link string) bool {
 Execute will search the tree for links and stores the result in the field response of the task
 */
 func (analyserTask *analyserTaskRequest) Execute() bool {
-	analyserTask.taskstate = PROCESSING
-	tree := model.NewHTMLTree(analyserTask.gethtml())
+	analyserTask.preprocess()
 
-	start := time.Now()
-	tree.Parse()
-	analyserTask.parserTime = time.Since(start).Nanoseconds()
-
-	root := tree.RootNode()
-
-	start = time.Now()
-	analyserTask.analyze(root)
-	analyserTask.analyserTime = time.Since(start).Nanoseconds()
-
-	analyserTask.taskstate = FINISHED
+	analyserTask.SetState(FINISHED)
 
 	return true
 }
+
+func (analyserTask *analyserTaskRequest) preprocess() {
+	if analyserTask.CrawlerData().getTaskError() == nil {
+		analyserTask.process()
+	} else {
+		analyserTask.handleCrawlerError()
+	}
+}
+
+func (analyserTask *analyserTaskRequest) handleCrawlerError() {
+	analyserTask.SetState(CRAWLERERROR)
+	//TODO: ADD NEO4J
+	analyserTask.SetState(FINISHED)
+}
+
+func (analyserTask *analyserTaskRequest) saveToNeo4J() {
+	analyserTask.SetState(SAVING)
+	//TODO: ADD NEO4J
+}
+
+func (analyserTask *analyserTaskRequest) sendToCrawler() {
+	analyserTask.SetState(SENDTOCRAWLER)
+
+	serv := analyserTask.Dependencies.Crawler()
+
+	for _, link := range analyserTask.FoundLinks() {
+		message := &crawlerproto.CrawlTaskCreateRequest{
+			Url: link,
+		}
+
+		_, err := serv.CreateTask(context.TODO(), message)
+		if err != nil {
+			fmt.Println("Error while sending link to crawler")
+			fmt.Println(err)
+		}
+	}
+}
+
+func (analyserTask *analyserTaskRequest) process() {
+	analyserTask.SetState(PROCESSING)
+
+	analyserTask.SetWorkAddr(analyserTask.CrawlerData().getAddr())
+	analyserTask.SetHtml(string(analyserTask.CrawlerData().responseBodyBytes))
+	analyserTask.initializeLinkTags()
+
+	htmlTree := model.NewHTMLTree(analyserTask.Html())
+	start := time.Now()
+	htmlTree.Parse()
+	rootNode := htmlTree.RootNode()
+	analyserTask.parserTime = time.Since(start).Nanoseconds()
+
+	start = time.Now()
+	analyserTask.analyze(rootNode)
+	analyserTask.analyserTime = time.Since(start).Nanoseconds()
+
+	analyserTask.saveToNeo4J()
+	analyserTask.sendToCrawler()
+	analyserTask.SetState(FINISHED)
+}
+

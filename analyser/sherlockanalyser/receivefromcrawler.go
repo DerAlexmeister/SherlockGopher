@@ -2,11 +2,6 @@ package sherlockanalyser
 
 import (
 	"context"
-	"errors"
-	"io"
-	"net/http"
-	"time"
-
 	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyserfiletransfer"
 )
 
@@ -45,7 +40,7 @@ func NewServerGRPC(lqueue *AnalyserQueue) *ServerGRPC {
 DownloadFile gets chunks of a html response from the crawler, appends them and returns the result
 */
 func (handler *ServerGRPC) Upload(ctx context.Context, stream proto.Sender_UploadStream) error {
-	var task CrawlerData
+	/*var task CrawlerData
 	var arr []byte
 	finished := false
 
@@ -113,6 +108,6 @@ func (handler *ServerGRPC) Upload(ctx context.Context, stream proto.Sender_Uploa
 
 	newTask := NewTask(task)
 	handler.getQueue().AppendQueue(&newTask)
-
+	*/
 	return nil
 }
