@@ -1,7 +1,6 @@
 package sherlockneo
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/neo4j/neo4j-go-driver/neo4j"
@@ -100,35 +99,148 @@ func CloseSession(session *neo4j.Session) {
 }
 
 /*
-RunStatement will execute a given statement on a given session and return the result.
+GetAllNodesAndProperties will return all nodes an their properties.
 */
-func RunStatement(session *neo4j.Session, statment string, args map[string]interface{}) (neo4j.Result, error) {
-	result, err := (*session).Run(statment, args)
-	if err != nil {
-		return nil, fmt.Errorf("An error occured while trying to run the cypherstatement. Error: %s", err)
+func GetAllNodesAndProperties(session *neo4j.Session, args map[string]interface{}) ([]map[string]interface{}, error) {
+	var results []map[string]interface{}
+	result, _ := (*session).Run(GetReturnAll(), args)
+	for result.Next() {
+		//fmt.Println(result.Record().Keys())
+
+		a := result.Record().GetByIndex(0).(map[string]interface{}) //n.id
+		for k, v := range a {
+			fmt.Println(k, v)
+		}
+		fmt.Println("------------------------")
+
 	}
-	return result, nil
+	return results, nil
 }
 
 /*
-JsonfiyNeo will try to turn a given neo4j result into json.
-It will return a byte array containing the formated json-output.
-If an err occurred the byte array is nil
+GetAllNodesAndTheirRelationships will return all nodes with address and the rels to other nodes.
 */
-func JsonfiyNeo(res neo4j.Result) ([]byte, error) {
-	sliceofrecords := []map[string]interface{}{}
-	for res.Next() {
-		recor := make(map[string]interface{})
-		for _, element := range res.Record().Keys() {
-			if value, contains := res.Record().Get(element); contains {
-				recor[element] = value
+func GetAllNodesAndTheirRelationships(session *neo4j.Session, args map[string]interface{}) ([]map[string]string, error) {
+	results, _ := (*session).Run(returnallrels, args)
+	var tojson []map[string]string
+	for results.Next() {
+		elem := make(map[string]string)
+		for _, element := range results.Record().Keys() {
+			if value, contains := results.Record().Get(element); contains {
+				elem[element] = value.(string)
+			}
+
+		}
+		tojson = append(tojson, elem)
+	}
+	return tojson, nil
+}
+
+/*
+GetAmountOfNodes will return the amount of nodes
+*/
+func GetAmountOfNodes(session *neo4j.Session, args map[string]interface{}) ([]map[string]int64, error) {
+	var tojson []map[string]int64
+	amountofnodes, _ := (*session).Run(GetCountNumberOfNodes(), args)
+
+	for amountofnodes.Next() {
+		elem := make(map[string]int64)
+		for _, element := range amountofnodes.Record().Keys() {
+			if value, contains := amountofnodes.Record().Get(element); contains {
+				elem[element] = value.(int64)
 			}
 		}
-		sliceofrecords = append(sliceofrecords, recor)
+		tojson = append(tojson, elem)
 	}
-	jsonData, err := json.Marshal(sliceofrecords)
-	if err != nil {
-		return nil, err
+	return tojson, nil
+}
+
+/*
+GetAmountOfRels will return the amout of relationship.
+*/
+func GetAmountOfRels(session *neo4j.Session, args map[string]interface{}) ([]map[string]int64, error) {
+	var tojson []map[string]int64
+	amountofrels, _ := (*session).Run(GetCountRelsToNodes(), args)
+	for amountofrels.Next() {
+		elem := make(map[string]int64)
+		for _, element := range amountofrels.Record().Keys() {
+			if value, contains := amountofrels.Record().Get(element); contains {
+				elem[element] = value.(int64)
+			}
+		}
+		tojson = append(tojson, elem)
 	}
-	return jsonData, nil
+	return tojson, nil
+}
+
+/*
+GetAmountofHTMLNodes will return the amount of html nodes.
+*/
+func GetAmountofHTMLNodes(session *neo4j.Session, args map[string]interface{}) ([]map[string]int64, error) {
+	var tojson []map[string]int64
+	amountofhtmls, _ := (*session).Run(GetCountHtmlsNodes(), args)
+	for amountofhtmls.Next() {
+		elem := make(map[string]int64)
+		for _, element := range amountofhtmls.Record().Keys() {
+			if value, contains := amountofhtmls.Record().Get(element); contains {
+				elem[element] = value.(int64)
+			}
+		}
+		tojson = append(tojson, elem)
+	}
+	return tojson, nil
+}
+
+/*
+GetAmountOfStylesheets will return the amount of Stylesheets.
+*/
+func GetAmountOfStylesheets(session *neo4j.Session, args map[string]interface{}) ([]map[string]int64, error) {
+	var tojson []map[string]int64
+	amountofcss, _ := (*session).Run(GetCountCSSNodes(), args)
+	for amountofcss.Next() {
+		elem := make(map[string]int64)
+		for _, element := range amountofcss.Record().Keys() {
+			if value, contains := amountofcss.Record().Get(element); contains {
+				elem[element] = value.(int64)
+			}
+		}
+		tojson = append(tojson, elem)
+	}
+	return tojson, nil
+}
+
+/*
+GetAmountOfJavascriptFiles will return the amount of Javascript files.
+*/
+func GetAmountOfJavascriptFiles(session *neo4j.Session, args map[string]interface{}) ([]map[string]int64, error) {
+	var tojson []map[string]int64
+	amountofjs, _ := (*session).Run(GetCountJavascriptNodes(), args)
+	for amountofjs.Next() {
+		elem := make(map[string]int64)
+		for _, element := range amountofjs.Record().Keys() {
+			if value, contains := amountofjs.Record().Get(element); contains {
+				elem[element] = value.(int64)
+			}
+		}
+		tojson = append(tojson, elem)
+	}
+	return tojson, nil
+}
+
+/*
+GetAmountOfImages will return amount of images.
+*/
+func GetAmountOfImages(session *neo4j.Session, args map[string]interface{}) ([]map[string]int64, error) {
+	var tojson []map[string]int64
+	amountofimages, _ := (*session).Run(GetCountImageNodes(), args)
+	for amountofimages.Next() {
+		elem := make(map[string]int64)
+		for _, element := range amountofimages.Record().Keys() {
+			if value, contains := amountofimages.Record().Get(element); contains {
+				elem[element] = value.(int64)
+			}
+		}
+		tojson = append(tojson, elem)
+	}
+	return tojson, nil
 }

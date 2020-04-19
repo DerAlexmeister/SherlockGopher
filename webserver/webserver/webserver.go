@@ -5,7 +5,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/neo4j/neo4j-go-driver/neo4j"
 	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertowebserver"
+	sherlockneo "github.com/ob-algdatii-20ss/SherlockGopher/sherlockneo"
 )
 
 /*
@@ -13,6 +15,7 @@ SherlockWebserver will be the webserver being the man in the middle between the 
 */
 type SherlockWebserver struct {
 	Dependency *SherlockWebServerDependency
+	Driver     *neo4j.Driver
 }
 
 /*
@@ -27,6 +30,15 @@ SetCrawlerServiceDependency will set the dependency for the sherlockwebserver pa
 */
 func (server *SherlockWebserver) SetCrawlerServiceDependency(deps *SherlockWebServerDependency) {
 	server.Dependency = deps
+}
+
+/*
+Helloping Ping will return just for testing purposes a pong. Like PING PONG.
+*/
+func (server *SherlockWebserver) Helloping(context *gin.Context) {
+	context.JSON(200, map[string]string{
+		"message": "Pong",
+	})
 }
 
 /*
@@ -47,16 +59,13 @@ func NewRequestedURL() *RequestedURL {
 New will return a new instance of the SherlockWebserver
 */
 func New() *SherlockWebserver {
+	ldriver, err := sherlockneo.GetNewDatabaseConnection()
+	if err == nil {
+		return &SherlockWebserver{
+			Driver: &ldriver,
+		}
+	}
 	return &SherlockWebserver{}
-}
-
-/*
-Helloping Ping will return just for testing purposes a pong. Like PING PONG.
-*/
-func (server *SherlockWebserver) Helloping(context *gin.Context) {
-	context.JSON(200, map[string]string{
-		"message": "Pong",
-	})
 }
 
 /*

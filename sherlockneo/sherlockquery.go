@@ -34,7 +34,10 @@ const (
 	contrainsimg string = "CREATE CONSTRAINT ON (i:Image) ASSERT i.address IS UNIQUE"
 
 	//returnall will return all nodes and their relationsships in the db.
-	returnall string = "MATCH (n) RETURN n"
+	returnall string = "MATCH (n) RETURN properties(n)"
+
+	//returnall will return all nodes and their relationsships in the db.
+	returnallrels string = "MATCH (n)-[r]-(k) RETURN n.Address, n.Filetype, Type(r), k.Address, k.Filetype "
 
 	//connectbylink will connect two given nodes by a link relationship.
 	connectbylink string = "MATCH (f:Website), (s:Website) WHERE f.Address = \"%s\" AND s.Address = \"%s\" AND s.Filetype = \"HTML\" MERGE (f)-[r:Links]->(s);"
@@ -48,26 +51,23 @@ const (
 	//connectbyRequireShows will connect a website with a image instance by the relationship shows.
 	connectbyShows string = "MATCH (f:Website), (s:Image) WHERE f.Address = \"%s\" AND s.Address = \"%s\" AND s.Filetype = \"Image\" MERGE (f)-[r:Shows]->(s);"
 
-	//starterkidofnode Will return a subset of nodes connected directly to a given node.
-	starterkidofnode string = "MATCH (a)-[:]->(b) WHERE a.address = \"%s\" RETURN a, b" // TODO Vlt. mit Limit.
-
 	//countnumberofnodes will count the number of nodes.
-	countnumberofnodes string = "MATCH (n) RETURN count(n) as count"
+	countnumberofnodes string = "MATCH (n) RETURN count(n) as amountofnodes"
 
 	//countnumberofrels will count the number of relationships.
-	countnumberofrels string = "MATCH ()-[r]->() RETURN count(r) as count"
+	countnumberofrels string = "MATCH ()-[r]->() RETURN count(r) as amountofrels"
 
 	//countnumberofstylesheets will count the number of CSS files in the db.
-	countnumberofstylesheets string = "MATCH (n) WHERE n.Filetype = \"CSS\" RETURN count(n) as count"
+	countnumberofstylesheets string = "MATCH (n) WHERE n.Filetype = \"CSS\" RETURN count(n) as amountofsheets"
 
 	//countnumberofjavascript will count the number of javascripts in the db.
-	countnumberofjavascript string = "MATCH (n) WHERE n.Filetype = \"Javascript\" RETURN count(n) as count"
+	countnumberofjavascript string = "MATCH (n) WHERE n.Filetype = \"Javascript\" RETURN count(n) as amountofjs"
 
 	//countnumberofimages will count the number of Images in the db.
-	countnumberofimages string = "MATCH (n) WHERE n.Filetype = \"Image\" RETURN count(n) as count"
+	countnumberofimages string = "MATCH (n) WHERE n.Filetype = \"Image\" RETURN count(n) as amountofimages"
 
 	//countnumberofhtml will count the number of HTML sites in the db.
-	countnumberofhtml string = "MATCH (n) WHERE n.Filetype = \"HTML\" RETURN count(n) as count"
+	countnumberofhtml string = "MATCH (n) WHERE n.Filetype = \"HTML\" RETURN count(n) as amountofhtmls"
 
 	//responseTimeInTableAndStatusCode will be for each website the responsetime and the code so easy to put in a table.
 	responseTimeInTableAndStatusCode string = "MATCH (n) RETURN n.Address, n.Responsetime, n.Statuscode"
@@ -113,13 +113,6 @@ GetConnectbyLink will return the query to link to nodes together
 */
 func GetConnectbyLink() string {
 	return connectbylink
-}
-
-/*
-GetStarterKidOfNode will return the query for a small subset of nodes.
-*/
-func GetStarterKidOfNode() string {
-	return starterkidofnode
 }
 
 /*
