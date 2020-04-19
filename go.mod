@@ -16,4 +16,6 @@ require (
 	github.com/go-log/log v0.1.0
 	github.com/pkg/errors v0.9.1
 	google.golang.org/grpc v1.26.0
+	golang.org/x/sys v0.0.0-20200321134203-328b4cd54aae // indirect
+	github.com/gin-gonic/contrib v0.0.0-20191209060500-d6e26eeaa607
 )

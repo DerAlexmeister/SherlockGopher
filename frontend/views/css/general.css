@@ -1,0 +1,83 @@
+.body {
+    background-color:#ebedef;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+.searchbar {
+    position: absolute;
+    width: 100%;
+    height: 40px;
+    top: 0px;
+    left: 0px;
+    background-color: #e74c3c;
+    box-shadow: 2px 2px 2px 2px #aca7a7;
+}
+
+.logo {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    top: 0px;
+    left: 30px;
+}
+
+.title {
+    position: absolute;
+    top: 0px;
+    left: 80px;
+    color:white;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.searchbarform {
+    position: absolute;
+    width: 200px;
+    height: 100%;
+    right: 0px;
+    top: 0px;
+}
+
+.searchbarbutton {
+    position: inherit;
+    right: 30px;
+    top: 10px;
+    bottom: 10px;
+    height: 20px;
+    border-radius: 20px;
+    border-width: 1px;
+    border-color: white;
+    background-color: #e74c3c;
+    color: white;
+    border-style: solid;
+    font-size: 10px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+
+}
+
+.searchbarbutton:hover {
+    border-color: #e74c3c;
+    background-color: white;
+    border-style: none;
+    color: #e74c3c;
+}
+
+.searchbarinput {
+    position: inherit;
+    right: 100px;
+    top: 10px;
+    bottom: 10px;
+    height: 20px;
+    width: 180px;
+    border-radius: 20px;
+    border-width: 1px;
+    background-color: white;
+    color: gray;
+    border-style: solid;
+    font-size: 8px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+
+}
