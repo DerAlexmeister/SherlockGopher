@@ -12,9 +12,11 @@ steps:
           - apt install pkg-config
           - wget https://github.com/neo4j-drivers/seabolt/releases/download/v1.7.4/seabolt-1.7.4-Linux-ubuntu-18.04.deb
           - apt install -f ./seabolt-1.7.4-Linux-ubuntu-18.04.deb
+          - export PKG_CONFIG_PATH="/usr/local/share/pkgconfig"
           - go get github.com/neo4j/neo4j-go-driver/neo4j
-          - go test /analyser/sherlockanalyser/
-          - go build /analyser
+          - ls -la
+          - go test 
+          - go build
     - name: lint
       image: golangci/golangci-lint
       commands:
