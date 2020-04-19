@@ -13,8 +13,8 @@ steps:
           - wget https://github.com/neo4j-drivers/seabolt/releases/download/v1.7.4/seabolt-1.7.4-Linux-ubuntu-18.04.deb
           - apt install -f ./seabolt-1.7.4-Linux-ubuntu-18.04.deb
           - go get github.com/neo4j/neo4j-go-driver/neo4j
-          - go test
-          - go build
+          - go test /analyser/sherlockanalyser/
+          - go build /analyser
     - name: lint
       image: golangci/golangci-lint
       commands:
