@@ -1,10 +1,20 @@
 kind: pipeline
 name: default
 
+platform:
+  arch: amd64
+
 steps:
-    - name: test
-      image: golang
+    - name: test analyser
+      image: golang:1.14
       commands:
+          - cd analyser/sherlockanalser
+          - go test
+          - go build
+    - name: test crawler
+      image: golang:1.14
+        commands:
+          - cd sherlockcrawler/sherlockcrawler
           - go test
           - go build
     - name: lint
