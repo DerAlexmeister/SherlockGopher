@@ -9,8 +9,10 @@ steps:
     - name:
       image: golang:1.14
       commands:
-          - neo4j start
-          - sleep 5
+          - sudo apt install pkg-config
+          - wget https://github.com/neo4j-drivers/seabolt/releases/download/v1.7.4/seabolt-1.7.4-Linux-ubuntu-18.04.deb
+          - sudo apt intall-get ./seabolt-1.7.4-Linux-ubuntu-18.04.deb
+          - go get github.com/neo4j/neo4j-go-driver/neo4j
           - go test
           - go build
     - name: lint
