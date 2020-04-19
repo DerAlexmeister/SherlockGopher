@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyser"
 	"strings"
 	"sync"
 	"time"
+
+	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyser"
 
 	jw "github.com/jwalteri/GO/jwstring"
 	model "github.com/ob-algdatii-20ss/SherlockGopher/analyser/sherlockparser"
@@ -42,17 +43,17 @@ const (
 analyserTaskRequest will be a request made by the analyser.
 */
 type analyserTaskRequest struct {
-	id    		 uint64
+	id           uint64
 	workAddr     string
-	html    	 string
-	state	     TASKSTATE
-	linkTags  	 map[string]string
+	html         string
+	state        TASKSTATE
+	linkTags     map[string]string
 	rootAddr     string
 	foundLinks   []string
 	parserTime   int64
 	analyserTime int64
 	crawlerData  *CrawlerData
-	Dependencies  *AnalyserDependency
+	Dependencies *AnalyserDependency
 }
 
 /*
@@ -65,7 +66,7 @@ func (analyserTask *analyserTaskRequest) InjectDependency(deps *AnalyserDependen
 
 /*
 CrawlerData returns CrawlerData
- */
+*/
 func (analyserTask *analyserTaskRequest) CrawlerData() *CrawlerData {
 	return analyserTask.crawlerData
 }
@@ -195,7 +196,6 @@ func (analyserTask *analyserTaskRequest) WorkAddr() string {
 	return analyserTask.workAddr
 }
 
-
 /*
 Id returns Id
 */
@@ -286,8 +286,7 @@ func (analyserTask *analyserTaskRequest) verifyLink(link string) (string, error)
 
 	if link[0] == '/' {
 		return analyserTask.RootAddr() + link, nil
-	} else
-	if !strings.HasPrefix(link, "www") && !strings.HasPrefix(link, "http") {
+	} else if !strings.HasPrefix(link, "www") && !strings.HasPrefix(link, "http") {
 		return "", errors.New("it's not a link")
 	} else {
 		return link, nil
@@ -380,7 +379,7 @@ func (analyserTask *analyserTaskRequest) process() {
 
 	htmlTree := model.NewHTMLTree(analyserTask.Html())
 	start := time.Now()
-	htmlTree.Parse()
+	htmlTree.Parse(false)
 	rootNode := htmlTree.RootNode()
 	analyserTask.parserTime = time.Since(start).Nanoseconds()
 
@@ -392,4 +391,3 @@ func (analyserTask *analyserTaskRequest) process() {
 	analyserTask.sendToCrawler()
 	analyserTask.SetState(FINISHED)
 }
-

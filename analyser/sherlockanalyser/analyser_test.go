@@ -2,8 +2,9 @@ package sherlockanalyser
 
 import (
 	"context"
-	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto/analysertowebserver"
 	"testing"
+
+	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto/analysertowebserver"
 )
 
 /*
@@ -17,8 +18,8 @@ func TestNewAnalyserServiceHandler(t *testing.T) {
 
 	if queue := sherlock.getQueue(); queue == nil {
 		t.Fatal("queue was nil but should not be ")
-	//} else if deps := sherlock.getDependency(); deps == nil { TODO: Alex fragen
-	//	t.Fatal("dependencies was nil but should not be ")
+		//} else if deps := sherlock.getDependency(); deps == nil { TODO: Alex fragen
+		//	t.Fatal("dependencies was nil but should not be ")
 	} else {
 		t.Log("successfully created all things needed in the new analyser instance")
 	}
@@ -52,8 +53,7 @@ func TestStatusOfQueue(t *testing.T) {
 			t.Fatalf("got a zero id for task at index %d", i)
 		}
 	}
-	if service.StatusOfTaskQueue(context.TODO(), nil, &response);
-	response.GetUndone() != undone {
+	if service.StatusOfTaskQueue(context.TODO(), nil, &response); response.GetUndone() != undone {
 		t.Fatalf("number of undone tasks does not match. Expected: %d, Got %d", undone, response.GetUndone())
 	} else if response.GetProcessing() != processing {
 		t.Fatalf("number of finished tasks does not match. Expected: %d, Got %d", processing, response.GetProcessing())
