@@ -18,7 +18,7 @@ steps:
           - export C_INCLUDE_PATH=/seabolt/build/dist/includ
           - go get github.com/neo4j/neo4j-go-driver/neo4j
           - ls -la
-          - cd /analyser/sherlockcrawler/sherlockcrawler
+          - cd /sherlockcrawler/sherlockcrawler
           - ls -la
           - go test
           - cd ..
