@@ -16,12 +16,7 @@ jobs:
 
             - name: Get dependencies
               run: |
-                  cd ./analyser
-                  go get -v -t -d ./...
-                  cd ..
-                  cd ./sherlockcrawler
-                  go get -v -t -d ./...
-                  cd ..
+                  go get -v -t -d
                   if [ -f Gopkg.toml ]; then
                       curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
                       dep ensure
