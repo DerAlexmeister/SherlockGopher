@@ -6,7 +6,7 @@ platform:
   os: linux
 
 steps:
-    - name:
+    - name: test
       image: golang:1.14
       commands:
           - sudo apt install pkg-config
