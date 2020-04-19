@@ -7,6 +7,7 @@ platform:
 
 steps:
     - name: install
+      image: golang:1.14
       commands:
           - apt install pkg-config
           - wget https://github.com/neo4j-drivers/seabolt/releases/download/v1.7.4/seabolt-1.7.4-Linux-ubuntu-18.04.deb
