@@ -3,7 +3,9 @@ package webserver
 import (
 	"fmt"
 	"net/http"
+	"time"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	"github.com/neo4j/neo4j-go-driver/neo4j"
 	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertowebserver"
@@ -71,14 +73,72 @@ func New() *SherlockWebserver {
 /*
 RecieveURL will handle the requested url which should be crawled.
 */
-func (server *SherlockWebserver) RecieveURL(context *gin.Context) {
+func (server *SherlockWebserver) ReceiveURL(context *gin.Context) {
+	sherlockcrawlerService := server.Dependency.Crawler()
+
 	var url = NewRequestedURL()
 	context.BindJSON(url)
-	context.JSON(http.StatusOK, gin.H{
-		"Status": "Fine",
-	}) //Send fine as response.
-	fmt.Println(url)
 
-	//TODO check if url is empty or a well formed url.
-	//TODO send to crawler.
+	//check if url is empty or a well formed url.
+	if govalidator.IsURL(url.URL) {
+		context.JSON(http.StatusOK, gin.H{
+			"Status": "Fine",
+		}) //Send fine as response.
+		fmt.Println(url)
+		//send to crawler
+		didSendCount := 0
+		for didSend := false; !didSend; {
+			if didSendCount < 5 {
+				response, err := sherlockcrawlerService.ReceiveURL(context, &crawlerproto.SubmitURLRequest{URL: url.URL})
+				if err == nil && response.Recieved {
+					didSend = true
+				} else {
+					didSendCount++
+					time.Sleep(100 * time.Millisecond)
+				}
+			} else {
+				context.JSON(http.StatusInternalServerError, gin.H{
+					"Status": "Cant send url to crawler",
+				})
+				didSend = true
+			}
+		}
+
+	} else {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"Status": "Url was empty or malformed",
+		})
+	}
+}
+
+/*
+RecieveURL will handle the requested url which should be crawled.
+*/
+func (server *SherlockWebserver) ReceiveMetadata(context *gin.Context) {
+	sherlockcrawlerService := server.Dependency.Crawler()
+	in_crawler := &crawlerproto.TaskStatusRequest{}
+	response_crawler, err_crawler := sherlockcrawlerService.StatusOfTaskQueue(context, in_crawler)
+
+	//TODO Analyser Dependency
+	/*
+		sherlockanalyserService := server.Dependency.Analyser()
+		in_analyser := &analyserproto.TaskStatusRequest{}
+		response_analyser, err_analyser := sherlockanalyserService.StatusOfTaskQueue(context, in_analyser)
+	*/
+
+	if err_crawler == nil /*&& err_analyser == nil*/ {
+		context.JSON(http.StatusOK, gin.H{
+			"Website":    response_crawler.Website,
+			"Undone":     response_crawler.Undone,
+			"Processing": response_crawler.Processing,
+			"Finished":   response_crawler.Finished,
+			"Failed":     response_crawler.Failed,
+
+			//TODO Analyser StatusOfTaskQueue out senden
+		})
+	} else {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"Status": "Couldnt get Metadata",
+		})
+	}
 }

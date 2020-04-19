@@ -55,7 +55,7 @@ func main() {
 	router.GET("/areyouthere", webServerService.Helloping)
 
 	//POST Requests.
-	router.POST("/search", webServerService.RecieveURL)
+	router.POST("/search", webServerService.ReceiveURL)
 
 	//DONT implement this yet.
 	controller := router.Group("/controller/v1")
