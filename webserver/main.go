@@ -70,10 +70,10 @@ func main() {
 
 	//Graph Group.
 	graphsapi := router.Group("/graph/v1")
-	graphsapi.GET("/meta", webServerService.GraphMetaV1)           // Get all meta information about neo4j.
-	graphsapi.GET("/all", webServerService.GraphFetchWholeGraphV1) // Will return the entire graph, maybe build a stream.
-	graphsapi.GET("/performenceofsites")                           //Will return address with statuscode and reponsetime.
-	graphsapi.POST("/detailsofnode")                               // get all information of a node.
+	graphsapi.GET("/meta", webServerService.GraphMetaV1)                             // Get all meta information about neo4j.
+	graphsapi.GET("/all", webServerService.GraphFetchWholeGraphV1)                   // Will return the entire graph, maybe build a stream.
+	graphsapi.GET("/performenceofsites", webServerService.GraphPerformenceOfSitesV1) //Will return address with statuscode and reponsetime.
+	graphsapi.POST("/detailsofnode")                                                 // get all information of a node.
 
 	router.Run(getAddress())
 

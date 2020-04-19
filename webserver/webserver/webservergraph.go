@@ -3,6 +3,7 @@ package webserver
 import (
 	"net/http"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	sherlockneo "github.com/ob-algdatii-20ss/SherlockGopher/sherlockneo"
 )
@@ -49,12 +50,38 @@ func (server *SherlockWebserver) GraphMetaV1(context *gin.Context) {
 GraphPerformenceOfSitesV1 will return the performence of all sites like statuscode and RTT.
 */
 func (server *SherlockWebserver) GraphPerformenceOfSitesV1(context *gin.Context) {
+	session, err := sherlockneo.GetSession(server.Driver)
+	if err != nil {
+		context.JSON(http.StatusOK, gin.H{
+			"Message": "A Problem occurred while trying to connect to the Database", //TODO improve message
+		})
+	}
+	args := make(map[string]interface{})
+	performence, _ := sherlockneo.GetPerformenceOfSite(&session, args)
 
+	var meta [][]map[string]string
+	meta = append(meta, performence)
+	context.JSON(http.StatusOK, meta)
 }
 
 /*
 GraphNodeDetailsV1 will
 */
 func (server *SherlockWebserver) GraphNodeDetailsV1(context *gin.Context) {
+	session, err := sherlockneo.GetSession(server.Driver)
 
+	var url = NewRequestedURL()
+	context.BindJSON(url)
+
+	//check if url is empty or a well formed url.
+	if govalidator.IsURL(url.URL) {
+		if err != nil {
+			context.JSON(http.StatusOK, gin.H{
+				"Message": "A Problem occurred while trying to connect to the Database", //TODO improve message
+			})
+		}
+	}
+	args := make(map[string]interface{})
+	performence, _ := sherlockneo.GetPerformenceOfSite(&session, args) //TODO
+	context.JSON(http.StatusOK, performence)
 }

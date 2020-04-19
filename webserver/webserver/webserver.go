@@ -71,7 +71,7 @@ func New() *SherlockWebserver {
 }
 
 /*
-RecieveURL will handle the requested url which should be crawled.
+ReceiveURL will handle the requested url which should be crawled.
 */
 func (server *SherlockWebserver) ReceiveURL(context *gin.Context) {
 	sherlockcrawlerService := server.Dependency.Crawler()

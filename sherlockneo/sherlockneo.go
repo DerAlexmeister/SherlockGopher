@@ -247,9 +247,22 @@ func GetAmountOfImages(session *neo4j.Session, args map[string]interface{}) ([]m
 /*
 GetPerformenceOfSite will return the performence index of each site like address, rTT and statuscode.
 */
-func GetPerformenceOfSite(session *neo4j.Session, args map[string]interface{}) ([]map[string]int64, error) {
-	var tojson []map[string]int64
+func GetPerformenceOfSite(session *neo4j.Session, args map[string]interface{}) ([]map[string]string, error) {
+	var tojson []map[string]string
 	performence, _ := (*session).Run(GetResponseTimeInTableAndStatusCode(), args)
-	fmt.Println(performence)
+	for performence.Next() {
+		elem := make(map[string]string)
+		for _, element := range performence.Record().Keys() {
+			if value, contains := performence.Record().Get(element); contains {
+				switch value.(type) {
+				case int64:
+					elem[element] = fmt.Sprintf("%d", value)
+				case string:
+					elem[element] = value.(string)
+				}
+			}
+		}
+		tojson = append(tojson, elem)
+	}
 	return tojson, nil
 }
