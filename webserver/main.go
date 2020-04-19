@@ -54,9 +54,6 @@ func main() {
 	//Get Requests.
 	router.GET("/areyouthere", webServerService.Helloping)
 
-	//POST Requests.
-	router.POST("/search", webServerService.ReceiveURL)
-
 	//DONT implement this yet.
 	controller := router.Group("/controller/v1")
 	controller.GET("/stop")   //will stop the cralwer and the analyser
@@ -73,7 +70,9 @@ func main() {
 	graphsapi.GET("/meta", webServerService.GraphMetaV1)                             // Get all meta information about neo4j.
 	graphsapi.GET("/all", webServerService.GraphFetchWholeGraphV1)                   // Will return the entire graph, maybe build a stream.
 	graphsapi.GET("/performenceofsites", webServerService.GraphPerformenceOfSitesV1) //Will return address with statuscode and reponsetime.
-	graphsapi.POST("/detailsofnode")                                                 // get all information of a node.
+
+	graphsapi.POST("/detailsofnode", webServerService.GraphNodeDetailsV1) // get all information of a node.
+	graphsapi.POST("/search", webServerService.ReceiveURL)
 
 	router.Run(getAddress())
 

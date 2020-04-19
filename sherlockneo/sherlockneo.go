@@ -97,30 +97,10 @@ func CloseSession(session *neo4j.Session) {
 }
 
 /*
-GetAllNodesAndProperties will return all nodes an their properties.
-*/
-func GetAllNodesAndProperties(session *neo4j.Session, args map[string]interface{}) ([]map[string]interface{}, error) {
-	//TODO
-	var results []map[string]interface{}
-	result, _ := (*session).Run(GetReturnAll(), args)
-	for result.Next() {
-		//fmt.Println(result.Record().Keys())
-
-		a := result.Record().GetByIndex(0).(map[string]interface{}) //n.id
-		for k, v := range a {
-			fmt.Println(k, v)
-		}
-		fmt.Println("------------------------")
-
-	}
-	return results, nil
-}
-
-/*
 GetAllNodesAndTheirRelationships will return all nodes with address and the rels to other nodes.
 */
 func GetAllNodesAndTheirRelationships(session *neo4j.Session, args map[string]interface{}) ([]map[string]string, error) {
-	results, _ := (*session).Run(GetAllRels(), args)
+	results, _ := (*session).Run(getAllRels(), args)
 	var tojson []map[string]string
 	for results.Next() {
 		elem := make(map[string]string)
@@ -140,7 +120,7 @@ GetAmountOfNodes will return the amount of nodes
 */
 func GetAmountOfNodes(session *neo4j.Session, args map[string]interface{}) ([]map[string]int64, error) {
 	var tojson []map[string]int64
-	amountofnodes, _ := (*session).Run(GetCountNumberOfNodes(), args)
+	amountofnodes, _ := (*session).Run(getCountNumberOfNodes(), args)
 
 	for amountofnodes.Next() {
 		elem := make(map[string]int64)
@@ -159,7 +139,7 @@ GetAmountOfRels will return the amout of relationship.
 */
 func GetAmountOfRels(session *neo4j.Session, args map[string]interface{}) ([]map[string]int64, error) {
 	var tojson []map[string]int64
-	amountofrels, _ := (*session).Run(GetCountRelsToNodes(), args)
+	amountofrels, _ := (*session).Run(getCountRelsToNodes(), args)
 	for amountofrels.Next() {
 		elem := make(map[string]int64)
 		for _, element := range amountofrels.Record().Keys() {
@@ -177,7 +157,7 @@ GetAmountofHTMLNodes will return the amount of html nodes.
 */
 func GetAmountofHTMLNodes(session *neo4j.Session, args map[string]interface{}) ([]map[string]int64, error) {
 	var tojson []map[string]int64
-	amountofhtmls, _ := (*session).Run(GetCountHtmlsNodes(), args)
+	amountofhtmls, _ := (*session).Run(getCountHtmlsNodes(), args)
 	for amountofhtmls.Next() {
 		elem := make(map[string]int64)
 		for _, element := range amountofhtmls.Record().Keys() {
@@ -195,7 +175,7 @@ GetAmountOfStylesheets will return the amount of Stylesheets.
 */
 func GetAmountOfStylesheets(session *neo4j.Session, args map[string]interface{}) ([]map[string]int64, error) {
 	var tojson []map[string]int64
-	amountofcss, _ := (*session).Run(GetCountCSSNodes(), args)
+	amountofcss, _ := (*session).Run(getCountCSSNodes(), args)
 	for amountofcss.Next() {
 		elem := make(map[string]int64)
 		for _, element := range amountofcss.Record().Keys() {
@@ -213,7 +193,7 @@ GetAmountOfJavascriptFiles will return the amount of Javascript files.
 */
 func GetAmountOfJavascriptFiles(session *neo4j.Session, args map[string]interface{}) ([]map[string]int64, error) {
 	var tojson []map[string]int64
-	amountofjs, _ := (*session).Run(GetCountJavascriptNodes(), args)
+	amountofjs, _ := (*session).Run(getCountJavascriptNodes(), args)
 	for amountofjs.Next() {
 		elem := make(map[string]int64)
 		for _, element := range amountofjs.Record().Keys() {
@@ -231,7 +211,7 @@ GetAmountOfImages will return amount of images.
 */
 func GetAmountOfImages(session *neo4j.Session, args map[string]interface{}) ([]map[string]int64, error) {
 	var tojson []map[string]int64
-	amountofimages, _ := (*session).Run(GetCountImageNodes(), args)
+	amountofimages, _ := (*session).Run(getCountImageNodes(), args)
 	for amountofimages.Next() {
 		elem := make(map[string]int64)
 		for _, element := range amountofimages.Record().Keys() {
@@ -249,11 +229,34 @@ GetPerformenceOfSite will return the performence index of each site like address
 */
 func GetPerformenceOfSite(session *neo4j.Session, args map[string]interface{}) ([]map[string]string, error) {
 	var tojson []map[string]string
-	performence, _ := (*session).Run(GetResponseTimeInTableAndStatusCode(), args)
+	performence, _ := (*session).Run(getResponseTimeInTableAndStatusCode(), args)
 	for performence.Next() {
 		elem := make(map[string]string)
 		for _, element := range performence.Record().Keys() {
 			if value, contains := performence.Record().Get(element); contains {
+				switch value.(type) {
+				case int64:
+					elem[element] = fmt.Sprintf("%d", value)
+				case string:
+					elem[element] = value.(string)
+				}
+			}
+		}
+		tojson = append(tojson, elem)
+	}
+	return tojson, nil
+}
+
+/*
+GetDetailsOfNode will return information of a node given as parameter.
+*/
+func GetDetailsOfNode(session *neo4j.Session, args map[string]interface{}) ([]map[string]string, error) {
+	var tojson []map[string]string
+	details, _ := (*session).Run(getReturnNode(), args)
+	for details.Next() {
+		elem := make(map[string]string)
+		for _, element := range details.Record().Keys() {
+			if value, contains := details.Record().Get(element); contains {
 				switch value.(type) {
 				case int64:
 					elem[element] = fmt.Sprintf("%d", value)

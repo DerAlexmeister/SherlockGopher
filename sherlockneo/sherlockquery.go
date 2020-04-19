@@ -36,6 +36,9 @@ const (
 	//returnall will return all nodes and their relationsships in the db.
 	returnall string = "MATCH (n) RETURN properties(n)"
 
+	//returnnode will return all information of a node.
+	returnnode string = "MATCH (n) WHERE n.address = \"$s\" RETURN properties(n)"
+
 	//returnall will return all nodes and their relationsships in the db.
 	returnallrels string = "MATCH (n)-[r]-(k) RETURN n.Address, n.Filetype, Type(r), k.Address, k.Filetype "
 
@@ -81,92 +84,99 @@ func getDropGraph() string {
 }
 
 /*
-GetContains will return the query to check if a node is contained.
+getContains will return the query to check if a node is contained.
 */
-func GetContains() string {
+func getContains() string {
 	return contains
 }
 
 /*
 GetAddNode will return the query to add a node.
 */
-func GetAddNode() string {
+func getAddNode() string {
 	return addnode
 }
 
 /*
 GetConstrains will return the query to the main constrain.
 */
-func GetConstrains() string {
+func getConstrains() string {
 	return constrains
 }
 
 /*
 GetReturnAll will return the query to fetch all entitys in a DB.
 */
-func GetReturnAll() string {
+func getReturnAll() string {
 	return returnall
 }
 
 /*
 GetConnectbyLink will return the query to link to nodes together
 */
-func GetConnectbyLink() string {
+func getConnectbyLink() string {
 	return connectbylink
 }
 
 /*
 GetCountNumberOfNodes will return the query to get the number of nodes in the db.
 */
-func GetCountNumberOfNodes() string {
+func getCountNumberOfNodes() string {
 	return countnumberofnodes
 }
 
 /*
 GetCountRelsToNodes will return the query to get the number of relationships in the db.
 */
-func GetCountRelsToNodes() string {
+func getCountRelsToNodes() string {
 	return countnumberofrels
 }
 
 /*
 GetCountCSSNodes will return the query to get the number of type stylesheets in the db.
 */
-func GetCountCSSNodes() string {
+func getCountCSSNodes() string {
 	return countnumberofstylesheets
 }
 
 /*
 GetCountJavascriptNodes will return the query to get the number of type javascripts in the db.
 */
-func GetCountJavascriptNodes() string {
+func getCountJavascriptNodes() string {
 	return countnumberofjavascript
 }
 
 /*
 GetCountImageNodes will return the query to get the number of nodes of type images in the db.
 */
-func GetCountImageNodes() string {
+func getCountImageNodes() string {
 	return countnumberofimages
 }
 
 /*
 GetCountHtmlsNodes will return the query to get the number of nodes of type html in the db.
 */
-func GetCountHtmlsNodes() string {
+func getCountHtmlsNodes() string {
 	return countnumberofhtml
 }
 
 /*
 GetResponseTimeInTableAndStatusCode will return the query to get for each address the statuscode and the RTT.
 */
-func GetResponseTimeInTableAndStatusCode() string {
+func getResponseTimeInTableAndStatusCode() string {
 	return responseTimeInTableAndStatusCode
 }
 
 /*
 GetAllRels will return the query to get all relationships.
 */
-func GetAllRels() string {
+func getAllRels() string {
 	return returnallrels
+}
+
+/*
+getReturnNode will return the query to get information of a node.
+*/
+func getReturnNode() string {
+	return returnnode
 }

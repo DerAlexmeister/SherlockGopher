@@ -8,6 +8,8 @@ import (
 	sherlockneo "github.com/ob-algdatii-20ss/SherlockGopher/sherlockneo"
 )
 
+//TODO close session after finishing the response.
+
 /*
 GraphFetchWholeGraphV1 will fetch the entire graph.
 */
@@ -35,11 +37,11 @@ func (server *SherlockWebserver) GraphMetaV1(context *gin.Context) {
 	}
 	args := make(map[string]interface{})
 	images, _ := sherlockneo.GetAmountOfImages(&session, args)
-	css, _ := sherlockneo.GetAmountOfImages(&session, args)
-	js, _ := sherlockneo.GetAmountOfImages(&session, args)
-	html, _ := sherlockneo.GetAmountOfImages(&session, args)
-	rels, _ := sherlockneo.GetAmountOfImages(&session, args)
-	nodes, _ := sherlockneo.GetAmountOfImages(&session, args)
+	css, _ := sherlockneo.GetAmountOfStylesheets(&session, args)
+	js, _ := sherlockneo.GetAmountOfJavascriptFiles(&session, args)
+	html, _ := sherlockneo.GetAmountofHTMLNodes(&session, args)
+	rels, _ := sherlockneo.GetAmountOfRels(&session, args)
+	nodes, _ := sherlockneo.GetAmountOfNodes(&session, args)
 
 	var meta [][]map[string]int64
 	meta = append(meta, images, css, js, html, rels, nodes)
@@ -82,6 +84,7 @@ func (server *SherlockWebserver) GraphNodeDetailsV1(context *gin.Context) {
 		}
 	}
 	args := make(map[string]interface{})
+	args["address"] = string(url.URL)
 	performence, _ := sherlockneo.GetPerformenceOfSite(&session, args) //TODO
 	context.JSON(http.StatusOK, performence)
 }
