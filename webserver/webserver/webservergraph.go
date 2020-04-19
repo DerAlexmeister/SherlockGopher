@@ -45,4 +45,16 @@ func (server *SherlockWebserver) GraphMetaV1(context *gin.Context) {
 	context.JSON(http.StatusOK, meta)
 }
 
-//func (server *SherlockWebserver) GraphMetaV1(context *gin.Context)
+/*
+GraphPerformenceOfSitesV1 will return the performence of all sites like statuscode and RTT.
+*/
+func (server *SherlockWebserver) GraphPerformenceOfSitesV1(context *gin.Context) {
+
+}
+
+/*
+GraphNodeDetailsV1 will
+*/
+func (server *SherlockWebserver) GraphNodeDetailsV1(context *gin.Context) {
+
+}

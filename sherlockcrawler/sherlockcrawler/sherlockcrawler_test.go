@@ -303,7 +303,7 @@ TestRunManager will test the runManager function which will run over all
 types of tasks an start a goroutine for the function ManageFailedTasks, manageFinishedTasks
 and manageUndoneTasks. In the end there should be 10 failed task for the crawler and 10 finished
 task which are previously undone tasks and 10 failed task to send to the analyser.
-
+*/
 func TestRunManager(t *testing.T) {
 	service := NewSherlockCrawlerService()
 	deps := NewSherlockDependencies()
@@ -341,7 +341,7 @@ func TestRunManager(t *testing.T) {
 		t.Log("Successfully created all tasks and finished them of.")
 	}
 }
-*/
+
 /*
 BenchmarkCreateTask benchmark test for the createtask function
 to see how many task can be created in a secound.

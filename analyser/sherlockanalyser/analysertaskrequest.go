@@ -7,7 +7,7 @@ import (
 	"time"
 
 	jw "github.com/jwalteri/GO/jwstring"
-	model "github.com/ob-algdatii-20ss/SherlockGopher/analyser/sherlockparser/model"
+	model "github.com/ob-algdatii-20ss/SherlockGopher/analyser/sherlockparser"
 )
 
 /*
