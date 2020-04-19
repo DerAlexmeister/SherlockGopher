@@ -6,6 +6,7 @@ import (
 	"fmt"
 	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyser"
 	"strings"
+	"sync"
 	"time"
 
 	jw "github.com/jwalteri/GO/jwstring"
@@ -322,11 +323,14 @@ func (analyserTask *analyserTaskRequest) addToNEO4J(link string) bool {
 /*
 Execute will search the tree for links and stores the result in the field response of the task
 */
-func (analyserTask *analyserTaskRequest) Execute() bool {
+func (analyserTask *analyserTaskRequest) Execute(waitGroup *sync.WaitGroup) bool {
 	analyserTask.preprocess()
 
 	analyserTask.SetState(FINISHED)
 
+	if waitGroup != nil {
+		defer waitGroup.Done()
+	}
 	return true
 }
 

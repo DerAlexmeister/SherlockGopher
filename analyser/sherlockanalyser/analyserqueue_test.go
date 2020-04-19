@@ -114,7 +114,7 @@ func TestQueueRemoveTaskFailedBecauseOfZeroID(t *testing.T) {
 TestGetQueueStatus will test the status of the queue and show its status.
 */
 func TestGetQueueStatus(t *testing.T) {
-	message := "States of the Task currently in the Queue. \nUndone: 1, Processing: 1, Finished: 1, Failed: 1"
+	message := "States of the Task currently in the Queue. \nUndone: 1, Processing: 1, CrawlerError: 1, Saving: 1, SendToCrawler: 1, Finished: 1"
 	queue := NewAnalyserQueue()
 	task1 := &analyserTaskRequest{}
 	task2 := &analyserTaskRequest{}
@@ -140,7 +140,7 @@ func TestGetQueueStatus(t *testing.T) {
 	if id1 == 0 || id2 == 0 || id3 == 0 || id4 == 0 || id5 == 0 || id6 == 0{
 		t.Fatalf("Missmatching ids excpeted non-zero value but got id1: %d, id2: %d, id3: %d, id4: %d, id5: %d, id6: %d", id1, id2, id3, id4, id5, id6)
 	} else {
-		t.Log("successfully creates 4 different tasks with different states")
+		t.Log("successfully created different tasks with different states")
 	}
 
 	status := queue.GetStatusOfQueue()

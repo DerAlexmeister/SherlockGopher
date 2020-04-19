@@ -37,7 +37,7 @@ func TestAnalyser(t *testing.T) {
 
 			task := injectDependencies(NewTask(cdata))
 
-			task.Execute()
+			task.Execute(nil)
 
 			if len(expected) != len(task.FoundLinks()) {
 				t.Errorf("got %d elements, want %d elements", len(task.foundLinks), len(expected))
@@ -72,7 +72,7 @@ func TestErrorCase(t *testing.T) {
 	task := NewTask(cData)
 	task = injectDependencies(task)
 
-	task.Execute()
+	task.Execute(nil)
 
 	if len(task.FoundLinks()) != 0 {
 		t.Errorf("task was worngly analyzed")

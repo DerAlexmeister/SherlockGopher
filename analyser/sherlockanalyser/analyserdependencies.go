@@ -12,3 +12,11 @@ type AnalyserDependency struct {
 	Neo4J   *neo4j.Session
 	Crawler func() crawlerproto.AnalyserInterfaceService
 }
+
+/*
+NewAnalyserDependencies will return a new analyserDependency instance to put it in the dependencies
+in a analyser object.
+*/
+func NewAnalyserDependencies() *AnalyserDependency {
+	return &AnalyserDependency{}
+}
