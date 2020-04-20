@@ -1,17 +1,11 @@
-//React app
-
 // Basic RESTendpoint.
 const RESTENDPOINT = "localhost:8081";
 
-// Address to post a url to search for.
-const SEARCHENDPOINT = RESTENDPOINT + "/search/"; //TODO search is nolonger there
-
 // Basicaddress of the graph endpoint.
-// const GRAPHGROUP = "/graph/v1";
+const GRAPHGROUP = "/graph/v1";
 
-// class extends React.Component {
-
-// }
+// Address to post a url to search for.
+const SEARCHENDPOINT = RESTENDPOINT + GRAPHGROUP + "/search/";
 
 // Just the Searchbar Component with the logo, title and the searchbar to submit a url.
 class SearchBar extends React.Component {
@@ -25,19 +19,22 @@ class SearchBar extends React.Component {
     super(props);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.serverRequest = this.serverRequest.bind(this);
   }
 
   // Making the POST REQUEST
-  serverRequest(url) {
+  serverRequest(submiturl) {
+    console.log("Here?")
     $.post(
       SEARCHENDPOINT,
       {
-        url: this.state.value
+        url: submiturl
       },
       response => {
-        // TODO
+        console.log(response)
       }
     );
+    return
   }
 
   // Handling the Change of the Inputfield. 
@@ -51,6 +48,7 @@ class SearchBar extends React.Component {
 
   // Handle the submit of the Form.
   handleSubmit(event) {
+    this.serverRequest(this.state.value)
     alert('A Website was submitted: ' + this.state.value);
   }
 
