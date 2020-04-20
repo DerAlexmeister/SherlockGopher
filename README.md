@@ -4,7 +4,7 @@
 
 ## What is Sherlock Gopher
 
-Sherlock Gopher is a distributed System which will crawl over a given website and anaylse the given HTML. It will produce a graph with all contections between subsites of a website. Also it will show the status of the pages like 200 OK or 404 not found. 
+Sherlock Gopher is a distributed System which will crawl over a given website and analyse the given HTML. It will produce a graph with all contections between subsites of a website. Also it will show the status of the pages like 200 OK or 404 not found. 
 
 
 ## Features for Version beyond 1.0 
@@ -20,7 +20,6 @@ Sherlock Gopher is a distributed System which will crawl over a given website an
 <p align="center"><img alt="Sherlock Gopher" src="https://github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen/blob/develop/Images/4Ausrufezeichen-Page-1.png" width="250" height="350"></p>
 
 ## Contributors
-
     - DerAlexx
     - jwalteri
     - schroedp

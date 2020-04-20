@@ -7,11 +7,11 @@ const RESTENDPOINT = "localhost:8081";
 const SEARCHENDPOINT = RESTENDPOINT + "/search/"; //TODO search is nolonger there
 
 // Basicaddress of the graph endpoint.
-const GRAPHGROUP = "/graph/v1";
+// const GRAPHGROUP = "/graph/v1";
 
-class extends React.Component {
+// class extends React.Component {
 
-}
+// }
 
 // Just the Searchbar Component with the logo, title and the searchbar to submit a url.
 class SearchBar extends React.Component {

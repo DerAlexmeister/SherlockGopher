@@ -37,7 +37,7 @@ const (
 	returnall string = "MATCH (n) RETURN properties(n)"
 
 	//returnnode will return all information of a node.
-	returnnode string = "MATCH (n) WHERE n.address = \"$s\" RETURN properties(n)"
+	returnnode string = "MATCH (n) WHERE n.Address=\"%s\" RETURN properties(n)"
 
 	//returnall will return all nodes and their relationsships in the db.
 	returnallrels string = "MATCH (n)-[r]-(k) RETURN n.Address, n.Filetype, Type(r), k.Address, k.Filetype "

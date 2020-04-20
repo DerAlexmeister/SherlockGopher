@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto/analysertowebserver"
+	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
 )
 
 /*
