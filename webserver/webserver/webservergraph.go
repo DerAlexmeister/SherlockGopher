@@ -67,15 +67,13 @@ func (server *SherlockWebserver) GraphPerformenceOfSitesV1(context *gin.Context)
 }
 
 /*
-GraphNodeDetailsV1 will
+GraphNodeDetailsV1 will receive a URL and return the properties of the node incase
+the node exists.
 */
 func (server *SherlockWebserver) GraphNodeDetailsV1(context *gin.Context) {
 	session, err := sherlockneo.GetSession(server.Driver)
-
 	var url = NewRequestedURL()
 	context.BindJSON(url)
-
-	//check if url is empty or a well formed url.
 	if govalidator.IsURL(url.URL) {
 		if err != nil {
 			context.JSON(http.StatusOK, gin.H{
@@ -83,8 +81,16 @@ func (server *SherlockWebserver) GraphNodeDetailsV1(context *gin.Context) {
 			})
 		}
 	}
-	args := make(map[string]interface{})
-	args["address"] = string(url.URL)
-	performence, _ := sherlockneo.GetPerformenceOfSite(&session, args) //TODO
-	context.JSON(http.StatusOK, performence)
+	details, err := sherlockneo.GetDetailsOfNode(&session, url.URL) //TODO
+	if err != nil {
+		context.JSON(http.StatusOK, gin.H{
+			"Message": "A Problem occurred while trying to consume your node", //TODO improve message
+		})
+	} else if len(details) == 0 {
+		context.JSON(http.StatusOK, gin.H{
+			"Message": "The node you requested was not found. Are you sure it is already crawled or on this website.", //TODO improve message
+		})
+	} else {
+		context.JSON(http.StatusOK, details)
+	}
 }

@@ -250,20 +250,16 @@ func GetPerformenceOfSite(session *neo4j.Session, args map[string]interface{}) (
 /*
 GetDetailsOfNode will return information of a node given as parameter.
 */
-func GetDetailsOfNode(session *neo4j.Session, args map[string]interface{}) ([]map[string]string, error) {
-	var tojson []map[string]string
-	details, _ := (*session).Run(getReturnNode(), args)
+func GetDetailsOfNode(session *neo4j.Session, target string) ([]map[string]map[string]interface{}, error) {
+	var tojson []map[string]map[string]interface{}
+	details, _ := (*session).Run(fmt.Sprintf(getReturnNode(), target), nil)
 	for details.Next() {
-		elem := make(map[string]string)
+		elem := make(map[string]map[string]interface{})
 		for _, element := range details.Record().Keys() {
 			if value, contains := details.Record().Get(element); contains {
-				switch value.(type) {
-				case int64:
-					elem[element] = fmt.Sprintf("%d", value)
-				case string:
-					elem[element] = value.(string)
-				}
+				elem[(value.(map[string]interface{}))["Address"].(string)] = value.(map[string]interface{})
 			}
+
 		}
 		tojson = append(tojson, elem)
 	}

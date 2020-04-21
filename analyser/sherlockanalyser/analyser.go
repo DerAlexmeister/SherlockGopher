@@ -3,9 +3,10 @@ package sherlockanalyser
 import (
 	"context"
 	"fmt"
-	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto/analysertowebserver"
 	"sync"
 	"time"
+
+	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
 )
 
 //Time to wait in milliseconds after checking for the tasks again.

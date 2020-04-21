@@ -16,7 +16,7 @@ steps:
           - go build -o sherlockcrawlermain
           - cd ../analyser/sherlockanalyser
           - go test
-          - cd ../sherlockparser
+          - cd ../sherlockanalyser
           - go test
           - cd ..
           - go build -o analysermain
