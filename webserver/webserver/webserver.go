@@ -1,7 +1,6 @@
 package webserver
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -79,18 +78,15 @@ func (server *SherlockWebserver) ReceiveURL(context *gin.Context) {
 	var url = NewRequestedURL()
 	context.BindJSON(url)
 
-	//check if url is empty or a well formed url.
 	if govalidator.IsURL(url.URL) {
-		context.JSON(http.StatusOK, gin.H{
-			"Status": "Fine",
-		}) //Send fine as response.
-		fmt.Println(url)
-		//send to crawler
 		didSendCount := 0
 		for didSend := false; !didSend; {
 			if didSendCount < 5 {
 				response, err := sherlockcrawlerService.ReceiveURL(context, &crawlerproto.SubmitURLRequest{URL: url.URL})
 				if err == nil && response.Recieved {
+					context.JSON(http.StatusOK, gin.H{
+						"Status": "Fine",
+					})
 					didSend = true
 				} else {
 					didSendCount++
@@ -98,12 +94,11 @@ func (server *SherlockWebserver) ReceiveURL(context *gin.Context) {
 				}
 			} else {
 				context.JSON(http.StatusInternalServerError, gin.H{
-					"Status": "Cant send url to crawler",
+					"Status": "Url format correct but sending url to crawler went wrong",
 				})
 				didSend = true
 			}
 		}
-
 	} else {
 		context.JSON(http.StatusBadRequest, gin.H{
 			"Status": "Url was empty or malformed",
