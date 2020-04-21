@@ -4,10 +4,9 @@ import (
 	"fmt"
 
 	"github.com/micro/go-micro"
-	//sherlockneo "github.com/ob-algdatii-20ss/SherlockGopher/analyser/ormneo4j"
-	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto/analyser"
+	sherlockneo "github.com/ob-algdatii-20ss/SherlockGopher/sherlockneo"
+	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
 	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyser"
-
 	sherlockanalyser "github.com/ob-algdatii-20ss/SherlockGopher/analyser/sherlockanalyser"
 )
 
@@ -31,7 +30,8 @@ func main() {
 			AnalyserService.InjectDependency(&sherlockanalyser.AnalyserDependency{
 				Crawler: func() crawlerproto.AnalyserInterfaceService {
 					return crawlerproto.NewAnalyserInterfaceService("crawler-service", service.Client()) // TODO: FIX BY DERALEXX
-				}//, Neo4J: &session,
+				},
+				/*, Neo4J: &session,*/
 			})
 		}
 		fmt.Println("Could not get a session to talk to the neo4j db. Service will shutdown.")

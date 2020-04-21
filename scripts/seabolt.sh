@@ -20,7 +20,4 @@ export C_INCLUDE_PATH=/seabolt/build/dist/includ
 echo "[+] Cleaning up"
 rm ./seabolt-1.7.4-Linux-ubuntu-18.04.deb
 
-echo "[+] Install Neo4j driver"
-go get github.com/neo4j/neo4j-go-driver/neo4j
-
 echo "[+] Finished with Installing Seabolt"
