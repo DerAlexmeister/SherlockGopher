@@ -1,6 +1,7 @@
 package webserver
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -74,13 +75,14 @@ ReceiveURL will handle the requested url which should be crawled.
 */
 func (server *SherlockWebserver) ReceiveURL(context *gin.Context) {
 	sherlockcrawlerService := server.Dependency.Crawler()
-
 	var url = NewRequestedURL()
-	context.BindJSON(url)
-
+	err := context.BindJSON(url)
+	if err != nil {
+		fmt.Println(err)
+	}
 	if govalidator.IsURL(url.URL) {
 		didSendCount := 0
-		for didSend := false; !didSend; {
+		for didSend := true; !didSend; { // TODO Must set on false in production
 			if didSendCount < 5 {
 				response, err := sherlockcrawlerService.ReceiveURL(context, &crawlerproto.SubmitURLRequest{URL: url.URL})
 				if err == nil && response.Recieved {
@@ -92,6 +94,9 @@ func (server *SherlockWebserver) ReceiveURL(context *gin.Context) {
 					didSendCount++
 					time.Sleep(100 * time.Millisecond)
 				}
+				context.JSON(http.StatusOK, gin.H{
+					"Status": "Fine",
+				})
 			} else {
 				context.JSON(http.StatusInternalServerError, gin.H{
 					"Status": "Url format correct but sending url to crawler went wrong",
@@ -107,7 +112,7 @@ func (server *SherlockWebserver) ReceiveURL(context *gin.Context) {
 }
 
 /*
-RecieveURL will handle the requested url which should be crawled.
+ReceiveMetadata will handle the requested url which should be crawled.
 */
 func (server *SherlockWebserver) ReceiveMetadata(context *gin.Context) {
 	sherlockcrawlerService := server.Dependency.Crawler()

@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/web"
@@ -50,6 +51,11 @@ func main() {
 	})
 
 	router := gin.Default()
+
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://localhost:8080"}
+
+	router.Use(cors.New(config))
 
 	//Get Requests.
 	router.GET("/areyouthere", webServerService.Helloping)

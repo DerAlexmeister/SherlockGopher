@@ -60,10 +60,7 @@ func (server *SherlockWebserver) GraphPerformenceOfSitesV1(context *gin.Context)
 	}
 	args := make(map[string]interface{})
 	performence, _ := sherlockneo.GetPerformenceOfSite(&session, args)
-
-	var meta [][]map[string]string
-	meta = append(meta, performence)
-	context.JSON(http.StatusOK, meta)
+	context.JSON(http.StatusOK, performence)
 }
 
 /*
