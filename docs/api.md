@@ -19,7 +19,7 @@ The webserver supplys a REST-API to fetch data from various points. For Example 
 
 - [Basicaddress]/areyouthere
 - Type: GET
-- Will send you as json a Pong as message as response to the "ping".
+- Will send you a Pong as json to respond to the "ping".
 
 **Response:**
 ```Json
@@ -123,8 +123,7 @@ The webserver supplys a REST-API to fetch data from various points. For Example 
 
 **Response:**
 ```Json
-    ...
-        "www.github.com/imprint": {
+    ... "www.github.com/imprint": {
             "Accept-Ranges": "bytes",
             "Address": "1",
             "Age": "12",
@@ -165,7 +164,7 @@ The webserver supplys a REST-API to fetch data from various points. For Example 
 ### /meta
 - [Basicaddress]/monitor/v1/meta
 - Type: GET
-- Will meta information about the service.
+- Will return meta information about the services (Analyser and Crawler).
 
 **Response:**
 ```Json

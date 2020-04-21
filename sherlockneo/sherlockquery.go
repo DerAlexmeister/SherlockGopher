@@ -73,7 +73,7 @@ const (
 	countnumberofhtml string = "MATCH (n) WHERE n.Filetype = \"HTML\" RETURN count(n) as amountofhtmls"
 
 	//responseTimeInTableAndStatusCode will be for each website the responsetime and the code so easy to put in a table.
-	responseTimeInTableAndStatusCode string = "MATCH (n) RETURN n.Address, n.Responsetime, n.Statuscode"
+	responseTimeInTableAndStatusCode string = "MATCH (n) RETURN n.Address as Address, n.Responsetime as ResponseTime, n.Statuscode as Status"
 )
 
 /*

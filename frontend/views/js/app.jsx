@@ -1,17 +1,80 @@
 // Basic RESTendpoint.
-const RESTENDPOINT = "localhost:8081";
+const RESTENDPOINT = "http://0.0.0.0:8081";
 
 // Basicaddress of the graph endpoint.
 const GRAPHGROUP = "/graph/v1";
 
 // Address to post a url to search for.
-const SEARCHENDPOINT = RESTENDPOINT + GRAPHGROUP + "/search/";
+const SEARCHENDPOINT = RESTENDPOINT + GRAPHGROUP + "/search";
+
+const PERFORMENCE = RESTENDPOINT + GRAPHGROUP + "/performenceofsites"
+
+//Site will render a table 
+class SitePerformence extends React.Component {
+
+  state = {
+    items: [],
+  }
+
+  constructor(props) {
+    super(props);
+    this.getCardStyle = this.getCardStyle.bind(this);
+  }
+
+  componentDidMount() {
+    try {
+      setInterval(async() => {
+        const res = await fetch(PERFORMENCE)
+        const chuncks = await res.json()
+        //this.makeRows(chuncks) //await or something and then turn it into a table
+        this.setState({items: chuncks})
+      }, 1000)
+    } catch (exception) {
+      console.log(exception)
+    }
+  }
+
+  getCardStyle(status) {
+    if (status > 199 && status < 300) { //200
+      return "alert alert-success"
+    } else if (status > 299 && status < 400) { //300
+      return "alert alert-warning"
+    } else if (status > 399 && status < 500) { //400
+      return "alert alert-danger"
+    } else if (status > 499 && status < 600) { //500
+      return "alert alert-danger"
+    } else if (status > 99 && status < 200) { //100
+      return "alert alert-success"
+    }  else {  // Errors
+      return "alert alert-info"
+    }
+  }
+
+  render() {
+    const {items} = this.state
+    return ( 
+      <div id="tableElement" >
+        {items.map(item => (
+          <div class={this.getCardStyle(item.Status)} role="alert">
+          <h4 class="alert-heading">#<a class="alert-link" href={item.Address}> {item.Address} </a></h4>
+          <p class="mb-0">
+            SherlockGopher measured for {item.Address} the following information: <hr></hr>
+            <p class="font-weight-bold"><b>Responsetime:</b> {item.ResponseTime} ms,</p> 
+            <p class="font-weight-bold"><b>Responsecode:</b> {item.Status} (HTTP/s Standartcode)</p>
+          </p>
+        </div>
+          ))}
+      </div>
+    )
+  }
+}
 
 // Just the Searchbar Component with the logo, title and the searchbar to submit a url.
 class SearchBar extends React.Component {
 
   state = {
-    value: ""
+    value: "",
+    lresponse: undefined
   }
 
   // CTor for the Searchbar Component.
@@ -24,16 +87,16 @@ class SearchBar extends React.Component {
 
   // Making the POST REQUEST
   serverRequest(submiturl) {
-    console.log("Here?")
     $.post(
       SEARCHENDPOINT,
-      {
+      JSON.stringify({
         url: submiturl
-      },
+      }),
       response => {
         console.log(response)
-      }
+      }, 'json'
     );
+      console.log(this.state.lresponse)
     return
   }
 
@@ -72,6 +135,9 @@ class App extends React.Component {
       return (
         <div>
             <SearchBar></SearchBar>
+            <div style = {{position: 'absolute', top:80,left: 50, right:50}}>
+              <SitePerformence></SitePerformence>
+            </div>
         </div>
       )
     }
