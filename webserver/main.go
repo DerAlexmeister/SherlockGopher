@@ -49,7 +49,7 @@ func main() {
 			return crawlerproto.NewCrawlerService(serviceNameCrawler, grpcservice.Client())
 		},
 	})
-
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
 	config := cors.DefaultConfig()
