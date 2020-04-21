@@ -14,11 +14,55 @@ class SitePerformence extends React.Component {
 
   state = {
     items: [],
+    amountofentries: 0,
+    amountofHunderter: 0,
+    amountofZweiHunderter: 0,
+    amountofDreiHunderter: 0,
+    amountofVierHunderter:0,
+    amountofFünfHunderter:0,
+    amountoferrors: 0,
+    averageRTT: 0,
   }
 
   constructor(props) {
     super(props);
     this.getCardStyle = this.getCardStyle.bind(this);
+    this.getAmountOfEntrys = this.getAmountOfEntrys.bind(this);
+  }
+  
+  getAmountOfEntrys(chuncks) {
+    var entries = 0
+    var einhunderter = 0
+    var zweihunderter = 0
+    var dreithunderter = 0
+    var vierhunderter = 0
+    var fünfhunderter = 0
+    var errors = 0
+    var avrtt = 0
+    chuncks.map(item => {
+      if (item.Status > 199 && item.Status < 300) { //200
+        zweihunderter++
+      } else if (item.Status > 299 && item.Status < 400) { //300
+        dreithunderter++
+      } else if (item.Status > 399 && item.Status < 500) { //400
+        vierhunderter++
+      } else if (item.Status > 499 && item.Status < 600) { //500
+        fünfhunderter++
+      } else if (item.Status > 99 && item.Status < 200) { //100
+        einhunderter++
+      }  else {  // Errors
+        errors++
+      }
+      entries++ 
+      avrtt += (item.ResponseTime * 1)
+    },
+    )
+    avrtt = Math.floor(avrtt/entries)
+    this.setState({
+      amountofentries: entries, amountofHunderter: einhunderter, amountofZweiHunderter: zweihunderter, 
+      amountofDreiHunderter: dreithunderter, amountofVierHunderter: vierhunderter, amountofFünfHunderter: fünfhunderter, 
+      amountoferrors: errors, averageRTT: avrtt
+    })
   }
 
   componentDidMount() {
@@ -26,9 +70,9 @@ class SitePerformence extends React.Component {
       setInterval(async() => {
         const res = await fetch(PERFORMENCE)
         const chuncks = await res.json()
-        //this.makeRows(chuncks) //await or something and then turn it into a table
+        this.getAmountOfEntrys(chuncks)
         this.setState({items: chuncks})
-      }, 1000)
+      }, 500)
     } catch (exception) {
       console.log(exception)
     }
@@ -51,16 +95,35 @@ class SitePerformence extends React.Component {
   }
 
   render() {
-    const {items} = this.state
+    const {
+      items, amountofentries, amountofHunderter, amountofZweiHunderter, amountofDreiHunderter, amountofVierHunderter, 
+      amountofFünfHunderter, amountoferrors, averageRTT
+    } = this.state
     return ( 
       <div id="tableElement" >
+        <span class="badge badge-pill badge-primary"> Entries: {amountofentries} </span> 
+        <span style={{color: "#d5d8dc"}}>   </span>
+        <span class="badge badge-pill badge-primary"> 100er: {amountofHunderter}</span>
+        <span style={{color: "#d5d8dc"}}>   </span>
+        <span class="badge badge-pill badge-primary"> 200er: {amountofZweiHunderter}</span>
+        <span style={{color: "#d5d8dc"}}>   </span>
+        <span class="badge badge-pill badge-primary"> 300er: {amountofDreiHunderter}</span>
+        <span style={{color: "#d5d8dc"}}>   </span>
+        <span class="badge badge-pill badge-primary"> 400er: {amountofVierHunderter}</span>
+        <span style={{color: "#d5d8dc"}}>   </span>
+        <span class="badge badge-pill badge-primary"> 500er: {amountofFünfHunderter}</span>
+        <span style={{color: "#d5d8dc"}}>  </span>
+        <span class="badge badge-pill badge-primary"> Errors: {amountoferrors}</span>
+        <span style={{color: "#d5d8dc"}}>  </span>
+        <span class="badge badge-pill badge-primary"> Ø RTT: {averageRTT}</span>
+        <hr></hr>
         {items.map(item => (
           <div class={this.getCardStyle(item.Status)} role="alert">
-          <h4 class="alert-heading">#<a class="alert-link" href={item.Address}> {item.Address} </a></h4>
+          <h4 class="alert-heading"># <a class="alert-link" href={item.Address}>{item.Address}</a></h4>
           <p class="mb-0">
-            SherlockGopher measured for {item.Address} the following information: <hr></hr>
+            SherlockGopher gathered following information for address {item.Address}:<hr></hr>
             <p class="font-weight-bold"><b>Responsetime:</b> {item.ResponseTime} ms,</p> 
-            <p class="font-weight-bold"><b>Responsecode:</b> {item.Status} (HTTP/s Standartcode)</p>
+            <p class="font-weight-bold"><b>Responsecode:</b> {item.Status} (HTTP/s Standardcode)</p>
           </p>
         </div>
           ))}
@@ -135,7 +198,7 @@ class App extends React.Component {
       return (
         <div>
             <SearchBar></SearchBar>
-            <div style = {{position: 'absolute', top:80,left: 50, right:50}}>
+            <div style = {{position: 'absolute', top:65,left: 50, right:50}}>
               <SitePerformence></SitePerformence>
             </div>
         </div>
