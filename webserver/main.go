@@ -51,7 +51,7 @@ func main() {
 	})
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
-
+	//test
 	config := cors.DefaultConfig()
 	config.AllowOrigins = []string{"http://localhost:8080"}
 
