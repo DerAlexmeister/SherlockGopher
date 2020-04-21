@@ -5,7 +5,6 @@ WORKDIR /app
 ADD frontend ./frontend
 ADD go.mod . 
 ADD go.sum . 
-RUN ls -la
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o frontend ./frontend
 
 FROM alpine:latest

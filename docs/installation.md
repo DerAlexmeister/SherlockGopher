@@ -1,5 +1,7 @@
 # Manual to install or run SherlockGropher
 
+Most of the scripts and the installation guide are only working on debian based systems
+
 ## How to install all dependencies to start the services via main file
 
 execute the seabolt.sh script:
@@ -12,6 +14,7 @@ start the neo4j docker container with the following command:
 execute the getDependencies.sh script with the command:
 - ./scripts/getDependencies.sh
 - this script will download all JavaScript and CSS dependencies
+- the script needs curl, install with: sudo apt install curl
 
 ### How to start all services via main file
 start the analyser service:
@@ -28,7 +31,7 @@ start the webserver service:
 
 ## How to start all services via dockerfile - Docker Start Script
 
-Alternatively you can use the start.sh script. The script will stop all running docker containers related to this project, build them and execute them afterwards. Also it starts the neo4j docker container and executes the getDependencies.sh.
+Alternatively you can use the start.sh script. The script will stop all running docker containers related to this project, build them and execute them afterwards. Also it tries to install curl (used in getDependencies.sh), starts the neo4j docker container and executes the getDependencies.sh.
 The script can be executed on the command line via: ./start.sh
 
 There are 2 possible arguments that the script accepts. These arguments will change the functionality of the script:
