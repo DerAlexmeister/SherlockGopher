@@ -86,6 +86,9 @@ func (server *SherlockWebserver) ReceiveURL(context *gin.Context) {
 			if didSendCount < 5 {
 				response, err := sherlockcrawlerService.ReceiveURL(context, &crawlerproto.SubmitURLRequest{URL: url.URL})
 				if err == nil && response.Recieved {
+					context.JSON(http.StatusOK, gin.H{
+						"Status": "Fine",
+					})
 					didSend = true
 				} else {
 					didSendCount++
@@ -96,12 +99,11 @@ func (server *SherlockWebserver) ReceiveURL(context *gin.Context) {
 				})
 			} else {
 				context.JSON(http.StatusInternalServerError, gin.H{
-					"Status": "Cant send url to crawler",
+					"Status": "Url format correct but sending url to crawler went wrong",
 				})
 				didSend = true
 			}
 		}
-
 	} else {
 		context.JSON(http.StatusBadRequest, gin.H{
 			"Status": "Url was empty or malformed",
