@@ -23,7 +23,7 @@ jobs:
                   fi
             - name: Test
               run: |
-                  ../scripts/seabolt.sh
+                  ./scripts/seabolt.sh
                   go test -v -coverprofile cover.out ./...
                   go tool cover -func cover.out
 
