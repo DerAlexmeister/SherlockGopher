@@ -1,23 +1,24 @@
 package main
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/micro/go-micro"
-	sherlockneo "github.com/ob-algdatii-20ss/SherlockGopher/sherlockneo"
 	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
-	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyser"
-	sherlockanalyser "github.com/ob-algdatii-20ss/SherlockGopher/analyser/sherlockanalyser"
+	"github.com/ob-algdatii-20ss/SherlockGopher/analyser/sherlockanalyser"
+	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto"
+	"github.com/ob-algdatii-20ss/SherlockGopher/sherlockneo"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
-	serviceName      = "analyser-service"
-	streamingService = "filestransfer-service-analyser"
+	serviceName = "analyser-service"
 )
 
 func main() {
+	SetupLogging()
+	log.Info("Started analyser")
 
-	// Analyserservice
 	service := micro.NewService(
 		micro.Name(serviceName),
 	)
@@ -25,35 +26,59 @@ func main() {
 
 	AnalyserService := sherlockanalyser.NewAnalyserServiceHandler()
 
-	if driver, err := sherlockneo.GetNewDatabaseConnection(); err == nil {
-		if session, sessionerror := sherlockneo.GetSession(&driver); sessionerror == nil {
-			AnalyserService.InjectDependency(&sherlockanalyser.AnalyserDependency{
-				Crawler: func() crawlerproto.AnalyserInterfaceService {
-					return crawlerproto.NewAnalyserInterfaceService("crawler-service", service.Client()) // TODO: FIX BY DERALEXX
-				},
-				/*, Neo4J: &session,*/
-			})
-		}
-		fmt.Println("Could not get a session to talk to the neo4j db. Service will shutdown.")
+	dep := sherlockanalyser.AnalyserDependency{}
+
+	if driver, err := sherlockneo.GetNewDatabaseConnection(); driver == nil || err != nil {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Error("Neo4J failed!")
 	} else {
-		fmt.Println("Could not reach the neo4j DB. Is the DB up?")
+		dep.Neo4J = &driver
 	}
 
-	err := proto.RegisterAnalyserHandler(service.Server(), AnalyserService) // TODO: FIX BY DERALEXX
+	dep.Crawler = func() crawlerproto.CrawlerService {
+		return crawlerproto.NewCrawlerService("crawler-service", service.Client())
+	}
+
+	if session, err := sherlockneo.GetSession(*dep.Neo4J); session == nil || err != nil {
+		log.WithFields(log.Fields{
+			"err":     err,
+			"session": session,
+		}).Error("getting session failed")
+	} else {
+		sherlockneo.RunConstrains(session)
+	}
+
+	AnalyserService.InjectDependency(&dep)
+
+	err := proto.RegisterAnalyserHandler(service.Server(), AnalyserService)
+
+	go AnalyserService.ManageTasks()
 
 	if err != nil {
-		fmt.Println(err)
-	} else if lerr := service.Run(); lerr != nil {
-		fmt.Println(lerr)
+		log.Fatal("Analyser->main.go->RegisterAnalyserHandler failed!")
+		log.Fatal(err)
+	} else if err = service.Run(); err != nil {
+		log.Fatal("Analyser->main.go->service.Run() failed!")
+		log.Fatal(err)
 	} else {
-		fmt.Printf("Service %s started as intended... ", serviceName)
+		log.Infof("Service %s started as intended... ", serviceName)
 	}
-	// FileTransferService.
+}
 
-	streamingservice := micro.NewService(
-		micro.Name(streamingService),
-	)
+/*
+SetupLogging will init all needed things for logging.
+*/
+func SetupLogging() {
+	_ = os.Remove("info.log")
+	file, _ := os.OpenFile("info.log", os.O_RDWR|os.O_CREATE, 0644)
 
-	streamingservice.Init()
-	//streamclient := crawlerproto.NewSenderService(name, service.Client())
+	log.SetFormatter(&log.TextFormatter{
+		ForceColors:               true,
+		ForceQuote:                true,
+		EnvironmentOverrideColors: true,
+		FullTimestamp:             true,
+	})
 
+	log.SetOutput(file)
+}

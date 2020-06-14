@@ -3,41 +3,109 @@ package sherlockanalyser
 import (
 	"fmt"
 	"math/rand"
+	"sync"
 	"time"
+
+	swd "github.com/ob-algdatii-20ss/SherlockGopher/sherlockwatchdog"
+	log "github.com/sirupsen/logrus"
 )
 
 /*
 AnalyserQueue will be the queue of the current CrawlerTaskRequest.
 */
 type AnalyserQueue struct {
-	Queue map[uint64]*analyserTaskRequest
+	Queue    map[uint64]*AnalyserTaskRequest
+	observer AnalyserObserverInterface
+	watchdog swd.WatchdogInterface
+	state    int
+	mutex    *sync.Mutex
+	saver    neoSaverInterface
+	cache 	AnalyserCacheInterface
 }
 
 /*
-QueueStatus struct contains a status of all tasks. E.g undonetaks 10, processingtask 2343, ...
+Watchdog returns the watchdog stored in the AnalyserQueue.
+*/
+func (que *AnalyserQueue) Watchdog() swd.WatchdogInterface {
+	return que.watchdog
+}
+
+/*
+SetWatchdog is a setter for the watchdog stored in the AnalyserQueue.
+*/
+func (que *AnalyserQueue) SetWatchdog(watchdog swd.WatchdogInterface) {
+	que.watchdog = watchdog
+}
+
+/*
+SetObserver is a setter for the observer stored in the AnalyserQueue.
+*/
+func (que *AnalyserQueue) SetObserver(observer AnalyserObserverInterface) {
+	que.observer = observer
+}
+
+/*
+Observer returns the observer stored in the AnalyserQueue.
+*/
+func (que *AnalyserQueue) Observer() AnalyserObserverInterface {
+	return que.observer
+}
+
+/*
+State returns the state of the queue.
+*/
+func (que *AnalyserQueue) State() int {
+	return que.state
+}
+
+/*
+SetState sets the state of the queue.
+*/
+func (que *AnalyserQueue) SetState(state int) {
+	switch state {
+	case STOP:
+		que.state = state
+		que.StopQueue()
+	case PAUSE:
+		que.state = state
+	case RUNNING:
+		que.state = state
+	case IDLE:
+		que.state = state
+	}
+}
+
+/*
+QueueStatus struct contains a status of all tasks. E.g undonetaks 10, processingtask 2343, etc.
 */
 type QueueStatus struct {
-	undoneTasks     uint64
-	processingTasks uint64
-	crawlerErrorTasks uint64
-	savingTasks uint64
+	undoneTasks        uint64
+	processingTasks    uint64
+	crawlerErrorTasks  uint64
+	savingTasks        uint64
 	sendToCrawlerTasks uint64
-	finishedTasks   uint64
+	finishedTasks      uint64
 }
 
 /*
 NewAnalyserQueue will return a new Queue.
 */
 func NewAnalyserQueue() AnalyserQueue {
+	saver := newNeoSaver()
+	cache := NewAnalyserCache()
 	return AnalyserQueue{
-		Queue: map[uint64]*analyserTaskRequest{},
+		Queue: map[uint64]*AnalyserTaskRequest{},
+		state: RUNNING,
+		mutex: &sync.Mutex{},
+		saver: &saver,
+		cache: &cache,
 	}
 }
 
 /*
 getThisQueue will return a pointer to the current Queue.
 */
-func (que *AnalyserQueue) getThisQueue() *map[uint64]*analyserTaskRequest {
+func (que *AnalyserQueue) getThisQueue() *map[uint64]*AnalyserTaskRequest {
 	return &que.Queue
 }
 
@@ -52,9 +120,9 @@ func (que *AnalyserQueue) ContainsTaskID(id uint64) bool {
 }
 
 /*
-Function to produce a random taskId.
+getRandomTaskID is a function that produces a random taskID.
 */
-func (que *AnalyserQueue) getRandomUserID() uint64 {
+func (que *AnalyserQueue) getRandomTaskID() uint64 {
 	rand.Seed(time.Now().UnixNano())
 	for {
 		potentialID := rand.Uint64()
@@ -66,28 +134,48 @@ func (que *AnalyserQueue) getRandomUserID() uint64 {
 
 /*
 AppendQueue will append the current queue with a new AnalyserTaskRequest.
-Will return the taskId. In case an error occurred it will return 0.
-The taskId is a uint64.
+Will return the taskID. In case an error occurred it will return 0.
+The taskID is a uint64.
 */
-func (que *AnalyserQueue) AppendQueue(task *analyserTaskRequest) uint64 {
-	taskId := que.getRandomUserID()
-	if !que.ContainsTaskID(taskId) && task != nil {
-		task.SetId(taskId)
-		(*que.getThisQueue())[taskId] = task
-		return taskId
+func (que *AnalyserQueue) AppendQueue(task *AnalyserTaskRequest) uint64 {
+	que.mutex.Lock()
+	taskID := que.getRandomTaskID()
+	var ret uint64 = 0
+	if !que.ContainsTaskID(taskID) && task != nil {
+		if que.cache.Request(task.crawlerData.addr) {
+			que.mutex.Unlock()
+			return 0 //kann komische dinge verursachen
+		}
+		que.cache.Register(task.crawlerData.addr)
+		task.cache = que.cache
+		task.SetID(taskID)
+		task.saver = que.saver
+		(*que.getThisQueue())[taskID] = task
+
+		que.Watchdog().Aus()
+		ret = taskID
+
+		log.WithFields(
+			log.Fields{
+				"addr": task.crawlerData.addr,
+			}).Info("Appended task")
 	}
-	return 0
+	que.mutex.Unlock()
+	return ret
 }
 
 /*
-RemoveFromQueue will remove a task from the queue by a given taskId.
+RemoveFromQueue will remove a task from the queue by a given taskID.
 */
-func (que *AnalyserQueue) RemoveFromQueue(taskId uint64) bool {
-	if taskId > 0 && que.ContainsTaskID(taskId) {
-		delete(*que.getThisQueue(), taskId)
-		return true
+func (que *AnalyserQueue) RemoveFromQueue(taskID uint64) bool {
+	que.mutex.Lock()
+	ret := false
+	if taskID > 0 && que.ContainsTaskID(taskID) {
+		delete(*que.getThisQueue(), taskID)
+		ret = true
 	}
-	return false
+	que.mutex.Unlock()
+	return ret
 }
 
 /*
@@ -160,25 +248,33 @@ func (status *QueueStatus) getAmountOfFinishedTasks() uint64 {
 }
 
 /*
-getNumberOfUndoneTasks will return the number of Tasks of all states
+getNumberOfUndoneTasks will return the number of Tasks of all states.
 */
 func (que *AnalyserQueue) getNumberOfStatus() (uint64, uint64, uint64, uint64, uint64, uint64) {
+	que.mutex.Lock()
 	var undone, processing, crawlerError, saving, sendToCrawler, finished uint64 = 0, 0, 0, 0, 0, 0
 	for _, v := range *que.getThisQueue() {
 		switch v.State() {
-		case UNDONE: undone++
-		case PROCESSING: processing++
-		case CRAWLERERROR: crawlerError++
-		case SAVING: saving++
-		case SENDTOCRAWLER: sendToCrawler++
-		case FINISHED: finished++
+		case UNDONE:
+			undone++
+		case PROCESSING:
+			processing++
+		case CRAWLERERROR:
+			crawlerError++
+		case SAVING:
+			saving++
+		case SENDTOCRAWLER:
+			sendToCrawler++
+		case FINISHED:
+			finished++
 		}
 	}
+	que.mutex.Unlock()
 	return undone, processing, crawlerError, saving, sendToCrawler, finished
 }
 
 /*
-GetStatusOfQueue will return the
+GetStatusOfQueue will return the status of the queue.
 */
 func (que *AnalyserQueue) GetStatusOfQueue() string {
 	status := que.NewQueueStatus()
@@ -192,8 +288,30 @@ func (que *AnalyserQueue) GetStatusOfQueue() string {
 }
 
 /*
-IsEmpty returns true if queue empty
+IsEmpty returns true if queue empty.
 */
 func (que *AnalyserQueue) IsEmpty() bool {
 	return len(que.Queue) == 0
+}
+
+/*
+StopQueue will stop the queue.
+*/
+func (que *AnalyserQueue) StopQueue() {
+	que.CleanQueue()
+}
+
+/*
+CleanQueue will clean the queue.
+*/
+func (que *AnalyserQueue) CleanQueue() {
+	que.deleteAllTasks()
+}
+
+/*
+deleteAllTasks will empty the queue.
+*/
+func (que *AnalyserQueue) deleteAllTasks() {
+	log.Info("Queue was emptied")
+	que.Queue = make(map[uint64]*AnalyserTaskRequest)
 }

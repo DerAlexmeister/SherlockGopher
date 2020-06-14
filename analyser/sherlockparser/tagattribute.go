@@ -2,26 +2,34 @@ package sherlockparser
 
 import "strings"
 
+const (
+	attrlen int = 2
+)
+
+/*
+TagAttribute struct.
+*/
 type TagAttribute struct {
 	attributeType string
-	value    string
+	value         string
 }
+
 /*
-Returns the AttributeType of the attribute
+AttributeType returns the AttributeType of the attribute.
 */
 func (attr *TagAttribute) AttributeType() string {
 	return attr.attributeType
 }
 
 /*
-Returns the value of the attribute
+Value returns the value of the attribute
 */
 func (attr *TagAttribute) Value() string {
 	return attr.value
 }
 
 /*
-Returns a pointer to a TagAttribute-Slice generated based on the input string.
+extractAttributes returns a pointer to a TagAttribute-Slice generated based on the input string.
 */
 func (tree *HTMLTree) extractAttributes(tagContent string) []*TagAttribute {
 	attributes := make([]*TagAttribute, 0)
@@ -60,17 +68,17 @@ func (tree *HTMLTree) extractAttributes(tagContent string) []*TagAttribute {
 }
 
 /*
-Returns a pointer to a TagAttribute which may contain several attributes from a single tag based on the input string.
+processAttribute returns a pointer to a TagAttribute which may contain several attributes from a single tag based on the input string.
 */
 func (tree *HTMLTree) processAttribute(attributeRaw string) *TagAttribute {
 
 	/*if index, ok := findFirst(attributeRaw, '='); ok {
 		strings.SplitN()
 	}*/
-	attributeSplit := strings.SplitN(attributeRaw, "=", 2)
+	attributeSplit := strings.SplitN(attributeRaw, "=", attrlen)
 	attribute := &TagAttribute{}
 	attribute.attributeType = attributeSplit[0]
-	if len(attributeSplit) == 2 {
+	if len(attributeSplit) == attrlen {
 		trimmed := strings.Trim(attributeSplit[1], "\"")
 		attribute.value = strings.Trim(trimmed, "'")
 	}

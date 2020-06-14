@@ -2,31 +2,35 @@ package sherlockparser
 
 import (
 	"fmt"
-	"github.com/golang-collections/collections/stack"
 	"log"
+
+	"github.com/golang-collections/collections/stack"
 )
 
+/*
+HTMLTree struct.
+*/
 type HTMLTree struct {
 	htmlRaw  string
 	rootNode *Node
 }
 
 /*
-Return the RootNode of the HTMLTree.
+RootNode returns the RootNode of the HTMLTree.
 */
 func (tree *HTMLTree) RootNode() *Node {
 	return tree.rootNode
 }
 
 /*
-Returns pointer to a new empty HTMLTree with set html string.
+NewHTMLTree returns pointer to a new empty HTMLTree with set html string.
 */
 func NewHTMLTree(html string) *HTMLTree {
 	return &HTMLTree{htmlRaw: html}
 }
 
 /*
-Returns a pointer to the Root-Node of the parsed HTMLTree. Set verbose to true for info about malformed HTML-Documents.
+Parse returns a pointer to the Root-Node of the parsed HTMLTree. Set verbose to true for info about malformed HTML-Documents.
 */
 func (tree *HTMLTree) Parse(verbose bool) *Node {
 	tokenStream := tree.tokenize()
@@ -69,13 +73,19 @@ func (tree *HTMLTree) Parse(verbose bool) *Node {
 				}
 				stack.Push(currentNode)
 			case EndTag:
-				if nextNode, ok := stack.Pop().(*Node); ok {
-					if nextNode.Tag().TagType() != currentToken.TagType() {
-						if verbose {fmt.Printf("Expected Closing Tag for CurrentNode %s, but got Closing Tag for CurrentToken: %s", currentNode.Tag().TagType(), currentToken.TagType())}
-					} else if stack.Len() > 0 {
+				if stack.Len() == 0 {
+					currentNode = tree.RootNode()
+				} else if nextNode, ok := stack.Pop().(*Node); ok {
+					switch {
+					case nextNode.Tag().TagType() != currentToken.TagType():
+						if verbose {
+							fmt.Printf("Expected Closing Tag for CurrentNode %s, but got Closing Tag for CurrentToken: %s", currentNode.Tag().TagType(), currentToken.TagType())
+						}
+					case stack.Len() > 0:
 						currentNode = nextNode.Parent()
-					} else {
+					default:
 						currentNode = tree.RootNode()
+
 					}
 				} else {
 					log.Fatal("Something went wrong while popping from the stack.")
@@ -104,5 +114,3 @@ func (tree *HTMLTree) Parse(verbose bool) *Node {
 	}
 	return tree.rootNode
 }
-
-

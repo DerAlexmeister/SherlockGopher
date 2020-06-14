@@ -1,12 +1,15 @@
 # Dockerfile webserver
 
-FROM golang:1.14 as build
-WORKDIR /app 
-ADD . . 
-RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o webserver . 
+FROM golang:1.14-alpine as build
 
-FROM alpine:latest
-COPY --from=build /app/webserver /app/
-WORKDIR /app 
+WORKDIR /go/src/app
+ADD . /go/src/app
+RUN apk add --no-cache ca-certificates cmake make g++ openssl-dev git curl pkgconfig
+RUN apk add libressl-dev
+RUN git clone -b 1.7 https://github.com/neo4j-drivers/seabolt.git /seabolt
+WORKDIR /seabolt/build
+RUN cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib .. && cmake --build . --target install
+RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+WORKDIR /go/src/app/webserver
 EXPOSE 8081
-ENTRYPOINT [ "./webserver" ] 
+CMD ["go", "run", "main.go"]

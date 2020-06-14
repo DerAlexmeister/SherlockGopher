@@ -7,11 +7,11 @@ import (
 func TestTokenize(t *testing.T) {
 	tables := []struct {
 		input  *HTMLTree
-		wanted []HtmlToken
+		wanted []HTMLToken
 	}{
 		{
 			input: NewHTMLTree("<span>test</span>"),
-			wanted: []HtmlToken{
+			wanted: []HTMLToken{
 				&TagToken{
 					tokenType:  StartTag,
 					tagType:    "span",
@@ -30,7 +30,7 @@ func TestTokenize(t *testing.T) {
 		},
 		{
 			input: NewHTMLTree("<html><!-- Comment!><meta value=test>"),
-			wanted: []HtmlToken{
+			wanted: []HTMLToken{
 				&TagToken{
 					tokenType:  StartTag,
 					tagType:    "html",
@@ -45,7 +45,7 @@ func TestTokenize(t *testing.T) {
 		},
 		{
 			input: NewHTMLTree("<html    ><title>Ja test = <<> test< /title >"),
-			wanted: []HtmlToken{
+			wanted: []HTMLToken{
 				&TagToken{
 					tokenType:  0,
 					tagType:    "html",
@@ -69,7 +69,7 @@ func TestTokenize(t *testing.T) {
 		},
 		{
 			input: NewHTMLTree("<html    ><title>test< /title >"),
-			wanted: []HtmlToken{
+			wanted: []HTMLToken{
 				&TagToken{
 					tokenType:  0,
 					tagType:    "html",
@@ -93,7 +93,7 @@ func TestTokenize(t *testing.T) {
 		},
 		{
 			input: NewHTMLTree("<html    ><title>< /title >"),
-			wanted: []HtmlToken{
+			wanted: []HTMLToken{
 				&TagToken{
 					tokenType:  0,
 					tagType:    "html",
@@ -128,7 +128,7 @@ func TestHandleToken(t *testing.T) {
 	sut := NewHTMLTree("")
 	tables := []struct {
 		input  string
-		wanted HtmlToken
+		wanted HTMLToken
 	}{
 		{
 			input: "html",

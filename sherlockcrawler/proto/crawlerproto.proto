@@ -1,0 +1,127 @@
+syntax = "proto3";
+
+package crawlerwebserverproto;
+
+//import "google/protobuf/empty.proto"; google.protobuf.Empty
+
+/*
+Status of the Crawler.
+*/
+enum ServiceStatus {
+    DONE = 0; // Crawler Finished Working
+}
+
+/*
+State of the url. Like can be crawled or is rejected.
+*/
+enum URL_STATUS {
+    ok = 0;
+    failure = 1;
+}
+
+/*
+CurrentState represents the state that the analyser will transfer to.
+*/
+enum CurrentState {
+    Stop = 0;
+    Pause = 1;
+    Running = 2;
+    Clean = 3;
+}
+
+/*
+Crawler will be the gRPC service for the crawler.
+*/
+service Crawler {
+
+    // Receive will take a URLRequest and answer with a statuscode like 200.
+    rpc ReceiveURL(SubmitURLRequest) returns (SubmitURLResponse) {}
+
+    // StatusOfTaskQueue will send the status of the tasks.
+    rpc StatusOfTaskQueue(TaskStatusRequest) returns (TaskStatusResponse) {}
+
+    // responsible for changing the state of the crawler
+    rpc SetState(StateRequest) returns (StateResponse) {}
+
+    // responsible for receiving the state of the crawler
+    rpc GetState(StateGetRequest) returns (StateGetResponse) {}
+
+    // Create a Task which should be crawled by sherlock crawler.
+    rpc CreateTask(CrawlTaskCreateRequest) returns (CrawlTaskCreateResponse) {}
+
+
+
+}
+
+/*
+CrawlTaskCreateRequest will be the request for the url.
+*/
+message CrawlTaskCreateRequest {
+    string url = 1;
+}
+
+/*
+CrawlTaskCreateResponse will be the response telling the state of the requested url.
+*/
+message CrawlTaskCreateResponse {
+    URL_STATUS statuscode = 1;
+    uint64 taskid = 2;
+}
+
+/*
+TaskStatusRequest will represent a request for the current status of the tasks.
+*/
+message TaskStatusRequest {}
+
+/*
+TaskStatusResponse will represent a response for a TaskStatusRequest.
+*/
+message TaskStatusResponse {
+    string website = 1;
+    uint64 undone = 2;
+    uint64 processing = 3;
+    uint64 finished = 4;
+    uint64 failed = 5;
+}
+
+/*
+SubmitURLRequest will submit a URL.
+*/
+message SubmitURLRequest {
+    string URL = 1;
+}
+
+/*
+SubmitURLResponse will answer a SubmitURLRequest with a bool to indecate the status of the request.
+*/
+message SubmitURLResponse {
+    bool recieved = 1;
+    string error = 2;
+}
+
+/*
+StateRequest contains the CurrentState. future state of the analyser
+*/
+message StateRequest {
+    CurrentState State = 1;
+}
+
+/*
+StateResponse that will be sent to the webserver. true if everything was successful.
+*/
+message StateResponse {
+    bool received = 1;
+}
+
+/*
+StateGetRequest that will be sent to the crawler to get the current status of the crawler.
+*/
+message StateGetRequest {}
+
+/*
+StateGetResponse contains the CurrentState. current state of the crawler.
+*/
+message StateGetResponse {
+    CurrentState State = 1;
+}
+

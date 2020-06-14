@@ -1,46 +1,51 @@
 package sherlockcrawler
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"sync"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/pkg/errors"
 )
 
 /*
-TASKSTATE will be a type representing the current TASKSTATE of the task.
+taskState will be a type representing the current taskState of the task.
 */
-type TASKSTATE int
+type taskState int
 
 const (
-	//UNDONE will be a task untouch.
-	UNDONE TASKSTATE = 0
+	//UNDONE will be an untouched task .
+	UNDONE taskState = 0
 	//PROCESSING will be a task currently working on.
-	PROCESSING TASKSTATE = 1
+	PROCESSING taskState = 1
 	//FINISHED will be a task which is successfully completed.
-	FINISHED TASKSTATE = 2
+	FINISHED taskState = 2
 	//FAILED is a task which was in the state of PROCESSING but failed to complet.
-	FAILED TASKSTATE = 3
+	FAILED taskState = 3
 )
 
 /*
 CrawlerTaskRequest will be a request made by the analyser.
 */
 type CrawlerTaskRequest struct {
-	taskid            uint64 //taskid, send every time.
+	taskID            uint64 //taskID, send every time.
 	addr              string //addr, once
-	taskstate         TASKSTATE
-	taskerror         error //error, send as string incase there is an error then dont send a body
-	taskerrortry      int   //never
+	taskState         taskState
+	taskError         error //error, send as string in case there is an error then dont send a body
+	taskErrorTry      int   //never
 	response          *http.Response
 	responseHeader    *http.Header //header, once (typ map)
 	responseBody      string
 	responseBodyBytes []byte        //body, split
-	statuscode        int           //statuscode, once
+	statusCode        int           //statusCode, once
 	responseTime      time.Duration //response time, once
+}
+
+func NewCrawlerTaskRequest(taskID uint64, addr string, taskState taskState, taskError error, taskErrorTry int, response *http.Response, responseHeader *http.Header, responseBody string, responseBodyBytes []byte, statusCode int, responseTime time.Duration) *CrawlerTaskRequest {
+	return &CrawlerTaskRequest{taskID: taskID, addr: addr, taskState: taskState, taskError: taskError, taskErrorTry: taskErrorTry, response: response, responseHeader: responseHeader, responseBody: responseBody, responseBodyBytes: responseBodyBytes, statusCode: statusCode, responseTime: responseTime}
 }
 
 /*
@@ -48,222 +53,243 @@ NewTask will return an empty CrawlerTaskRequest.
 */
 func NewTask() CrawlerTaskRequest {
 	return CrawlerTaskRequest{
-		taskstate: UNDONE,
+		taskState:    UNDONE,
+		responseTime: time.Duration(0),
 	}
 }
 
 /*
-getTaskID will return the id of a given task.
+GetTaskID will return the id of a given task.
 */
-func (creq *CrawlerTaskRequest) getTaskID() uint64 {
-	return creq.taskid
+func (sherlock *CrawlerTaskRequest) GetTaskID() uint64 {
+	return sherlock.taskID
 }
 
 /*
-getAddr getter for the address.
+GetAddr getter for the address.
 */
-func (creq *CrawlerTaskRequest) getAddr() string {
-	return creq.addr
+func (sherlock *CrawlerTaskRequest) GetAddr() string {
+	return sherlock.addr
 }
 
 /*
-getTASKSTATE will return the TASKSTATE of the task.
+GetTaskState will return the taskState of the task.
 */
-func (creq *CrawlerTaskRequest) getTaskState() TASKSTATE {
-	return creq.taskstate
-}
-
-/*lTASKSTATE
-getResponse will return the response of a crawlertask.
-*/
-func (creq *CrawlerTaskRequest) getResponse() http.Response {
-	return *(creq.response)
+//nolint: golint
+func (sherlock *CrawlerTaskRequest) GetTaskState() taskState {
+	return sherlock.taskState
 }
 
 /*
-getResponseHeader will return the Header of the Response.
+GetResponse will return the response of a crawlerTask.
 */
-func (creq *CrawlerTaskRequest) getResponseHeader() http.Header {
-	return *(creq.responseHeader)
+func (sherlock *CrawlerTaskRequest) GetResponse() http.Response {
+	return *(sherlock.response)
 }
 
 /*
-getResponseBody will return the Header of the Response.
+GetResponseHeader will return the Header of the Response.
 */
-func (creq *CrawlerTaskRequest) getResponseBody() string {
-	return creq.responseBody
+func (sherlock *CrawlerTaskRequest) GetResponseHeader() http.Header {
+	return *(sherlock.responseHeader)
 }
 
 /*
-getResponseByReferenz will return the response of a crawlertask.
+GetResponseBody will return the Header of the Response.
 */
-func (creq *CrawlerTaskRequest) getResponseByReferenz() *http.Response {
-	return creq.response
+func (sherlock *CrawlerTaskRequest) GetResponseBody() string {
+	return sherlock.responseBody
 }
 
 /*
-getResponseBodyInBytes will return the responsebody as a bytearray.
+GetResponseByReference will return the response of a crawlerTask.
 */
-func (creq *CrawlerTaskRequest) getResponseBodyInBytes() []byte {
-	return creq.responseBodyBytes
+func (sherlock *CrawlerTaskRequest) GetResponseByReference() *http.Response {
+	return sherlock.response
+}
+
+/*
+GetResponseBodyInBytes will return the responseBody as a bytearray.
+*/
+func (sherlock *CrawlerTaskRequest) GetResponseBodyInBytes() []byte {
+	return sherlock.responseBodyBytes
 }
 
 /*
 getTask will return an error which was caused by the http package.
 */
-func (creq *CrawlerTaskRequest) getTaskError() error {
-	return creq.taskerror
+func (sherlock *CrawlerTaskRequest) GetTaskError() error {
+	return sherlock.taskError
 }
 
 /*
-getStatusCode will return the statuscode.
+GetStatusCode will return the statusCode.
 */
-func (creq *CrawlerTaskRequest) getStatusCode() int {
-	return creq.statuscode
+func (sherlock *CrawlerTaskRequest) GetStatusCode() int {
+	return sherlock.statusCode
 }
 
 /*
-getTrysError will return the number of errors occured.
+GetTryError will return the number of errors occurred.
 */
-func (creq *CrawlerTaskRequest) getTrysError() int {
-	return creq.taskerrortry
+func (sherlock *CrawlerTaskRequest) GetTryError() int {
+	return sherlock.taskErrorTry
 }
 
 /*
-getResponseTime will return the time it took to make the response and get an answer.
+GetResponseTime will return the time it took to make the response and get an answer.
 */
-func (creq *CrawlerTaskRequest) getResponseTime() time.Duration {
-	return creq.responseTime
+func (sherlock *CrawlerTaskRequest) GetResponseTime() time.Duration {
+	return sherlock.responseTime
 }
 
 /*
 setTaskID will set the task id of a given task.
 */
-func (creq *CrawlerTaskRequest) setTaskID(lid uint64) {
-	creq.taskid = lid
+func (sherlock *CrawlerTaskRequest) setTaskID(lid uint64) {
+	sherlock.taskID = lid
 }
 
 /*
 setAddr will set the addr to a given CrawlerTaskRequest.
 */
-func (creq *CrawlerTaskRequest) setAddr(laddr string) {
-	creq.addr = laddr
+func (sherlock *CrawlerTaskRequest) setAddr(addr string) {
+	sherlock.addr = addr
 }
 
 /*
 setResponse will set the response of the Request to a given CrawlerTaskRequest.
 */
-func (creq *CrawlerTaskRequest) setTaskState(ltaskstate TASKSTATE) {
-	creq.taskstate = ltaskstate
+func (sherlock *CrawlerTaskRequest) setTaskState(taskState taskState) {
+	sherlock.taskState = taskState
 }
 
 /*
 setResponse will set the response of the Request to a given CrawlerTaskRequest.
 */
-func (creq *CrawlerTaskRequest) setResponse(lresponse *http.Response) {
-	creq.response = lresponse
+func (sherlock *CrawlerTaskRequest) setResponse(response *http.Response) {
+	sherlock.response = response
 }
 
 /*
-setResponseBody will set the responsebody of the Response to a given CrawlerTaskRequest.
+setResponseBody will set the responseBody of the Response to a given CrawlerTaskRequest.
 */
-func (creq *CrawlerTaskRequest) setResponseBody(lbody string) {
-	creq.responseBody = lbody
+func (sherlock *CrawlerTaskRequest) setResponseBody(body string) {
+	sherlock.responseBody = body
 }
 
 /*
-setResponseHeader will set the responseheader of the Response to a given CrawlerTaskRequest.
+setResponseHeader will set the responseHeader of the Response to a given CrawlerTaskRequest.
 */
-func (creq *CrawlerTaskRequest) setResponseHeader(lheader *http.Header) {
-	creq.responseHeader = lheader
+func (sherlock *CrawlerTaskRequest) setResponseHeader(header *http.Header) {
+	sherlock.responseHeader = header
 }
 
 /*
-setResponseBodyInBytes will set the responsebody in bytes of the Response to a given CrawlerTaskRequest.
+setResponseBodyInBytes will set the responseBody in bytes of the Response to a given CrawlerTaskRequest.
 */
-func (creq *CrawlerTaskRequest) setResponseBodyInBytes(lbody []byte) {
-	creq.responseBodyBytes = lbody
+func (sherlock *CrawlerTaskRequest) setResponseBodyInBytes(body []byte) {
+	sherlock.responseBodyBytes = body
 }
 
 /*
 setTaskError will set the error raised by the http package.
 */
-func (creq *CrawlerTaskRequest) setTaskError(lerror error) {
-	creq.taskerror = lerror
+func (sherlock *CrawlerTaskRequest) setTaskError(error error) {
+	sherlock.taskError = error
 }
 
 /*
-setStatusCode set the statuscode of the task.
+setStatusCode set the statusCode of the task.
 */
-func (creq *CrawlerTaskRequest) setStatusCode(lstatuscode int) {
-	creq.statuscode = lstatuscode
+func (sherlock *CrawlerTaskRequest) setStatusCode(statusCode int) {
+	sherlock.statusCode = statusCode
 }
 
 /*
-setTrysIfError will be the setter for the number of missed trys.
+setTryIfError will be the setter for the number of missed tries.
 */
-func (creq *CrawlerTaskRequest) setTrysIfError(lnumerrors int) {
-	creq.taskerrortry = lnumerrors
+func (sherlock *CrawlerTaskRequest) setTryIfError(numErrors int) {
+	sherlock.taskErrorTry = numErrors
 }
 
 /*
-setResponseTime will set the time it tookt to make the request and recieve an answer.
+setResponseTime will set the time it took to make the request and receive an answer.
 */
-func (creq *CrawlerTaskRequest) setResponseTime(ltime time.Duration) {
-	creq.responseTime = ltime
+func (sherlock *CrawlerTaskRequest) setResponseTime(time time.Duration) {
+	sherlock.responseTime = time
 }
 
 /*
-MakeRequestForHTML will make a request to a given Website and return its HTML-Code.
+onError will set all things needed if an error occurred while dealing with a task or ŕequest/response.
 */
-func (creq *CrawlerTaskRequest) MakeRequestForHTML() (*http.Response, error) {
-	response, err := http.Get(creq.addr)
-	if err != nil {
-		return nil, fmt.Errorf("An error occurred while trying to get the Website: %s", creq.addr)
-	}
-	return response, nil
-}
-
-/*
-onError will set all things needed if an error occured while dealing with a task or ŕequest/response.
-*/
-func (creq *CrawlerTaskRequest) onError(lerr error) {
-	creq.setTaskError(lerr)
-	creq.setTrysIfError(creq.getTrysError() + 1)
-	creq.setTaskState(FAILED)
+func (sherlock *CrawlerTaskRequest) onError(err error) {
+	sherlock.setTaskError(err)
+	sherlock.setTryIfError(sherlock.GetTryError() + 1)
+	sherlock.setTaskState(FAILED)
 }
 
 /*
 MakeRequestAndStoreResponse will make a request and store the result in the field response of the task.
 */
-func (creq *CrawlerTaskRequest) MakeRequestAndStoreResponse(waitgroup *sync.WaitGroup) bool {
-	creq.setTaskState(PROCESSING)
-	if creq.addr == "" {
-		creq.onError(errors.New("cannot process a task with an empty address field"))
+//nolint: gosimple
+func (sherlock *CrawlerTaskRequest) MakeRequestAndStoreResponse(waitGroup *sync.WaitGroup) bool {
+	sherlock.setTaskState(PROCESSING)
+	log.WithFields(log.Fields{
+		"addr": sherlock.addr,
+	}).Info("MakeRequestAndStoreResponse Start")
+	if sherlock.addr == "" {
+		errMessage := "cannot process a task with an empty address field"
+		log.Error(errMessage)
+		sherlock.onError(errors.New(errMessage))
+		sherlock.setTaskState(FAILED)
+		sherlock.taskErrorTry++
+		sherlock.SetWaitGroupDone(waitGroup)
 		return false
 	}
-	starttime := time.Now()
-	response, err := creq.MakeRequestForHTML()
+	startTime := time.Now()
+
+	client := &http.Client{}
+	response, err := client.Get(sherlock.addr)
+
 	if err != nil {
-		creq.onError(err)
+		sherlock.taskError = err
+		sherlock.setTaskState(FAILED)
+		sherlock.taskErrorTry++
+
+		sherlock.SetWaitGroupDone(waitGroup)
 		return false
 	}
+	t := time.Now()
+	respT := t.Sub(startTime)
+	sherlock.setResponseTime(respT)
 	defer response.Body.Close()
-	creq.setResponseTime((time.Now()).Sub(starttime))
+
 	bodyBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		creq.onError(err)
+		sherlock.onError(err)
+		sherlock.SetWaitGroupDone(waitGroup)
 		return false
 	}
-	creq.setResponse(response)
-	creq.setResponseHeader(&response.Header)
-	creq.setResponseBody(string(bodyBytes))
-	creq.setResponseBodyInBytes(bodyBytes)
-	creq.setStatusCode(response.StatusCode)
-	creq.setTaskError(nil)
-	creq.setTaskState(FINISHED)
-	if waitgroup != nil {
-		defer waitgroup.Done()
-	}
+
+	sherlock.setResponse(response)
+	sherlock.setResponseHeader(&response.Header)
+	sherlock.setResponseBody(string(bodyBytes))
+	sherlock.setResponseBodyInBytes(bodyBytes)
+	sherlock.setStatusCode(response.StatusCode)
+	sherlock.setTaskError(nil)
+	sherlock.setTaskState(FINISHED)
+
+	log.WithFields(log.Fields{
+		"addr": sherlock.addr,
+	}).Info("MakeRequestAndStoreResponse End")
+
+	sherlock.SetWaitGroupDone(waitGroup)
 	return true
+}
+
+func (sherlock *CrawlerTaskRequest) SetWaitGroupDone(waitGroup *sync.WaitGroup) {
+	if waitGroup != nil {
+		defer waitGroup.Done()
+	}
 }

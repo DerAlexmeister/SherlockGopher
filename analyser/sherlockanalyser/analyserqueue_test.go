@@ -1,182 +1,162 @@
 package sherlockanalyser
 
 import (
+	"github.com/ob-algdatii-20ss/SherlockGopher/sherlockwatchdog"
 	"testing"
 )
 
-/*
-containsElement will check whether a given slice has an element or not.
-*/
-func containsElement(s []uint64, id uint64) bool {
-	for _, i := range s {
-		if i == id {
-			return true
-		}
-	}
-	return false
+func getTestQueue() AnalyserQueue {
+	watchDog := sherlockwatchdog.NewSherlockWatchdog()
+	observer := NewAnalyserObserver()
+	que := NewAnalyserQueue()
+	que.SetWatchdog(&watchDog)
+	que.SetObserver(observer)
+
+	return que
 }
 
 //=======================================================================
 // TESTS
 //=======================================================================
 
-/*
-TestQueueHasIDAlreadyInUse tests whether a id is already in use.
-*/
-func TestQueueHasIDAlreadyInUse(t *testing.T) {
-	queue := NewAnalyserQueue()
-	task := &analyserTaskRequest{}
-	id := queue.AppendQueue(task)
-	if id == 0 {
-		t.Fatal("got a 0 id from the AppendQueue-Method")
-	} else if contains := queue.ContainsTaskID(id); !contains {
-		t.Fatalf("id is not in the queue altought it should be. ID: %d, Contains: %t", id, contains)
-	} else {
-		t.Log("successfully found ID in task queue")
-	}
+func TestObserver(t *testing.T) {
+	que := getTestQueue()
 
-}
-
-/*
-TestQueueContainsTaskIDFailes tests trys
-*/
-func TestQueueContainsTaskIDFailes(t *testing.T) {
-	queue := NewAnalyserQueue()
-	task := &analyserTaskRequest{}
-	id := queue.AppendQueue(task)
-	if id == 0 {
-		t.Fatal("got a 0 id from the AppendQueue-Method")
-	} else if contains := queue.ContainsTaskID(id + 1); contains {
-		t.Fatalf("id is not in the queue altought it should be. ID: %d, Contains: %t", id, contains)
-	} else {
-		t.Log("successfully found ID in taskqueue")
-	}
-
-}
-
-/*
-TestQueueAppendFailesBecauseOfNilPointer will try to make the Apppend Method fail because of a nullpointer.
-*/
-func TestQueueAppendFailesBecauseOfNilPointer(t *testing.T) {
-	queue := NewAnalyserQueue()
-	id := queue.AppendQueue(nil)
-	if id == 0 {
-		t.Log("got a zero returncode as expected", 0, id)
-	} else {
-		t.Fatalf("got a non-zero returncode. Expected: %d, Got: %d", 0, id)
-	}
-
-}
-
-/*
-TestQueueRemoveTask will append a task to the queue and remove it.
-*/
-func TestQueueRemoveTask(t *testing.T) {
-	queue := NewAnalyserQueue()
-	task := &analyserTaskRequest{}
-	id := queue.AppendQueue(task)
-	if id == 0 {
-		t.Fatal("go a 0 id from the AppendQueue-Method")
-	} else if contains := queue.ContainsTaskID(id); !contains {
-		t.Fatalf("id is not in the queue altought it should be. ID: %d, Contains: %t", id, contains)
-	} else {
-		t.Log("successfully added task to the taskqueue")
-	}
-	if works := queue.RemoveFromQueue(id); !works {
-		t.Fatalf("couldnt remove task with valid id Expected: %t, Got: %t, ID: %d", true, works, id)
-	} else {
-		t.Log("successfully removed task")
+	if que.Observer() == nil {
+		t.Fatal("Observer is nil")
 	}
 }
 
-/*
-TestQueueRemoveTaskFailedBecauseOfZeroID will fail because of a zero id.
-*/
-func TestQueueRemoveTaskFailedBecauseOfZeroID(t *testing.T) {
-	queue := NewAnalyserQueue()
-	task := &analyserTaskRequest{}
-	id := queue.AppendQueue(task)
-	if id == 0 {
-		t.Fatal("go a 0 id from the AppendQueue-Method")
-	} else if contains := queue.ContainsTaskID(id); !contains {
-		t.Fatalf("id is not in the queue altought it should be. ID: %d, Contains: %t", id, contains)
-	} else {
-		t.Log("successfully added task to the taskqueue")
+func TestSetState_STOP(t *testing.T) {
+	que := getTestQueue()
+	cData := GetExampleCData()
+	task := AnalyserTaskRequest{crawlerData: &cData}
+	que.AppendQueue(&task)
+	que.SetState(STOP)
+
+	if !que.IsEmpty() {
+		t.Fatal("Queue is expected to be empty but is not")
 	}
-	if works := queue.RemoveFromQueue(0); works {
-		t.Fatalf("could remove task with unvalid id Expected: %t, Got: %t, ID: %d", false, works, id)
-	} else {
-		t.Log("successfully removed task")
+
+	if que.State() != STOP {
+		t.Fatal("State is expected to be STOP but is not")
 	}
 }
 
-/*
-TestGetQueueStatus will test the status of the queue and show its status.
-*/
-func TestGetQueueStatus(t *testing.T) {
-	message := "States of the Task currently in the Queue. \nUndone: 1, Processing: 1, CrawlerError: 1, Saving: 1, SendToCrawler: 1, Finished: 1"
-	queue := NewAnalyserQueue()
-	task1 := &analyserTaskRequest{}
-	task2 := &analyserTaskRequest{}
-	task3 := &analyserTaskRequest{}
-	task4 := &analyserTaskRequest{}
-	task5 := &analyserTaskRequest{}
-	task6 := &analyserTaskRequest{}
+func TestSetState_PAUSE(t *testing.T) {
+	que := getTestQueue()
+	que.SetState(PAUSE)
 
-	task1.SetState(UNDONE)
-	task2.SetState(PROCESSING)
-	task3.SetState(CRAWLERERROR)
-	task4.SetState(SAVING)
-	task5.SetState(SENDTOCRAWLER)
-	task6.SetState(FINISHED)
-
-	id1 := queue.AppendQueue(task1)
-	id2 := queue.AppendQueue(task2)
-	id3 := queue.AppendQueue(task3)
-	id4 := queue.AppendQueue(task4)
-	id5 := queue.AppendQueue(task5)
-	id6 := queue.AppendQueue(task6)
-
-	if id1 == 0 || id2 == 0 || id3 == 0 || id4 == 0 || id5 == 0 || id6 == 0{
-		t.Fatalf("Missmatching ids excpeted non-zero value but got id1: %d, id2: %d, id3: %d, id4: %d, id5: %d, id6: %d", id1, id2, id3, id4, id5, id6)
-	} else {
-		t.Log("successfully created different tasks with different states")
-	}
-
-	status := queue.GetStatusOfQueue()
-
-	if status != message {
-		t.Fatalf("messages does not match Expected: %s, Got: %s", message, status)
-	} else {
-		t.Log("message go as expected.")
+	if que.State() != PAUSE {
+		t.Fatal("State is expected to be PAUSE but is not")
 	}
 }
 
-/*
-TestGetAllTaskIds if GetAllTaskIds will return all ids.
-*/
+func TestSetState_RUNNING(t *testing.T) {
+	que := getTestQueue()
+	que.SetState(RUNNING)
+
+	if que.State() != RUNNING {
+		t.Fatal("State is expected to be RUNNING but is not")
+	}
+}
+
+func TestSetState_IDLE(t *testing.T) {
+	que := getTestQueue()
+	que.SetState(IDLE)
+
+	if que.State() != IDLE {
+		t.Fatal("State is expected to be IDLE but is not")
+	}
+}
+
+func TestRemoveFromQueue(t *testing.T) {
+	que := getTestQueue()
+
+	cData := GetExampleCData()
+	task := AnalyserTaskRequest{crawlerData: &cData}
+	que.AppendQueue(&task)
+
+	if !que.RemoveFromQueue(task.getID()) {
+		t.Fatal("Remove failed")
+	}
+
+	if !que.IsEmpty() {
+		t.Fatal("Remove didnt remove")
+	}
+}
+
 func TestGetAllTaskIds(t *testing.T) {
-	queue := NewAnalyserQueue()
-	task1 := &analyserTaskRequest{}
-	task2 := &analyserTaskRequest{}
-	id1 := queue.AppendQueue(task1)
-	id2 := queue.AppendQueue(task2)
+	que := getTestQueue()
 
-	if id1 == 0 || id2 == 0 {
-		t.Fatalf("Missmatching ids excpeted non-zero value but got id1: %d, id2: %d", id1, id2)
-	} else {
-		t.Log("successfully creates 4 different tasks with different states")
+	cData := GetExampleCData()
+	task := AnalyserTaskRequest{crawlerData: &cData}
+	que.AppendQueue(&task)
+
+	ids := que.getAllTaskIds()
+
+	if len(ids) != 1 {
+		t.Fatal("Wrong amount of ids")
 	}
 
-	ids := queue.getAllTaskIds()
+	if ids[0] != task.getID() {
+		t.Fatal("Wrong id returned")
+	}
+}
 
-	if length := len(ids); length != 2 {
-		t.Fatalf("The length of the slice of ids does not be match the real one. Expected: %d, Got: %d", 2, length)
-	} else if contains := containsElement(ids, id1); !contains {
-		t.Fatalf("element in should be in map but wasnt there. Coulndt find: %d", id1)
-	} else if contains := containsElement(ids, id2); !contains {
-		t.Fatalf("element in should be in map but wasnt there. Coulndt find: %d", id2)
-	} else {
-		t.Log("successfully found all elements")
+func TestGetStatusOfQueue(t *testing.T) {
+	que := getTestQueue()
+
+
+	cData := GetExampleCData()
+	cData.setAddr(cData.addr + "1")
+	task1 := AnalyserTaskRequest{crawlerData: &cData}
+	cData2 := GetExampleCData()
+	cData2.setAddr(cData2.addr + "2")
+	task2 := AnalyserTaskRequest{crawlerData: &cData2}
+	cData3 := GetExampleCData()
+	cData3.setAddr(cData3.addr + "3")
+	task3 := AnalyserTaskRequest{crawlerData: &cData3}
+	cData4 := GetExampleCData()
+	cData4.setAddr(cData4.addr + "4")
+	task4 := AnalyserTaskRequest{crawlerData: &cData4}
+	cData5 := GetExampleCData()
+	cData5.setAddr(cData5.addr + "5")
+	task5 := AnalyserTaskRequest{crawlerData: &cData5}
+	cData6 := GetExampleCData()
+	cData6.setAddr(cData6.addr + "6")
+	task6 := AnalyserTaskRequest{crawlerData: &cData6}
+	task1.SetState(0)
+	task2.SetState(1)
+	task3.SetState(2)
+	task4.SetState(3)
+	task5.SetState(4)
+	task6.SetState(5)
+	que.AppendQueue(&task1)
+	que.AppendQueue(&task2)
+	que.AppendQueue(&task3)
+	que.AppendQueue(&task4)
+	que.AppendQueue(&task5)
+	que.AppendQueue(&task6)
+
+	queStatus := que.GetStatusOfQueue()
+	expected := "States of the Task currently in the Queue. \nUndone: 1, Processing: 1, CrawlerError: 1, Saving: 1, SendToCrawler: 1, Finished: 1"
+
+	if queStatus != expected {
+		t.Fatal("Returned status does not equal expected")
+	}
+}
+
+func TestStopQueue(t *testing.T) {
+	que := getTestQueue()
+
+	cData := GetExampleCData()
+	task := AnalyserTaskRequest{crawlerData: &cData}
+	que.AppendQueue(&task)
+
+	que.StopQueue()
+
+	if !que.IsEmpty() {
+		t.Fatal("Remove didnt remove")
 	}
 }

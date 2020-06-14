@@ -1,29 +1,31 @@
 package sherlockparser
 
+/*
+Tag struct.
+*/
 type Tag struct {
-	tagType string
+	tagType       string
 	tagAttributes []*TagAttribute
-	tagContent string
+	tagContent    string
 }
 
 /*
-Returns the type of the tag
+TagType returns the type of the tag.
 */
 func (tag *Tag) TagType() string {
 	return tag.tagType
 }
 
 /*
-Returns a pointer to a slice of TagAttributes of the tag
+Attributes returns a pointer to a slice of TagAttributes of the tag.
 */
 func (tag *Tag) Attributes() []*TagAttribute {
 	return tag.tagAttributes
 }
 
 /*
-Returns the content of the tag
+TagContent returns the content of the tag.
 */
 func (tag *Tag) TagContent() string {
 	return tag.tagContent
 }
-

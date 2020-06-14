@@ -1,6 +1,6 @@
 # REST-API of the Webserver
 
-The webserver supplys a REST-API to fetch data from various points. For Example the state of the crawler and analysers queues can be retreived be the monitoring part of the API aswell as the data of the graph from the graph part (see structure below).
+The webserver supplys a REST-API to fetch data from various points. For Example the state of the crawler and analysers queues can be retreived by the monitoring part of the API aswell as the data of the graph from the graph part (see structure below).
 
 ```apistructure
     - [Basicaddress]
@@ -8,23 +8,28 @@ The webserver supplys a REST-API to fetch data from various points. For Example 
         - /graph/v1   
             - /meta 
             - /all
+            - /alloptimized
             - /performenceofsites
             - /detailsofnode 
             - /search
         - /monitor/v1
             - /meta
+        - /controller/v1
+            - /dropit
+            - /status
+            - /changestate
 ```
 
 ## /areyouthere
 
 - [Basicaddress]/areyouthere
 - Type: GET
-- Will send you a Pong as json to respond to the "ping".
+- Will send you a "yes i am here" as json to respond to the "ping".
 
 **Response:**
 ```Json
 {
-    "message": "Pong"
+    "Message": "Yes i am here!"
 }
 ```
 
@@ -38,22 +43,16 @@ The webserver supplys a REST-API to fetch data from various points. For Example 
 
 **Response:**
 ```Json
-    ...
+    [
         {
             "amountofimages": 18
-        }
-    ],
-    [
+        },
         {
             "amountofsheets": 10
-        }
-    ],
-    [
+        },
         {
             "amountofjs": 20
-        }
-    ], ...
-]
+        } ...] 
 ```
 ### /all
 
@@ -65,46 +64,76 @@ The webserver supplys a REST-API to fetch data from various points. For Example 
 ```Json
     ...
     {
-        "Type(r)": "Links",
-        "k.Address": "0",
-        "k.Filetype": "HTML",
-        "n.Address": "12",
-        "n.Filetype": "HTML"
+        "Destination": "www.example.com/6",
+        "DestinationType": "Javascript",
+        "Relationship": "Requires",
+        "Source": "www.example.com/23",
+        "SourceType": "HTML"
     },
     {
-        "Type(r)": "Links",
-        "k.Address": "0",
-        "k.Filetype": "HTML",
-        "n.Address": "61",
-        "n.Filetype": "HTML"
-    },
-    {
-        "Type(r)": "Links",
-        "k.Address": "0",
-        "k.Filetype": "HTML",
-        "n.Address": "48",
-        "n.Filetype": "HTML"
+        "Destination": "www.example.com/7",
+        "DestinationType": "CSS",
+        "Relationship": "Requires",
+        "Source": "www.example.com/79",
+        "SourceType": "HTML"
     }, ...
 ```
 
-### /performenceofsites
+### /alloptimized
+
+- [Basicaddress]/graph/v1/alloptimized
+- Type: GET
+- Will return json which contains all nodes and their relationships to other nodes but optimized for the react frontend.
+
+**Response:**
+```Json
+    ...
+    "links": [
+        {
+            "color": "#08206A",
+            "label": "Links",
+            "source": "www.example.com/43",
+            "target": "www.example.com/0"
+        },
+        {
+            "color": "#08206A",
+            "label": "Links",
+            "source": "www.example.com/41",
+            "target": "www.example.com/0"
+        }],
+        "nodes": [
+        {
+            "color": "#7CA9EF",
+            "id": "www.example.com/43"
+        },
+        {
+            "color": "#7CA9EF",
+            "id": "www.example.com/0"
+        },
+        {
+            "color": "#7CA9EF",
+            "id": "www.example.com/41"
+        }] ...
+```
+
+### /performanceofsites
 
 - [Basicaddress]/graph/v1/performenceofsites
 - Type: GET
-- Will return a list of performence indicators like statuscode and rtt.
+- Will return a list of performence indicators like statuscode and RTT.
 
 **Response:**
 ```Json
     ...
         {
-            "n.Address": "0",
-            "n.Responsetime": "333",
-            "n.Statuscode": "293"
+            "Address": "www.example.com/0",
+            "ResponseTime": "522",
+            "Status": "409"
         },
         {
-            "n.Address": "1",
-            "n.Responsetime": "1521",
-            "n.Statuscode": "446"
+            "Address": "www.example.com/1",
+            "ResponseTime": "1034",
+            "Status": "246"
         }, ...
 ```
 
@@ -117,13 +146,13 @@ The webserver supplys a REST-API to fetch data from various points. For Example 
 **Request:**
 ```Json
     ... {
-        "url": "www.github.com/imprint"
+        "url": "www.example.com/imprint"
     } ...
 ```
 
 **Response:**
 ```Json
-    ... "www.github.com/imprint": {
+    ... "www.example.com/imprint": {
             "Accept-Ranges": "bytes",
             "Address": "1",
             "Age": "12",
@@ -168,5 +197,69 @@ The webserver supplys a REST-API to fetch data from various points. For Example 
 
 **Response:**
 ```Json
-    ...
+    "Crawler":{
+        "Website":    45,
+        "Undone":     9,
+        "Processing": 25,
+        "Finished":   10,
+        "Failed":     1,
+    },
+    "Analyser":{
+        "Website":       45,
+        "Undone":        5,
+        "Processing":    25,
+        "CrawlerError":  0,
+        "Saving":        5,
+        "SendToCrawler": 5,
+        "Finished":      5,
+    }
+```
+
+## /controller/v1
+
+### /changestate
+- [Basicaddress]/controller/v1/changestate
+- Type: POST
+- Will change the state of various services.
+- Operations: Clean, Stop, Pause, Resume
+- Target: Crawler, Analyser, All
+
+**Request:**
+```Json
+    ... {
+        "operation": "clean",
+        "target": "crawler"
+    } ...
+```
+
+**Response:**
+```Json
+        {
+		"Status": "Fine",
+	}
+```
+
+### /status
+- [Basicaddress]/controller/v1/status
+- Type: GET
+- Will return the status of the crawler and analyser.
+
+**Response:**
+```Json
+   {
+       "Analyser": "Running",
+       "Crawler": "Paused"
+   }
+```
+
+### /dropit
+- [Basicaddress]/controller/v1/dropit
+- Type: GET
+- Will drop the database.
+
+**Response:**
+```Json
+   {
+       "Message": "Dropped the table."
+   }
 ```

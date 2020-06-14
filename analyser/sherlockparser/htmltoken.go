@@ -2,13 +2,17 @@ package sherlockparser
 
 import "strings"
 
-type HtmlToken interface {
+/*
+HTMLToken interface.
+*/
+type HTMLToken interface {
 	Type() TokenType
 	RawContent() string
 	AddToRawContent(toAdd string)
 	ToString() string
 }
 
+//TokenType represents HTML token types.
 type TokenType int
 
 /*
@@ -22,11 +26,11 @@ const (
 )
 
 /*
-Returns a pointer to a HtmlToken-slice which is generated based on the input html stored in the HTMLTree.
+tokenize returns a pointer to a HTMLToken-slice which is generated based on the input html stored in the HTMLTree.
 */
-func (tree *HTMLTree) tokenize() []HtmlToken {
+func (tree *HTMLTree) tokenize() []HTMLToken {
 	element := ""
-	classified := []HtmlToken{}
+	classified := []HTMLToken{}
 	textTags := []string{"style", "script", "textarea", "title"}
 	var lastTagType string
 	var lastTokenType TokenType
@@ -60,7 +64,7 @@ func (tree *HTMLTree) tokenize() []HtmlToken {
 								classified = append(classified, newTag)
 								break
 							} else {
-								nextElement = nextElement + string(tree.htmlRaw[l])
+								nextElement += string(tree.htmlRaw[l])
 								classified = append(classified, &TextToken{
 									tokenType:  PlainText,
 									rawContent: nextElement,
@@ -74,7 +78,7 @@ func (tree *HTMLTree) tokenize() []HtmlToken {
 						}
 					}
 				} else {
-					nextElement = nextElement + string(tree.htmlRaw[l])
+					nextElement += string(tree.htmlRaw[l])
 				}
 			}
 			continue
@@ -110,40 +114,43 @@ func (tree *HTMLTree) tokenize() []HtmlToken {
 						classified = append(classified, newTag)
 						break
 					} else {
-						tag = tag + string(tree.htmlRaw[l])
+						tag += string(tree.htmlRaw[l])
 					}
 				}
 			}
 		} else {
 			toAdd := string(tree.htmlRaw[i])
-			element = element + toAdd
+			element += toAdd
 		}
 	}
 	return classified
 }
 
 /*
-Returns a pointer to a TagToken extracted from the input string
+handleTag returns a pointer to a TagToken extracted from the input string.
 */
 func (tree *HTMLTree) handleTag(tag string) *TagToken {
 	var token *TagToken
 	tagRaw := strings.TrimSpace(tag)
-	voidElements := []string{"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
+	voidElements := []string{"area", "base", "br", "col", "embed", "hr",
+		"img", "input", "link", "meta", "param", "source", "track", "wbr"}
 	tagType := strings.Split(tagRaw, " ")[0]
 
-	if _, contained := find(voidElements, tagType); contained {
+	_, contained := find(voidElements, tagType)
+	switch {
+	case contained:
 		token = &TagToken{
 			tokenType:  SelfClosingTag,
 			tagType:    tagType,
 			rawContent: tagRaw,
 		}
-	} else if len(tagRaw) > 0 && tagRaw[0] == '/' {
+	case len(tagRaw) > 0 && tagRaw[0] == '/':
 		token = &TagToken{
 			tokenType:  EndTag,
 			tagType:    tagType[1:],
 			rawContent: tagRaw,
 		}
-	} else {
+	default:
 		token = &TagToken{
 			tokenType:  StartTag,
 			tagType:    tagType,
@@ -155,7 +162,7 @@ func (tree *HTMLTree) handleTag(tag string) *TagToken {
 }
 
 /*
-Finds a string in a string slice. Returns index of string (-1 if not found) and bool if string was found.
+find finds a string in a string slice. Returns index of string (-1 if not found) and bool if string was found.
 */
 func find(slice []string, val string) (int, bool) {
 	for i, item := range slice {
@@ -165,4 +172,3 @@ func find(slice []string, val string) (int, bool) {
 	}
 	return -1, false
 }
-

@@ -34,8 +34,16 @@ var _ server.Option
 // Client API for Analyser service
 
 type AnalyserService interface {
-	// StatusOfTaskQueue will send the status of the tasks.
-	StatusOfTaskQueue(ctx context.Context, in *TaskStatusRequest, opts ...client.CallOption) (*TaskStatusResponse, error)
+	//
+	//WorkloadRPC can be called to get the workload of the analyser
+	WorkloadRPC(ctx context.Context, in *WorkloadRequest, opts ...client.CallOption) (*WorkloadResponse, error)
+	//
+	//ChangeStateRPC can be called to set the state of the analyser
+	ChangeStateRPC(ctx context.Context, in *ChangeStateRequest, opts ...client.CallOption) (*ChangeStateResponse, error)
+	//
+	//StateRPC can be called to get the state of the analyser
+	StateRPC(ctx context.Context, in *StateRequest, opts ...client.CallOption) (*StateResponse, error)
+	WebsiteData(ctx context.Context, opts ...client.CallOption) (Analyser_WebsiteDataService, error)
 }
 
 type analyserService struct {
@@ -56,9 +64,9 @@ func NewAnalyserService(name string, c client.Client) AnalyserService {
 	}
 }
 
-func (c *analyserService) StatusOfTaskQueue(ctx context.Context, in *TaskStatusRequest, opts ...client.CallOption) (*TaskStatusResponse, error) {
-	req := c.c.NewRequest(c.name, "Analyser.StatusOfTaskQueue", in)
-	out := new(TaskStatusResponse)
+func (c *analyserService) WorkloadRPC(ctx context.Context, in *WorkloadRequest, opts ...client.CallOption) (*WorkloadResponse, error) {
+	req := c.c.NewRequest(c.name, "Analyser.WorkloadRPC", in)
+	out := new(WorkloadResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -66,16 +74,93 @@ func (c *analyserService) StatusOfTaskQueue(ctx context.Context, in *TaskStatusR
 	return out, nil
 }
 
+func (c *analyserService) ChangeStateRPC(ctx context.Context, in *ChangeStateRequest, opts ...client.CallOption) (*ChangeStateResponse, error) {
+	req := c.c.NewRequest(c.name, "Analyser.ChangeStateRPC", in)
+	out := new(ChangeStateResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *analyserService) StateRPC(ctx context.Context, in *StateRequest, opts ...client.CallOption) (*StateResponse, error) {
+	req := c.c.NewRequest(c.name, "Analyser.StateRPC", in)
+	out := new(StateResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *analyserService) WebsiteData(ctx context.Context, opts ...client.CallOption) (Analyser_WebsiteDataService, error) {
+	req := c.c.NewRequest(c.name, "Analyser.WebsiteData", &CrawlerPackage{})
+	stream, err := c.c.Stream(ctx, req, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &analyserServiceWebsiteData{stream}, nil
+}
+
+type Analyser_WebsiteDataService interface {
+	SendMsg(interface{}) error
+	RecvMsg(interface{}) error
+	Close() error
+	Send(*CrawlerPackage) error
+	Recv() (*CrawlerAck, error)
+}
+
+type analyserServiceWebsiteData struct {
+	stream client.Stream
+}
+
+func (x *analyserServiceWebsiteData) Close() error {
+	return x.stream.Close()
+}
+
+func (x *analyserServiceWebsiteData) SendMsg(m interface{}) error {
+	return x.stream.Send(m)
+}
+
+func (x *analyserServiceWebsiteData) RecvMsg(m interface{}) error {
+	return x.stream.Recv(m)
+}
+
+func (x *analyserServiceWebsiteData) Send(m *CrawlerPackage) error {
+	return x.stream.Send(m)
+}
+
+func (x *analyserServiceWebsiteData) Recv() (*CrawlerAck, error) {
+	m := new(CrawlerAck)
+	err := x.stream.Recv(m)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // Server API for Analyser service
 
 type AnalyserHandler interface {
-	// StatusOfTaskQueue will send the status of the tasks.
-	StatusOfTaskQueue(context.Context, *TaskStatusRequest, *TaskStatusResponse) error
+	//
+	//WorkloadRPC can be called to get the workload of the analyser
+	WorkloadRPC(context.Context, *WorkloadRequest, *WorkloadResponse) error
+	//
+	//ChangeStateRPC can be called to set the state of the analyser
+	ChangeStateRPC(context.Context, *ChangeStateRequest, *ChangeStateResponse) error
+	//
+	//StateRPC can be called to get the state of the analyser
+	StateRPC(context.Context, *StateRequest, *StateResponse) error
+	WebsiteData(context.Context, Analyser_WebsiteDataStream) error
 }
 
 func RegisterAnalyserHandler(s server.Server, hdlr AnalyserHandler, opts ...server.HandlerOption) error {
 	type analyser interface {
-		StatusOfTaskQueue(ctx context.Context, in *TaskStatusRequest, out *TaskStatusResponse) error
+		WorkloadRPC(ctx context.Context, in *WorkloadRequest, out *WorkloadResponse) error
+		ChangeStateRPC(ctx context.Context, in *ChangeStateRequest, out *ChangeStateResponse) error
+		StateRPC(ctx context.Context, in *StateRequest, out *StateResponse) error
+		WebsiteData(ctx context.Context, stream server.Stream) error
 	}
 	type Analyser struct {
 		analyser
@@ -88,6 +173,54 @@ type analyserHandler struct {
 	AnalyserHandler
 }
 
-func (h *analyserHandler) StatusOfTaskQueue(ctx context.Context, in *TaskStatusRequest, out *TaskStatusResponse) error {
-	return h.AnalyserHandler.StatusOfTaskQueue(ctx, in, out)
+func (h *analyserHandler) WorkloadRPC(ctx context.Context, in *WorkloadRequest, out *WorkloadResponse) error {
+	return h.AnalyserHandler.WorkloadRPC(ctx, in, out)
+}
+
+func (h *analyserHandler) ChangeStateRPC(ctx context.Context, in *ChangeStateRequest, out *ChangeStateResponse) error {
+	return h.AnalyserHandler.ChangeStateRPC(ctx, in, out)
+}
+
+func (h *analyserHandler) StateRPC(ctx context.Context, in *StateRequest, out *StateResponse) error {
+	return h.AnalyserHandler.StateRPC(ctx, in, out)
+}
+
+func (h *analyserHandler) WebsiteData(ctx context.Context, stream server.Stream) error {
+	return h.AnalyserHandler.WebsiteData(ctx, &analyserWebsiteDataStream{stream})
+}
+
+type Analyser_WebsiteDataStream interface {
+	SendMsg(interface{}) error
+	RecvMsg(interface{}) error
+	Close() error
+	Send(*CrawlerAck) error
+	Recv() (*CrawlerPackage, error)
+}
+
+type analyserWebsiteDataStream struct {
+	stream server.Stream
+}
+
+func (x *analyserWebsiteDataStream) Close() error {
+	return x.stream.Close()
+}
+
+func (x *analyserWebsiteDataStream) SendMsg(m interface{}) error {
+	return x.stream.Send(m)
+}
+
+func (x *analyserWebsiteDataStream) RecvMsg(m interface{}) error {
+	return x.stream.Recv(m)
+}
+
+func (x *analyserWebsiteDataStream) Send(m *CrawlerAck) error {
+	return x.stream.Send(m)
+}
+
+func (x *analyserWebsiteDataStream) Recv() (*CrawlerPackage, error) {
+	m := new(CrawlerPackage)
+	if err := x.stream.Recv(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }

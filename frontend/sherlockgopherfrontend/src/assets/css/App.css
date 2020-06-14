@@ -1,0 +1,72 @@
+/*
+CSS-File containing some classes.
+*/
+
+.body {
+    width: 80%;
+    height: 100%;
+    position: absolute;
+    top: 60px;
+    left: 10%;
+}
+
+.searchbar {
+    position: fixed;
+    width: 100%;
+    height: 40px;
+    top: 0px;
+    left: 0px;
+    background-color: #212f3d; /* #283747 */
+    z-index: 10000;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.logo {
+    position: fixed;
+    width: 40px;
+    height: 40px;
+    top: 0px;
+    left: 60px;
+    z-index: 20;
+    cursor: pointer;
+}
+
+.title {
+    position: absolute;
+    top: 10px;
+    left: 110px;
+    color:white;
+    font-size: 20px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.bigLogo {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width:200px;
+    height:200px;
+}
+
+.searchbarform {
+    margin: auto;
+    width: 80%;
+    padding: -5px;
+}
+
+.searchbarinput {
+    width:100%;
+    height:40px;
+    border-radius: 40px;
+    border: thin solid gray;
+    text-align: center;
+}
+
+.searchbarbutton {
+    border-radius: 40px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 200px
+}
+

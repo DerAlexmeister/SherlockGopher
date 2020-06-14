@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
-	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/micro/go-micro/web"
 )
@@ -34,15 +34,20 @@ func main() {
 	if err := service.Init(); err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("[+] Initialized the webserver for the frontend.")
+	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.Default()
 
-	router.Use(static.Serve("/", static.LocalFile("./views", true)))
+	router.Static("/static", "sherlockgopherfrontend/build/static")
+	router.StaticFile("/", "sherlockgopherfrontend/build/index.html")
 
-	router.Run(getAddress())
-
+	if err := router.Run(getAddress()); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("[+] Started the webserver. Listening on %s \n", getAddress())
 	service.Handle("/", router)
-
+	fmt.Println("[+] Started the service.")
 	if err := service.Run(); err != nil {
 		log.Fatal(err)
 	}

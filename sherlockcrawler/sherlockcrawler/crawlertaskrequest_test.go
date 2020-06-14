@@ -1,7 +1,7 @@
 package sherlockcrawler
 
 import (
-	"io/ioutil"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -18,13 +18,27 @@ const (
 	ltime         time.Duration = 10
 	errorsappered               = 3
 	statuscode                  = 200
+	wantedString  string        = "This should be in the body of the HTTP response."
 )
 
 // Testing error
 var err error = errors.New("An error")
 
+func TestNewCrawlerTaskRequest(t *testing.T) {
+	header := http.Header{}
+	task := NewCrawlerTaskRequest(0,
+		"www.helpme.de", 0, fmt.Errorf(""),
+		0, nil, &header, "html",
+		[]byte("html"), 200, 2000)
+	id := task.GetTaskID()
+	if id != uint64(0) {
+		fmt.Println(id)
+		t.Fatal("Test failed")
+	}
+}
+
 /*
-TestCrawlerTaskRequest will test a crawlertaskrequest in general so its getters and setters.
+TestCrawlerTaskRequest will test a crawler task request in general so its getters and setters.
 */
 func TestCrawlerTaskRequest(t *testing.T) {
 	task := NewTask()
@@ -33,98 +47,110 @@ func TestCrawlerTaskRequest(t *testing.T) {
 	task.setTaskState(state)
 	task.setTaskError(err)
 	task.setResponseTime(ltime)
-	task.setTrysIfError(errorsappered)
+	task.setTryIfError(errorsappered)
 	task.setStatusCode(statuscode)
 
-	if task.getAddr() != addr {
-		t.Fatalf("Address's do not match. Expected: %s, Got: %s", task.getAddr(), addr)
-	} else if task.getTaskID() != id {
-		t.Fatalf("IDs do not match. Expected: %d, Got: %d", task.getTaskID(), id)
-	} else if task.getTaskState() != state {
-		t.Fatalf("Taskstates do not match. Expected: %s, Got: %s", string(task.getTaskState()), string(state))
-	} else if task.getTaskError() != err {
-		t.Fatalf("Taskerror do not match. Expected: %s, Got: %s", string(task.getTaskError().Error()), string(err.Error()))
-	} else if task.getResponseTime() != ltime {
-		t.Fatalf("Responsetime do not match. Expected: %d, Got: %d", int(task.getResponseTime()), int(ltime))
-	} else if task.getStatusCode() != statuscode {
-		t.Fatalf("Statuscode do not match. Expected: %d, Got: %d", task.getStatusCode(), statuscode)
-	} else if task.getTrysError() != errorsappered {
-		t.Fatalf("Amount of errors does not match. Expected: %d, Got: %d", task.getTrysError(), errorsappered)
-	} else {
-		t.Log("Getter and Setter work well (Not Tested are all response related, see later tests).")
+	switch {
+	case task.GetAddr() != addr:
+		t.Fatalf("Address's do not match. Expected: %s, Got: %s", task.GetAddr(), addr)
+	case task.GetTaskID() != id:
+		t.Fatalf("IDs do not match. Expected: %d, Got: %d", task.GetTaskID(), id)
+	case task.GetTaskState() != state:
+		t.Fatalf("Taskstates do not match. Expected: %s, Got: %s", string(task.GetTaskState()), string(state))
+	case task.GetTaskError() != err:
+		t.Fatalf("Taskerror do not match. Expected: %s, Got: %s", task.GetTaskError().Error(), err.Error())
+	case task.GetResponseTime() != ltime:
+		t.Fatalf("Responsetime do not match. Expected: %d, Got: %d", int(task.GetResponseTime()), int(ltime))
+	case task.GetStatusCode() != statuscode:
+		t.Fatalf("Statuscode do not match. Expected: %d, Got: %d", task.GetStatusCode(), statuscode)
+	case task.GetTryError() != errorsappered:
+		t.Fatalf("Amount of errors does not match. Expected: %d, Got: %d", task.GetTryError(), errorsappered)
+	default:
+		fmt.Println("Getter and Setter work well (Not Tested are all response related, see later tests).")
 	}
 }
 
-/*
+/* // TODO: TEST IS DEAD
 TestMakeRequestForHTML will test the MakeRequestForHTML.
-*/
+
 func TestMakeRequestForHTML(t *testing.T) {
-	wanted := "This should be in the body of the HTTP response."
+	wanted := wantedString
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		w.Write([]byte(wanted))
+
+		_, err = w.Write([]byte(wanted))
+		if err != nil {
+			t.Fatal(err)
+		}
 	}))
 	task := NewTask()
 	task.setAddr(server.URL)
-	result, err := task.MakeRequestForHTML()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer result.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(result.Body)
-	if !reflect.DeepEqual([]byte(wanted), bodyBytes) {
-		t.Fatal(wanted, string(bodyBytes))
+	result := task.MakeRequestAndStoreResponse(nil)
+
+	if !result {
+		t.Fatal("an error occurred during execution")
 	}
 	defer server.Close()
-}
+}*/
 
-/*
+/* // TODO: TEST IS DEAD
 TestMakeRequestForHTML will test the MakeRequestForHTML which returned an error.
-*/
+
+//nolint: bodyclose
 func TestMakeRequestForHTMLWithError(t *testing.T) {
-	wanted := "This should be in the body of the HTTP response."
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		w.Write([]byte(wanted))
+		_, err := w.Write([]byte(wantedString))
+		if err != nil {
+			t.Fatal(err)
+		}
 	}))
 	task := NewTask()
-	_, err := task.MakeRequestForHTML()
-	if err != nil {
-		t.Log("An error occured as expected.", err)
+
+	ret := task.MakeRequestAndStoreResponse(nil)
+
+	if !ret {
+		fmt.Println("An error occurred as expected.")
 	} else {
-		t.Fatal("No error occured but was expected.")
+		t.Fatal("No error occurred but was expected.")
 	}
 	defer server.Close()
-}
+}*/
 
 /*
 TestMakeRequestAndStoreResponse will make a response and store all responses.
 */
 func TestMakeRequestAndStoreResponse(t *testing.T) {
-	wanted := "This should be in the body of the HTTP response."
+	wanted := wantedString
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		w.Write([]byte(wanted))
+		_, err := w.Write([]byte(wanted))
+		if err != nil {
+			t.Fatal(err)
+		}
 	}))
 	task := NewTask()
 	task.setAddr(server.URL)
 	result := task.MakeRequestAndStoreResponse(nil)
 	if result {
-		if task.getResponseByReferenz() == nil {
-			t.Fatalf("Got a nil reference to the responce Expected: not nil pointer, Got %p", task.getResponseByReferenz())
-		} else if !reflect.DeepEqual([]byte(wanted), task.getResponseBodyInBytes()) {
+		body := task.GetResponseByReference().Body
+		switch {
+		case body == nil:
+			t.Fatalf("Got a nil reference to the response Expected: not nil pointer, Got %p", body)
+		case !reflect.DeepEqual([]byte(wanted), task.GetResponseBodyInBytes()):
 			t.Fatal("The byte version of the body are not equal.")
-		} else if !reflect.DeepEqual(wanted, task.getResponseBody()) {
-			t.Fatalf("The body's of the response task.getResponseBody() and wanted(This should be in the body of the HTTP response.) are different")
-		} else if !reflect.DeepEqual(task.getResponse().Header, task.getResponseHeader()) {
-			t.Fatalf("Response.Header and getResponseHeader returnd different results. Expected: %v, Got %v", task.getResponse().Header, task.getResponseHeader())
-		} else if task.getResponse().StatusCode != 200 && task.getResponse().StatusCode != task.getStatusCode() {
-			t.Fatalf("Response status code retrieved on 2 different ways returned different results Expected: %d, Got %d", task.getResponse().StatusCode, task.getStatusCode())
-		} else {
-			t.Log("Successfully testet missing getters compared to the test TestCrawlerTaskRequest")
+		case !reflect.DeepEqual(wanted, task.GetResponseBody()):
+			t.Fatalf("The body's of the response task.GetResponseBody() and wanted(This should be in the body of the HTTP response.) are different")
+		case !reflect.DeepEqual(task.GetResponse().Header, task.GetResponseHeader()):
+			t.Fatalf("Response.Header and GetResponseHeader returned different results. Expected: %v, Got %v", task.GetResponse().Header, task.GetResponseHeader())
+		case task.GetResponse().StatusCode != 200 && task.GetResponse().StatusCode != task.GetStatusCode():
+			t.Fatalf("Response status code retrieved on 2 different ways returned different results Expected: %d, Got %d", task.GetResponse().StatusCode, task.GetStatusCode())
+		default:
+			fmt.Println("Successfully tested missing getters compared to the test TestCrawlerTaskRequest")
 		}
+		defer body.Close()
 	} else {
-		t.Fatal("A Problem occrued while trying to call MakeRequestAndStoreResponse")
+		t.Fatal("A Problem occurred while trying to call MakeRequestAndStoreResponse")
 	}
 
 	defer server.Close()
@@ -134,17 +160,23 @@ func TestMakeRequestAndStoreResponse(t *testing.T) {
 TestMakeRequestAndStoreResponseWithEmptyAddrField will test a request with empty addr field.
 */
 func TestMakeRequestAndStoreResponseWithEmptyAddrField(t *testing.T) {
-	wanted := "This should be in the body of the HTTP response."
+	wanted := wantedString
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		w.Write([]byte(wanted))
+		_, err := w.Write([]byte(wanted))
+		if err != nil {
+			t.Fatal(err)
+		}
 	}))
 	task := NewTask()
 	result := task.MakeRequestAndStoreResponse(nil)
-	if !result && task.getTaskError().Error() == "cannot process a task with an empty address field" && task.getTrysError() > 0 && task.getTaskState() == FAILED {
-		t.Log("An error occurred as expected.")
+	fmt.Println(result)
+	fmt.Println(task.GetTaskError().Error())
+	fmt.Println(task.GetTryError())
+	fmt.Println(task.GetTaskState())
+	if !result && task.GetTaskError().Error() == "cannot process a task with an empty address field" && task.GetTryError() > 0 && task.GetTaskState() == FAILED {
 	} else {
-		t.Fatal("A Problem occrued while trying to call MakeRequestAndStoreResponse should return an error but did not")
+		t.Fatal("A Problem occurred while trying to call MakeRequestAndStoreResponse should return an error but did not")
 	}
 
 	defer server.Close()

@@ -2,49 +2,68 @@ package main
 
 import (
 	"fmt"
+	"os"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/micro/go-micro"
-	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyser"
-	fileproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto/crawlertoanalyserfiletransfer"
+	aproto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
+	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto"
+
 	sherlock "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/sherlockcrawler"
 )
 
 const (
-	serviceName     = "crawler-service"
-	fileservicename = "filestransfer-service-crawler"
+	serviceName = "crawler-service"
 )
 
 func main() {
-	// CrawlerService.
+	SetupLogging()
+	log.Info("Started analyser")
+
 	service := micro.NewService(micro.Name(serviceName))
 	service.Init()
 
+	fmt.Printf("[+] Successfully initialized the serivce %s", serviceName)
+
 	crawlerservice := sherlock.NewSherlockCrawlerService()
-	deps := sherlock.NewSherlockDependencies()
-	streamingserver := sherlock.NewStreamingServer()
 
-	//TODO missing setters for the Dependencies.
-	crawlerservice.InjectDependency(deps)
-	crawlerservice.SetSherlockStreamer(&streamingserver) // Add the current streaminserver to the current sherlock crawler.
+	deps := sherlock.SherlockDependencies{
+		Analyser: func() aproto.AnalyserService {
+			return aproto.NewAnalyserService("analyser-service", service.Client())
+		},
+	}
+	fmt.Printf("[+] Injected dependencies in %s", serviceName)
 
-	err := proto.RegisterAnalyserInterfaceHandler(service.Server(), crawlerservice) //ändern
+	crawlerservice.InjectDependency(&deps)
+
+	err := proto.RegisterCrawlerHandler(service.Server(), crawlerservice) //ändern
 
 	if err != nil {
-		fmt.Println(err)
-	} else if lerr := service.Run(); lerr != nil {
-		fmt.Println(lerr)
-	} else {
-		fmt.Printf("Service %s started as intended... ", serviceName)
+		log.Fatal("Crawler->main.go->RegisterCrawlerHandler failed!")
+		log.Fatal(err)
 	}
 
-	go crawlerservice.ManageTasks() //Maybe a waitgroup needed.
+	go crawlerservice.ManageTasks()
 
-	//Filestreaming Service.
+	if err = service.Run(); err != nil {
+		log.Fatal("Crawler->main.go->service.Run() failed!")
+		log.Fatal(err)
+	} else {
+		log.Infof("Service %s started as intended... ", serviceName)
+	}
+}
 
-	streamingService := micro.NewService()
+func SetupLogging() {
+	_ = os.Remove("info.log")
+	file, _ := os.OpenFile("info.log", os.O_RDWR|os.O_CREATE, 0644)
 
-	streamingService.Init()
+	log.SetFormatter(&log.TextFormatter{
+		ForceColors:               true,
+		ForceQuote:                true,
+		EnvironmentOverrideColors: true,
+		FullTimestamp:             true,
+	})
 
-	fileproto.NewSenderService(fileservicename, streamingService.Client())
-
+	log.SetOutput(file)
 }

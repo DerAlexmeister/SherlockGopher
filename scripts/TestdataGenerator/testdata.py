@@ -14,8 +14,9 @@ from neo4j import GraphDatabase
 URL = "bolt://localhost:7687"
 USER = "neo4j"
 PASS = "test"
-
+BASICADDRESS = "www.example.com/"
 dropme = False
+FACTOR = 1
 
 statements = {
     "constrains": "CREATE CONSTRAINT ON (c:Website) ASSERT c.Address IS UNIQUE",
@@ -132,11 +133,11 @@ def addNewNodes(driver):
                     "Expires": "Thu, 01 Dec 1994 16:00:00 GMT",
                     "Proxy-Authenticate": "Basic",
                 }
-    for i in range(0, 100):
+    for i in range(0, 100*FACTOR):
         with driver.session() as session:
             if i % 4 == 0: # unverified node 
                 props = {
-                    "Address": str(i),
+                    "Address": BASICADDRESS + str(i),
                     "Statuscode": getRandomNumber(200, 505),
                     "Responsetime": getRandomNumber(1, 2000),
                     "Status": "unverified",
@@ -146,7 +147,7 @@ def addNewNodes(driver):
                 session.write_transaction(createNodes,props)
             elif i % 10 == 0: # error node
                 session.write_transaction(createNodes, {
-                    "Address": str(i),
+                    "Address": BASICADDRESS + str(i),
                     "Statuscode": str(0),
                     "Responsetime": getRandomNumber(1, 2000),
                     "Status": "unverified",
@@ -155,7 +156,7 @@ def addNewNodes(driver):
                 })
             elif i % 7 == 0: # css
                 props = {
-                    "Address": str(i),
+                    "Address": BASICADDRESS + str(i),
                     "Statuscode": getRandomNumber(200, 505),
                     "Responsetime": getRandomNumber(1, 2000),
                     "Status": "unverified",
@@ -165,7 +166,7 @@ def addNewNodes(driver):
                 session.write_transaction(createCss,props)
             elif i % 3 == 0: # javascript
                 props = {
-                    "Address": str(i),
+                    "Address": BASICADDRESS + str(i),
                     "Statuscode": getRandomNumber(200, 505),
                     "Responsetime": getRandomNumber(1, 2000),
                     "Status": "unverified",
@@ -175,7 +176,7 @@ def addNewNodes(driver):
                 session.write_transaction(createJs,props)
             elif i % 2 == 0 or i % 5 == 0 : # Img 
                 props = {
-                    "Address": str(i),
+                    "Address": BASICADDRESS + str(i),
                     "Statuscode": getRandomNumber(200, 505),
                     "Responsetime": getRandomNumber(1, 2000),
                     "Status": "unverified",
@@ -185,7 +186,7 @@ def addNewNodes(driver):
                 session.write_transaction(createImg,props)
             else:                
                 props = {
-                    "Address": "{}".format(str(i)),
+                    "Address": BASICADDRESS + "{}".format(str(i)),
                     "Statuscode": getRandomNumber(200, 505),
                     "Responsetime": getRandomNumber(1, 2000),
                     "Status": "unverified",
@@ -225,41 +226,41 @@ def addRelationshipBetweenNodes(driver):
     ''' Function to execute the create_relationships to create pseudo random relationships. '''
     try:
         printmessage("Creating HTML-Rels")
-        for i in range(0, 2000):
+        for i in range(0, 1000):
             with driver.session() as session:
                 session.write_transaction(create_relationships,
                 {   
-                    "a": str(getRandomNumber(0, 101)),
-                    "b": str(getRandomNumber(0, 101)),
+                    "a": BASICADDRESS + str(getRandomNumber(0, 101*FACTOR)),
+                    "b": BASICADDRESS + str(getRandomNumber(0, 101*FACTOR)),
                 })
                 session.write_transaction(create_relationships,
                 {
-                    "a": str(i),  
-                    "b": str(getRandomNumber(0, 101)),
+                    "a": BASICADDRESS + str(i),  
+                    "b": BASICADDRESS + str(getRandomNumber(0, 101*FACTOR)),
                 })
         printmessage("Creating CSS-Rels")
         for i in range(0, 500): #css
             with driver.session() as session:
                 session.write_transaction(create_relationships_css,
                 {   
-                    "a": str(getRandomWebsiteNumberAddress(0, 101)),
-                    "b": str(i), 
+                    "a": BASICADDRESS + str(getRandomWebsiteNumberAddress(0, 101*FACTOR)),
+                    "b": BASICADDRESS + str(i), 
                 })
         printmessage("Creating Image-Rels")
         for i in range(0, 250): #img
             with driver.session() as session:
                 session.write_transaction(create_relationships_img,
                 {
-                    "a": str(getRandomWebsiteNumberAddress(0, 101)),
-                    "b": str(i),
+                    "a": BASICADDRESS + str(getRandomWebsiteNumberAddress(0, 101*FACTOR)),
+                    "b": BASICADDRESS + str(i),
                 })
         printmessage("Creating Javascript-Rels")
         for i in range(0, 1500): #js
             with driver.session() as session:
                 session.write_transaction(create_relationships_js,
                 {
-                    "a": str(getRandomWebsiteNumberAddress(0, 101)),
-                    "b": str(i),
+                    "a": BASICADDRESS + str(getRandomWebsiteNumberAddress(0, 101*FACTOR)),
+                    "b": BASICADDRESS + str(i),
                 })
     except Exception as error:
         printError("addRelationshipBetweenNodes", error)

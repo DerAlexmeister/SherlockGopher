@@ -4,6 +4,33 @@ import (
 	"testing"
 )
 
+func TestAttributes(t *testing.T) {
+	tag :=
+		&Tag{
+			tagType:       "html",
+			tagAttributes: make([]*TagAttribute, 0),
+			tagContent:    "",
+		}
+
+	if len(tag.Attributes()) != 0 {
+		t.Errorf("Attributes length should be zero")
+	}
+}
+
+func TestAddToRawContent(t *testing.T) {
+	tagT := &TagToken{
+		tokenType:  EndTag,
+		tagType:    "span",
+		rawContent: "",
+	}
+
+	tagT.AddToRawContent("abc")
+
+	if tagT.RawContent() != "abc" {
+		t.Errorf("AddToRawContent should be abc, but was %s", tagT.RawContent())
+	}
+}
+
 func TestProcessAttribute(t *testing.T) {
 	sut := NewHTMLTree("")
 
@@ -18,39 +45,39 @@ func TestProcessAttribute(t *testing.T) {
 		},
 		{
 			"value=yes", &TagAttribute{
-			attributeType: "value",
-			value:         "yes",
-		},
+				attributeType: "value",
+				value:         "yes",
+			},
 		},
 		{
 			"href=\"/mmix.html\"", &TagAttribute{
-			attributeType: "href",
-			value:         "/mmix.html",
-		},
+				attributeType: "href",
+				value:         "/mmix.html",
+			},
 		},
 		{
 			"href='/impressum.html'", &TagAttribute{
-			attributeType: "href",
-			value:         "/impressum.html",
-		},
+				attributeType: "href",
+				value:         "/impressum.html",
+			},
 		},
 		{
 			"class=\"position-relative js-header-wrapper \"", &TagAttribute{
-			attributeType: "class",
-			value:         "position-relative js-header-wrapper ",
-		},
+				attributeType: "class",
+				value:         "position-relative js-header-wrapper ",
+			},
 		},
 		{
 			"value=color=red", &TagAttribute{
-			attributeType: "value",
-			value:         "color=red",
-		},
+				attributeType: "value",
+				value:         "color=red",
+			},
 		},
 		{
 			"value=\"color=red\"", &TagAttribute{
-			attributeType: "value",
-			value:         "color=red",
-		},
+				attributeType: "value",
+				value:         "color=red",
+			},
 		},
 	}
 
@@ -81,140 +108,140 @@ func TestExtractAttributes(t *testing.T) {
 		},
 		{
 			"link disabled value=yes", []*TagAttribute{
-			{
-				attributeType: "value",
-				value:         "yes",
+				{
+					attributeType: "value",
+					value:         "yes",
+				},
+				{
+					attributeType: "disabled",
+					value:         "",
+				},
 			},
-			{
-				attributeType: "disabled",
-				value:         "",
-			},
-		},
 		},
 		{
 			"link href=\"/mmix.html\" disabled     value=yes ", []*TagAttribute{
-			{
-				attributeType: "href",
-				value:         "/mmix.html",
-			},
+				{
+					attributeType: "href",
+					value:         "/mmix.html",
+				},
 
-			{
-				attributeType: "value",
-				value:         "yes",
+				{
+					attributeType: "value",
+					value:         "yes",
+				},
+				{
+					attributeType: "disabled",
+					value:         "",
+				},
 			},
-			{
-				attributeType: "disabled",
-				value:         "",
-			},
-		},
 		},
 		{
 			"link href='/impressum.html' href=\"/mmix.html\" disabled     value=yes ", []*TagAttribute{
-			{
-				attributeType: "href",
-				value:         "/impressum.html",
-			},
-			{
-				attributeType: "href",
-				value:         "/mmix.html",
-			},
+				{
+					attributeType: "href",
+					value:         "/impressum.html",
+				},
+				{
+					attributeType: "href",
+					value:         "/mmix.html",
+				},
 
-			{
-				attributeType: "value",
-				value:         "yes",
+				{
+					attributeType: "value",
+					value:         "yes",
+				},
+				{
+					attributeType: "disabled",
+					value:         "",
+				},
 			},
-			{
-				attributeType: "disabled",
-				value:         "",
-			},
-		},
 		},
 		{
 			"link class=\"position-relative js-header-wrapper \" href='/impressum.html' href=\"/mmix.html\" disabled     value=yes ", []*TagAttribute{
-			{
-				attributeType: "class",
-				value:         "position-relative js-header-wrapper ",
-			},
-			{
-				attributeType: "href",
-				value:         "/impressum.html",
-			},
-			{
-				attributeType: "href",
-				value:         "/mmix.html",
-			},
+				{
+					attributeType: "class",
+					value:         "position-relative js-header-wrapper ",
+				},
+				{
+					attributeType: "href",
+					value:         "/impressum.html",
+				},
+				{
+					attributeType: "href",
+					value:         "/mmix.html",
+				},
 
-			{
-				attributeType: "value",
-				value:         "yes",
+				{
+					attributeType: "value",
+					value:         "yes",
+				},
+				{
+					attributeType: "disabled",
+					value:         "",
+				},
 			},
-			{
-				attributeType: "disabled",
-				value:         "",
-			},
-		},
 		},
 		{
 			"link value=color=red class=\"position-relative js-header-wrapper \" href='/impressum.html' href=\"/mmix.html\" disabled     value=yes ", []*TagAttribute{
-			{
-				attributeType: "value",
-				value:         "color=red",
-			},
-			{
-				attributeType: "class",
-				value:         "position-relative js-header-wrapper ",
-			},
-			{
-				attributeType: "href",
-				value:         "/impressum.html",
-			},
-			{
-				attributeType: "href",
-				value:         "/mmix.html",
-			},
+				{
+					attributeType: "value",
+					value:         "color=red",
+				},
+				{
+					attributeType: "class",
+					value:         "position-relative js-header-wrapper ",
+				},
+				{
+					attributeType: "href",
+					value:         "/impressum.html",
+				},
+				{
+					attributeType: "href",
+					value:         "/mmix.html",
+				},
 
-			{
-				attributeType: "value",
-				value:         "yes",
+				{
+					attributeType: "value",
+					value:         "yes",
+				},
+				{
+					attributeType: "disabled",
+					value:         "",
+				},
 			},
-			{
-				attributeType: "disabled",
-				value:         "",
-			},
-		},
 		},
 		{
 			"link value=\"color=red\" value=color=blue class=\"position-relative js-header-wrapper \" href='/impressum.html' href=\"/mmix.html\" disabled     value=yes ", []*TagAttribute{
-			{
-				attributeType: "value",
-				value:         "color=red",
-			},
-			{
-				attributeType: "value",
-				value:         "color=blue",
-			},
-			{
-				attributeType: "class",
-				value:         "position-relative js-header-wrapper ",
-			},
-			{
-				attributeType: "href",
-				value:         "/impressum.html",
-			},
-			{
-				attributeType: "href",
-				value:         "/mmix.html",
-			},
+				{
+					attributeType: "value",
+					value:         "color=red",
+				},
+				{
+					attributeType: "value",
+					value:         "color=blue",
+				},
+				{
+					attributeType: "class",
+					value:         "position-relative js-header-wrapper ",
+				},
+				{
+					attributeType: "href",
+					value:         "/impressum.html",
+				},
+				{
+					attributeType: "href",
+					value:         "/mmix.html",
+				},
 
-			{
-				attributeType: "value",
-				value:         "yes",
+				{
+					attributeType: "value",
+					value:         "yes",
+				},
+				{
+					attributeType: "disabled",
+					value:         "",
+				},
 			},
-			{
-				attributeType: "disabled",
-				value:         "",
-			},
-		},
 		},
 	}
 
@@ -222,10 +249,10 @@ func TestExtractAttributes(t *testing.T) {
 		have := sut.extractAttributes(elem.input)
 
 		for _, wantElem := range elem.wanted {
-			contained, occurances := contains(wantElem, have)
+			contained, occurrences := contains(wantElem, have)
 
-			if !contained || occurances > 1 {
-				t.Errorf("TagAttribute with Type %s and Value %s was not contained or occured more then once for input string %s", wantElem.AttributeType(), wantElem.Value(), elem.input)
+			if !contained || occurrences > 1 {
+				t.Errorf("TagAttribute with Type %s and Value %s was not contained or occurred more then once for input string %s", wantElem.AttributeType(), wantElem.Value(), elem.input)
 			}
 		}
 	}
@@ -233,14 +260,14 @@ func TestExtractAttributes(t *testing.T) {
 
 func contains(attribute *TagAttribute, tbl []*TagAttribute) (bool, int) {
 	contained := false
-	occurances := 0
+	occurrences := 0
 
 	for _, elem := range tbl {
 		if elem.Value() == attribute.Value() && elem.AttributeType() == attribute.AttributeType() {
-			occurances++
+			occurrences++
 			contained = true
 		}
 	}
 
-	return contained, occurances
+	return contained, occurrences
 }

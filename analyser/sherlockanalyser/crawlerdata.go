@@ -9,7 +9,7 @@ import (
 CrawlerData contains the data send by the crawler.
 */
 type CrawlerData struct {
-	taskId            uint64
+	taskID            uint64
 	addr              string
 	taskError         error
 	responseHeader    *http.Header
@@ -22,7 +22,7 @@ type CrawlerData struct {
 getTaskID will return the id of a given task.
 */
 func (cdata *CrawlerData) getTaskID() uint64 {
-	return cdata.taskId
+	return cdata.taskID
 }
 
 /*
@@ -71,7 +71,7 @@ func (cdata *CrawlerData) getResponseTime() time.Duration {
 setTaskID will set the id of a given task.
 */
 func (cdata *CrawlerData) setTaskID(lid uint64) {
-	cdata.taskId = lid
+	cdata.taskID = lid
 }
 
 /*
@@ -92,7 +92,7 @@ func (cdata *CrawlerData) setTaskError(err error) {
 setResponseHeader will set the Header of the Response.
 */
 func (cdata *CrawlerData) setResponseHeader(header *http.Header) {
-	*(cdata.responseHeader) = *header
+	cdata.responseHeader = header
 }
 
 /*

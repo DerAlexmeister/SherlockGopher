@@ -1,1 +1,0 @@
-# Showcases of SherlockGopher in action.

@@ -1,2 +1,28 @@
 linters:
-    enable-all: true
+    disable-all: true
+    enable:
+      - bodyclose
+      - depguard
+      #- dogsled
+      - dupl
+      - errcheck
+      - gochecknoinits
+      - goconst
+      - gocritic
+      - gocyclo
+      - golint
+      #- gomnd
+      - goprintffuncname
+      - gosec
+      - gosimple
+      - govet
+      - ineffassign
+      - misspell
+      - nakedret
+      - nolintlint
+      - rowserrcheck
+      - staticcheck
+      - structcheck
+      - stylecheck
+      - typecheck
+      - unconvert  
