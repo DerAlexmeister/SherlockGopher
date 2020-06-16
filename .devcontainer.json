@@ -1,5 +1,0 @@
-{
-    "name": "AlgDat II - go project",
-    "image": "golang:latest",
-    "extensions": ["ms-vscode.go"]
-}
