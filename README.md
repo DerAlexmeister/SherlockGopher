@@ -2,8 +2,8 @@
 
 # Sherlock Gopher
 
-- ![Master Branch](https://github.com/DerAlexx/SherlockGopher/workflows/Go%20Test/badge.svg?branch=master) - Master 
-- ![Development Branch](https://github.com/DerAlexx/SherlockGopher/workflows/Go%20Test/badge.svg?branch=develop) - Development
+- ![Master Branch](https://github.com/ob-algdatii-20ss/SherlockGopher/workflows/Go%20Test/badge.svg?branch=master) - Master 
+- ![Development Branch](https://github.com/ob-algdatii-20ss/SherlockGopher/workflows/Go%20Test/badge.svg?branch=develop) - Development
 
 
 ## What is Sherlock Gopher

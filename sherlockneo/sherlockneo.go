@@ -16,7 +16,7 @@ import (
 
 const (
 	//ADDRESS of the Neo4j Dockercontainer.
-	ADDRESS string = "bolt://localhost:7687"
+	ADDRESS string = "bolt://0.0.0.0:7687"
 
 	//USER will be the user of the db.
 	USER string = "neo4j" //Standard username change this in production.
@@ -373,16 +373,12 @@ func GetPerformanceOfSite(session neo4j.Session, args map[string]interface{}) ([
 					elem[element] = value
 				case int:
 					elem[element] = fmt.Sprintf("%d", value)
-					fmt.Printf("+++++++++++++++++++++ in int   %s\n", elem[element])
 				}
 			}
 		}
 		tojson = append(tojson, elem)
 	}
 	defer CloseSession(&session)
-	for a := range tojson {
-		fmt.Printf("------------------++++++++++++++++ %d", a)
-	}
 	return tojson, nil
 }
 
@@ -501,12 +497,13 @@ func stringifymap(args map[string]interface{}) string {
 		case time.Duration:
 			stringifyedmap += strings.ReplaceAll(key, "-", "") + ": " + fmt.Sprintf("%d", value.(time.Duration).Milliseconds()) + ", " //TODO time.Duration in zeit nicht int
 		default:
-			//TODO logger the unknown key type.
-			fmt.Println(key, reflect.TypeOf(value))
+			log.WithFields(log.Fields{
+				"key":  key,
+				"type": reflect.TypeOf(value),
+			}).Info("Unknown key type")
 		}
 	}
 	stringifyedmap = strings.TrimRight(stringifyedmap, ", ")
-	fmt.Println(stringifyedmap)
 	return stringifyedmap
 }
 
@@ -516,7 +513,7 @@ CreateANode will create an node and put it in the neo4j db.
 func CreateANode(session neo4j.Session, args NeoData) error {
 	_, err := session.Run(fmt.Sprintf(getQueryByFiletype(args.crawledLink.FileType()), stringifymap(ConvertNeoDataIntoMap(args))), nil)
 	if err != nil {
-		fmt.Println(err)
+		log.Info(err)
 		return err
 	}
 	return nil
@@ -559,8 +556,7 @@ func CreateRelationships(driver neo4j.Driver, source NeoLink, target NeoLink) er
 	if err != nil {
 		return err
 	}
-	defer CloseSession(&session)
-	defer CloseDatabaseConnection(&driver)
+
 	relationships := func(styp FileType, ttyp FileType, source string, target string) (string, error) {
 		containsSource := ContainsNode(session, source)
 		containsTarget := ContainsNode(session, target)
@@ -581,34 +577,45 @@ func CreateRelationships(driver neo4j.Driver, source NeoLink, target NeoLink) er
 	}
 	result, err := session.Run(query, nil)
 	if err != nil {
-		fmt.Println(result.Err())
-
+		log.Info(result.Err())
+		CloseSession(&session)
 		return err
 	}
-
+	CloseSession(&session)
 	return nil
 }
 
 /*
 Save will save a Neo4J Entrie.
 */
-func (nData *NeoData) Save(session neo4j.Session, pDriver neo4j.Driver) error {
+func (nData *NeoData) Save(pDriver neo4j.Driver) error {
+	session, err := GetSession(pDriver)
+	if err != nil {
+		return err
+	}
+
 	if !ContainsNode(session, nData.CrawledLink().Address()) {
 		err := CreateANode(session, *nData)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"err": err,
 			}).Error("Save->CreateANode failed")
+			CloseSession(&session)
 			return err
 		}
-		fmt.Printf("[-] Not contained: %s \n", nData.CrawledLink().Address())
+		log.WithFields(log.Fields{
+			"link": nData.CrawledLink().Address(),
+		}).Info("[-] Not contained")
 	} else {
 		err := UpdateProperties(session, ConvertNeoDataIntoMap(*nData))
-		fmt.Printf("Update %s", nData.CrawledLink().Address())
+		log.WithFields(log.Fields{
+			"address": nData.CrawledLink().Address(),
+		}).Info("Update")
 		if err != nil {
 			log.WithFields(log.Fields{
 				"err": err,
 			}).Error("Save->UpdateProperties failed")
+			CloseSession(&session)
 			return err
 		}
 	}
@@ -616,12 +623,16 @@ func (nData *NeoData) Save(session neo4j.Session, pDriver neo4j.Driver) error {
 		if entry != nil && nData != nil && nData.CrawledLink() != nil {
 			err := CreateRelationships(pDriver, *nData.CrawledLink(), *entry)
 			if err != nil {
-				log.Fatal("CreateRealtionships failed")
+				log.Fatal("CreateRelationships failed")
 			}
 		} else {
-			fmt.Println(entry, *nData.CrawledLink())
+			log.WithFields(log.Fields{
+				"entry": entry,
+				"link":  *nData.CrawledLink(),
+			}).Info("Save")
 		}
 	}
+	CloseSession(&session)
 	return nil
 }
 
@@ -634,7 +645,6 @@ func UpdateProperties(session neo4j.Session, args map[string]interface{}) error 
 		log.Info("Empty Address-Field")
 	}
 	varA := fmt.Sprintf(getUpdatePropsQuery(), args["Address"], stringifymap(args))
-	fmt.Printf("--------------------------%s\n", varA)
 	time.Sleep(timeSleep)
 	_, err := session.Run(varA, nil)
 	if err != nil {
@@ -670,7 +680,7 @@ func ContainsNode(session neo4j.Session, target string) bool {
 	query := fmt.Sprintf(getContains(), target)
 	result, err := session.Run(query, nil)
 	if err != nil {
-		fmt.Println(err)
+		log.Info(err)
 		return false
 	}
 	for result.Next() {

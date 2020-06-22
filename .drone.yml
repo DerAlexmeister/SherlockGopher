@@ -1,0 +1,43 @@
+kind: pipeline
+name: default
+
+platform:
+  arch: amd64
+  os: linux
+
+steps:
+    - name: test
+      image: golang:1.14
+      commands:
+        - ./scripts/seabolt.sh
+        - cd analyser/sherlockanalyser
+        - go test
+        - cd .. 
+        - cd sherlockparser
+        - go test
+        - cd .. 
+        - go build -o analysermain
+        - cd .. 
+        - cd frontend
+        - go build -o frontendmain
+        - cd .. 
+        - cd sherlockcrawler/sherlockcrawler
+        - go test
+        - cd ..
+        - go build -o sherlockcrawlermain
+        - cd ..
+        - cd sherlockneo
+        - go test
+        - cd ..
+        - cd sherlockwatchdog
+        - go test
+        - cd ..
+        - cd webserver/webserver
+        - go test
+        - cd ..
+        - go build -o webservermain
+    - name: lint
+      image: golangci/golangci-lint
+      commands:
+          - ./scripts/seabolt.sh
+          - golangci-lint run

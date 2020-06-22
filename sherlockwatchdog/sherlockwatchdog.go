@@ -85,7 +85,7 @@ func (swd *SherlockWatchdog) hit() {
 func (swd *SherlockWatchdog) reset() {
 	swd.hits = 0
 	*swd.delay = minWaitTime
-	fmt.Println("watchdog reset")
+	fmt.Println("Working...")
 }
 
 func (swd *SherlockWatchdog) waitAndHit() {
@@ -99,6 +99,7 @@ func (swd *SherlockWatchdog) waitAndHit() {
 func (swd *SherlockWatchdog) slow() {
 	if *swd.delay < maxWaitTime {
 		*swd.delay *= 10
-		fmt.Printf("watchdog slowdown: %v\n", swd.delay.Seconds())
+	} else {
+		fmt.Println("Sleeping...")
 	}
 }

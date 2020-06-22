@@ -229,13 +229,9 @@ func (sherlock *SherlockCrawler) manageFailedTasks(wg *sync.WaitGroup) {
 			}).Info("manageFailedTasks")
 			if v.GetTryError() < maxErrors {
 				localWaitGroup.Add(1)
-				fmt.Println(v.GetAddr())
 				go v.MakeRequestAndStoreResponse(&localWaitGroup)
-				fmt.Println("End")
 				localWaitGroup.Wait()
 			} else {
-				fmt.Println("Sending")
-				fmt.Println(v.GetAddr())
 				sendWG.Add(1)
 				go sherlock.SendWebsiteData(sherlock.Dependencies.Analyser(), v, &sendWG)
 				sendWG.Wait()

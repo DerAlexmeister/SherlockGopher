@@ -1,7 +1,7 @@
 package sherlockanalyser
 
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"strings"
 	"sync"
 
@@ -71,9 +71,9 @@ func (h neoSaver) Save(analyserTask *AnalyserTaskRequest) {
 	neoData := neo.NewNeoData(crawledAddress, analyserTask.CrawlerData().getStatusCode(), analyserTask.CrawlerData().getResponseTime(),
 		&responseHeader, analyserTask.CrawlerData().getTaskError().Error(), linksToSave)
 
-	err := neoData.Save(h.session, h.driver)
+	err := neoData.Save(h.driver)
 	if err != nil {
-		fmt.Println(err)
+		log.Info(err)
 	}
 	h.mutex.Unlock()
 }

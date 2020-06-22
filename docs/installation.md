@@ -1,6 +1,5 @@
 # Manual to install or run SherlockGropher
 
-
 Vorraussetzung GO 1.12
 
 go get go.mod to install all dependencys
@@ -31,7 +30,7 @@ start the webserver service:
 
 ## How to start all services via dockerfile - Docker Start Script
 
-Alternatively you can use the start.sh script. The script will stop all running docker containers related to this project, build them and execute them afterwards. Also it tries to install curl and starts the neo4j docker container.
+Alternatively you can use the start.sh script. The script will stop all running docker containers related to this project, build them and execute them afterwards. Also it tries to install curl, gnome-terminal and starts the neo4j docker container.
 The script can be executed on the command line via: ./start.sh
 
 There are 2 possible arguments that the script accepts. These arguments will change the functionality of the script:
@@ -39,3 +38,20 @@ There are 2 possible arguments that the script accepts. These arguments will cha
   * with this argument the script will only prune all unused containers
 * ./start.sh frontend 
   * with this argument the script will only start the frontend docker container
+  
+## Build and start dockerfiles on your own
+### Build the dockerfiles
+sudo docker build -f ./[directory path]/dockerfile .
+
+directory path:
+    * frontend
+    * analyser
+    * webserver
+    * sherlockcrawler
+
+### Start the dockerfiles
+* webserver und frontend: sudo docker run -it -p [port] : [port] [dockerbuildid]
+* analyser und crawler: sudo docker run [dockerbuildid]
+  
+## Enter the follwing address in your Browser to see the Frontend
+localhost:8080

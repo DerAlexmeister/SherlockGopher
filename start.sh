@@ -1,6 +1,6 @@
 #!/bin/bash
 declare -a arr=("frontend" "webserver" "sherlockcrawler" "analyser")
-declare -a web=("-it -p 8080:8080" "-it -p 8081:8081" "" "")
+declare -a web=("-it -p 8080:8080 --network host" "-it -p 8081:8081 --network host" "--network host" "--network host")
 image_name="dockerfile"
 countweb=0
 
@@ -9,6 +9,8 @@ echo "[+] Start Script"
 echo "[+] Installing curl"
 apt install curl
 
+echo "[+] Installing gnome-terminal"
+apt install gnome-terminal
 
 if [[ "$(sudo docker ps -a | grep neo4j3.5)" != "" ]]; then
     echo "[+] Remove neo4j Docker"
@@ -17,7 +19,7 @@ if [[ "$(sudo docker ps -a | grep neo4j3.5)" != "" ]]; then
 fi
 
 echo "[+] Start neo4j Docker"
-docker run --name neo4j3.5 -p7474:7474 -p7687:7687 -d -v $HOME/neo4j/data:/data -v $HOME/neo4j/logs:/logs -v $HOME/neo4j/import:/var/lib/neo4j/import -v $HOME/neo4j/plugins:/plugins --env NEO4J_AUTH=neo4j/test neo4j:3.5
+docker run --name neo4j3.5 -it -p7474:7474 -p7687:7687 -d -v $HOME/neo4j/data:/data -v $HOME/neo4j/logs:/logs -v $HOME/neo4j/import:/var/lib/neo4j/import -v $HOME/neo4j/plugins:/plugins --env NEO4J_AUTH=neo4j/test neo4j:3.5
 
 case "$1" in
     ("prune")

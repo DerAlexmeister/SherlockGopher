@@ -1,7 +1,6 @@
 package webserver
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/asaskevich/govalidator"
@@ -114,7 +113,6 @@ func (server *SherlockWebserver) GraphNodeDetailsV1(context *gin.Context) {
 
 	if sessionErr == nil && bindErr == nil && validURL {
 		details, err := sherlockneo.GetDetailsOfNode(session, url.URL) //TODO
-		fmt.Println(details)
 		if err != nil {
 			context.JSON(http.StatusOK, gin.H{
 				"Message": "Sherlockneo Error", //TODO improve message

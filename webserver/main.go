@@ -58,7 +58,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("[+] Initialized the webserver for the frontend.")
+	fmt.Println("[+] Initialized the webserver.")
 	grpcservice := micro.NewService(micro.Name(servicename))
 	grpcerr := service.Init()
 	if grpcerr != nil {

@@ -1,5 +1,3 @@
-# Dockerfile crawler
-
 FROM golang:1.14 as build
 COPY . /app
 WORKDIR /app

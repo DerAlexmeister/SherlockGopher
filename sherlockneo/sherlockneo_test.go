@@ -696,10 +696,8 @@ func Test_CreateRelationshipsNodeNotContained(t *testing.T) {
 
 	mockDriver.EXPECT().Session(gomock.Any()).Return(mockSession, nil)
 	mockSession.EXPECT().Run(gomock.Any(), gomock.Any()).Return(mockResult, &testError{}).MinTimes(1)
-
-	mockResult.EXPECT().Err().Return(&testError{})
 	mockSession.EXPECT().Close()
-	mockDriver.EXPECT().Close()
+	mockResult.EXPECT().Err().Return(&testError{})
 
 	ret := CreateRelationships(mockDriver, *nl1, *nl2)
 
@@ -726,7 +724,6 @@ func Test_CreateRelationshipsBothContained(t *testing.T) {
 	mockResult.EXPECT().Record().Return(mockRecord).MinTimes(1)
 	mockRecord.EXPECT().Get(gomock.Any()).Return(true, true).MinTimes(1)
 	mockSession.EXPECT().Close()
-	mockDriver.EXPECT().Close()
 
 	ret := CreateRelationships(mockDriver, *nl1, *nl2)
 
@@ -757,7 +754,6 @@ func Test_CreateRelationshipsOneContained(t *testing.T) {
 
 	gomock.InOrder(first, second)
 	mockSession.EXPECT().Close()
-	mockDriver.EXPECT().Close()
 
 	ret := CreateRelationships(mockDriver, *nl1, *nl2)
 
@@ -788,7 +784,6 @@ func Test_CreateRelationshipsOtherContained(t *testing.T) {
 
 	gomock.InOrder(first, second)
 	mockSession.EXPECT().Close()
-	mockDriver.EXPECT().Close()
 
 	ret := CreateRelationships(mockDriver, *nl1, *nl2)
 
@@ -822,9 +817,11 @@ func Test_SaveErrorCreate(t *testing.T) {
 	mockSession := mocks.NewMockSession(mockCtrl)
 	mockResult := mocks.NewMockResult(mockCtrl)
 
+	mockDriver.EXPECT().Session(gomock.Any()).Return(mockSession, nil).MinTimes(1)
 	mockSession.EXPECT().Run(gomock.Any(), gomock.Any()).Return(mockResult, &testError{}).MinTimes(1)
+	mockSession.EXPECT().Close().MinTimes(1)
 
-	err := sut.Save(mockSession, mockDriver)
+	err := sut.Save(mockDriver)
 
 	assert.Equal(t, err.Error(), (&testError{}).Error())
 
@@ -847,12 +844,14 @@ func Test_SaveErrorContains(t *testing.T) {
 	mockSession := mocks.NewMockSession(mockCtrl)
 	mockResult := mocks.NewMockResult(mockCtrl)
 
+	mockDriver.EXPECT().Session(gomock.Any()).Return(mockSession, nil).MinTimes(1)
 	firstRun := mockSession.EXPECT().Run(gomock.Any(), gomock.Any()).Return(mockResult, &testError{})
 	secondRun := mockSession.EXPECT().Run(gomock.Any(), gomock.Any()).Return(mockResult, nil)
+	mockSession.EXPECT().Close().MinTimes(1)
 
 	gomock.InOrder(firstRun, secondRun)
 
-	err := sut.Save(mockSession, mockDriver)
+	err := sut.Save(mockDriver)
 
 	assert.Equal(t, err, (nil))
 
@@ -876,16 +875,18 @@ func Test_Save(t *testing.T) {
 	mockResult := mocks.NewMockResult(mockCtrl)
 	mockRecord := mocks.NewMockRecord(mockCtrl)
 
+	mockDriver.EXPECT().Session(gomock.Any()).Return(mockSession, nil).MinTimes(1)
 	first := mockSession.EXPECT().Run(gomock.Any(), gomock.Any()).Return(mockResult, nil)
 	second := mockSession.EXPECT().Run(gomock.Any(), gomock.Any()).Return(mockResult, &testError{})
 	mockResult.EXPECT().Next().Return(true)
+	mockSession.EXPECT().Close().MinTimes(1)
 
 	gomock.InOrder(first, second)
 
 	mockResult.EXPECT().Record().Return(mockRecord).MinTimes(1)
 	mockRecord.EXPECT().Get(gomock.Any()).Return(true, true).MinTimes(1)
 
-	err := sut.Save(mockSession, mockDriver)
+	err := sut.Save(mockDriver)
 
 	assert.Equal(t, err.Error(), (&testError{}).Error())
 
@@ -909,15 +910,14 @@ func Test_SaveWithRelations(t *testing.T) {
 	mockResult := mocks.NewMockResult(mockCtrl)
 	mockRecord := mocks.NewMockRecord(mockCtrl)
 
+	mockDriver.EXPECT().Session(gomock.Any()).Return(mockSession, nil).MinTimes(1)
 	mockResult.EXPECT().Next().Return(true).MinTimes(1)
 	mockSession.EXPECT().Run(gomock.Any(), gomock.Any()).Return(mockResult, nil).MinTimes(1)
+	mockSession.EXPECT().Close().MinTimes(1)
 
 	mockResult.EXPECT().Record().Return(mockRecord).MinTimes(1)
 	mockRecord.EXPECT().Get(gomock.Any()).Return(true, true).MinTimes(1)
-	mockSession.EXPECT().Close().MinTimes(1)
-	mockDriver.EXPECT().Close().MinTimes(1)
-	mockDriver.EXPECT().Session(gomock.Any()).Return(mockSession, nil).MinTimes(1)
-	err := sut.Save(mockSession, mockDriver)
+	err := sut.Save(mockDriver)
 
 	assert.Equal(t, err, nil)
 
