@@ -8,7 +8,7 @@
 
 Sherlock Gopher is a distributed System which will crawl over a given website and analyse the given HTML. It will produce a graph with all contections between subsites of a website. Also it will show the status of the pages like 200 OK or 404 not found. 
 
-## Features for Version beyond 1.0 
+## Features for Version beyond 0.1.0 
 
  - Advanced analysis of the HTML/CSS and Javascript
  - More information in the graph
