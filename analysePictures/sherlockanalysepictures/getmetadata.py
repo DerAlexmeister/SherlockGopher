@@ -3,53 +3,69 @@
 import os,sys,requests,psycopg2
 from sherlockneo import GetImages
 from exif import Image
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy import Column, Integer, String, Date, Boolean
 
-def databaseConnection():
-    con =  psycopg2.connect(database="metadata", user="gopher", password="gopher", host="127.0.0.1", port="5432")
-    return con
+Base = declarative_base()
+DATABASE_URI = 'postgresql://gopher:gopher@localhost:5432/metadata'
+engine = create_engine(DATABASE_URI)
+Session = sessionmaker(bind=engine)
+
+class Mdata(Base):
+    __tablename__ = 'metadata'
+    img_id = Column(Integer, primary_key = True)
+    condition = Column(Boolean)
+    datetime_original = Column(String(50))  
+    model = Column(String(50))
+    make = Column(String(50))
+    maker_note = Column(String(50))
+    software = Column(String(50))
+    gps_latitude = Column(String(50))
+    gps_longitude = Column(String(50))
+
+    def __init__(self, img_id, condition, datetime_original, model, make, maker_note, software, gps_latitude, gps_longitude):
+        self.img_id = img_id
+        self.condition = condition
+        self.datetime_original = datetime_original
+        self.model = model
+        self.make = make
+        self.maker_note = maker_note
+        self.software = software
+        self.gps_latitude = gps_latitude
+        self.gps_longitude = gps_longitude
+
+    def __str__(self):
+        return "{},{},{},{},".format(self.img_id, self.software, self.gps_latitude, self.gps_longitude)
 
 def databaseCreateTable():
-    con = databaseConnection()
-    cur = con.cursor()
-    cur.execute('''CREATE TABLE METADATA
-        (ID INT PRIMARY KEY     NOT NULL,
-        CONDITION           BOOLEAN    NOT NULL,
-        DATETIMEORIGINAL        CHAR(20),
-        MODEL        CHAR(20),
-        MAKE        CHAR(20),
-        MAKERNOTE   CHAR(50),
-        SOFTWARE    CHAR(20),
-        GPSLATITUDE CHAR(20),
-        GPSLONGITUDE    CHAR(20));''')
-    con.commit()
-    con.close()
+    Base.metadata.create_all(engine)
 
 def databaseDeleteTable():
-    con = databaseConnection()
-    cur = con.cursor()
-    cur.execute('''DROP TABLE METADATA;''')
-    con.commit()
-    con.close()
+    Base.metadata.drop_all(engine)
+ 
 
-def databaseInsertData(id, cond, listWithExif):
-    con = databaseConnection()
-    cur = con.cursor()
-    cur.execute('''INSERT INTO METADATA (ID, CONDITION, DATETIMEORIGINAL, MODEL, MAKE, MAKERNOTE, SOFTWARE, GPSLATITUDE, GPSLONGITUDE) VALUES ({}, {}, {}, {}, {}, {}, {});'''.format(id, cond, listWithExif[0], listWithExif[1], listWithExif[2], listWithExif[3], listWithExif[4], listWithExif[5], listWithExif[6]))
-    con.commit()
-    con.close()
+def databaseInsertData(img_id, cond, listWithExif):
+    s = Session()
+    latitude = "{}".format(listWithExif[5])
+    longtitude = "{}".format(listWithExif[6])
+    object1 = Mdata(img_id, cond, listWithExif[0], listWithExif[1], listWithExif[2], listWithExif[3], listWithExif[4], latitude, longtitude)
+
+    s.add(object1)
+    s.commit()
+    s.close()
 
 def DatabaseRetreiveData():
-    relevantExifTags = ["id", "condition", "datetime_original", "model", "make", "maker_note", "software", "gps_latitude", "gps_longitude"]
-    listExifTags = []
-    con = databaseConnection()
-    cur = con.cursor()
-    cur.execute('''SELECT id, condition, datetimefromoriginal, model, make, makernote, software, gpslatitude, gpslongtitude from METADATA;''')
-    rows = cur.fetchall()
-    for i, row in enumerate(rows):
-        listExifTags.append((relevantExifTags[i], row[i]))
-    con.commit()
-    con.close()
-    return listExifTags
+    s = Session()
+    res = s.query(Mdata).first()
+    s.close()
+    return res
+
+
+
 
 def DownloadImage():
 
