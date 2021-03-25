@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
+	proto "github.com/DerAlexx/SherlockGopher/analyser/proto"
 	log "github.com/sirupsen/logrus"
 )
 

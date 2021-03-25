@@ -5,7 +5,7 @@
 The HTML Parser is used to transform a HTML-Document into a tree. Every level of HTML-Tags is represented as a Node in the tree. This means that a tag that is contained by another tag is a child node of the surrounding tag. Only tags are stored as Nodes. Plaintext, such as the title are stored in the title-node as its content. Attributes of tags are also stored in the Node. Thus the analyzer is able to search for a specific tag and extract its value.
 ***
 
-![](https://github.com/ob-algdatii-20ss/SherlockGopher/blob/mergedwebserveranalyserandcrawler/assets/parser_sharp.png?raw=true)
+![](https://github.com/DerAlexx/SherlockGopher/blob/mergedwebserveranalyserandcrawler/assets/parser_sharp.png?raw=true)
 ***
 
 In this shape, it is much easier for the analyzer part of SherlockGopher to scan through the document by traversing the tree. 

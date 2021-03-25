@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"log"
 
+	analyserproto "github.com/DerAlexx/SherlockGopher/analyser/proto"
+	crawlerproto "github.com/DerAlexx/SherlockGopher/sherlockcrawler/proto"
+	webserver "github.com/DerAlexx/SherlockGopher/webserver/webserver"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/web"
-	analyserproto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
-	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto"
-	webserver "github.com/ob-algdatii-20ss/SherlockGopher/webserver/webserver"
 )
 
 const (

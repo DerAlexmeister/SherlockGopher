@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	swd "github.com/ob-algdatii-20ss/SherlockGopher/sherlockwatchdog"
+	swd "github.com/DerAlexx/SherlockGopher/sherlockwatchdog"
 )
 
 //=======================================================================

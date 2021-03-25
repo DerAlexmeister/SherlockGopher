@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/DerAlexx/SherlockGopher/sherlockneo/mocks"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
-	"github.com/ob-algdatii-20ss/SherlockGopher/sherlockneo/mocks"
 	"github.com/stretchr/testify/assert"
 )
 

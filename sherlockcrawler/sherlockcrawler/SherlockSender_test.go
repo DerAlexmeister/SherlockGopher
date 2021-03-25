@@ -2,28 +2,27 @@ package sherlockcrawler
 
 import (
 	"fmt"
-	"github.com/go-playground/assert/v2"
-	"github.com/golang/mock/gomock"
-	aproto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
-	mockanalyser "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/sherlockcrawler/mocks"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
 	"testing"
+
+	aproto "github.com/DerAlexx/SherlockGopher/analyser/proto"
+	mockanalyser "github.com/DerAlexx/SherlockGopher/sherlockcrawler/sherlockcrawler/mocks"
+	"github.com/go-playground/assert/v2"
+	"github.com/golang/mock/gomock"
 )
 
 const (
 	errorMessage = "This error is expected!"
 )
 
+type SenderTestError struct{}
 
-type SenderTestError struct {}
-
-func(err *SenderTestError)Error() string {
+func (err *SenderTestError) Error() string {
 	return errorMessage
 }
-
 
 func TestSendWebsiteData(t *testing.T) {
 	sut := NewSherlockCrawlerService()
@@ -33,11 +32,11 @@ func TestSendWebsiteData(t *testing.T) {
 	mockAnalyser := mockanalyser.NewMockAnalyserService(ctrl)
 	mockWebsiteData := mockanalyser.NewMockAnalyser_WebsiteDataService(ctrl)
 	mockAnalyser.EXPECT().WebsiteData(gomock.Any()).Return(mockWebsiteData, nil)
-	deps := SherlockDependencies{Analyser: func() aproto.AnalyserService {return mockAnalyser}}
+	deps := SherlockDependencies{Analyser: func() aproto.AnalyserService { return mockAnalyser }}
 	sut.InjectDependency(&deps)
 	mockWebsiteData.EXPECT().Send(gomock.Any()).Return(nil).MinTimes(1)
 	mockWebsiteData.EXPECT().Recv().Return(&aproto.CrawlerAck{
-		Id:                   0,
+		Id: 0,
 	}, nil).MinTimes(1)
 	mockWebsiteData.EXPECT().Close()
 	wg := &sync.WaitGroup{}
@@ -45,12 +44,12 @@ func TestSendWebsiteData(t *testing.T) {
 	header := http.Header{}
 	header.Add("1", "example.org")
 	have := sut.SendWebsiteData(mockAnalyser, &CrawlerTaskRequest{
-		taskID:            0,
-		addr:              "https://www.hm.edu",
-		taskState:         0,
-		taskError:         nil,
-		taskErrorTry:      0,
-		response:           &http.Response{
+		taskID:       0,
+		addr:         "https://www.hm.edu",
+		taskState:    0,
+		taskError:    nil,
+		taskErrorTry: 0,
+		response: &http.Response{
 			Status:           "",
 			StatusCode:       0,
 			Proto:            "",
@@ -86,11 +85,11 @@ func TestSendWebsiteDataError(t *testing.T) {
 	mockAnalyser := mockanalyser.NewMockAnalyserService(ctrl)
 	mockWebsiteData := mockanalyser.NewMockAnalyser_WebsiteDataService(ctrl)
 	mockAnalyser.EXPECT().WebsiteData(gomock.Any()).Return(mockWebsiteData, nil)
-	deps := SherlockDependencies{Analyser: func() aproto.AnalyserService {return mockAnalyser}}
+	deps := SherlockDependencies{Analyser: func() aproto.AnalyserService { return mockAnalyser }}
 	sut.InjectDependency(&deps)
 	mockWebsiteData.EXPECT().Send(gomock.Any()).Return(nil).MinTimes(1)
 	mockWebsiteData.EXPECT().Recv().Return(&aproto.CrawlerAck{
-		Id:                   0,
+		Id: 0,
 	}, nil).MinTimes(1)
 	mockWebsiteData.EXPECT().Close()
 	wg := &sync.WaitGroup{}
@@ -98,12 +97,12 @@ func TestSendWebsiteDataError(t *testing.T) {
 	header := http.Header{}
 	header.Add("2", "example.org")
 	have := sut.SendWebsiteData(mockAnalyser, &CrawlerTaskRequest{
-		taskID:            0,
-		addr:              "https://www.hm.edu",
-		taskState:         0,
-		taskError:         &SenderTestError{},
-		taskErrorTry:      0,
-		response:           &http.Response{
+		taskID:       0,
+		addr:         "https://www.hm.edu",
+		taskState:    0,
+		taskError:    &SenderTestError{},
+		taskErrorTry: 0,
+		response: &http.Response{
 			Status:           "",
 			StatusCode:       0,
 			Proto:            "",
@@ -139,7 +138,7 @@ func TestSendDataWebsiteDataError(t *testing.T) {
 	mockAnalyser := mockanalyser.NewMockAnalyserService(ctrl)
 
 	mockAnalyser.EXPECT().WebsiteData(gomock.Any()).Return(nil, &SenderTestError{})
-	deps := SherlockDependencies{Analyser: func() aproto.AnalyserService {return mockAnalyser}}
+	deps := SherlockDependencies{Analyser: func() aproto.AnalyserService { return mockAnalyser }}
 	sut.InjectDependency(&deps)
 	err := sut.SendData(1, nil, nil, nil)
 	if err.Error() != errorMessage {
@@ -155,11 +154,10 @@ func TestSendDataSendError(t *testing.T) {
 	mockAnalyser := mockanalyser.NewMockAnalyserService(ctrl)
 	mockWebsiteData := mockanalyser.NewMockAnalyser_WebsiteDataService(ctrl)
 	mockAnalyser.EXPECT().WebsiteData(gomock.Any()).Return(mockWebsiteData, nil)
-	deps := SherlockDependencies{Analyser: func() aproto.AnalyserService {return mockAnalyser}}
+	deps := SherlockDependencies{Analyser: func() aproto.AnalyserService { return mockAnalyser }}
 	sut.InjectDependency(&deps)
 	mockWebsiteData.EXPECT().Send(gomock.Any()).Return(&SenderTestError{}).MinTimes(1)
-	err :=	sut.SendData(1, [][]byte{{2},}, nil, &CrawlerTaskRequest{addr: "example.com"})
-
+	err := sut.SendData(1, [][]byte{{2}}, nil, &CrawlerTaskRequest{addr: "example.com"})
 
 	if err.Error() != errorMessage {
 		t.Fail()
@@ -174,16 +172,15 @@ func TestSendReceiveError(t *testing.T) {
 	mockAnalyser := mockanalyser.NewMockAnalyserService(ctrl)
 	mockWebsiteData := mockanalyser.NewMockAnalyser_WebsiteDataService(ctrl)
 	mockAnalyser.EXPECT().WebsiteData(gomock.Any()).Return(mockWebsiteData, nil)
-	deps := SherlockDependencies{Analyser: func() aproto.AnalyserService {return mockAnalyser}}
+	deps := SherlockDependencies{Analyser: func() aproto.AnalyserService { return mockAnalyser }}
 	sut.InjectDependency(&deps)
 	mockWebsiteData.EXPECT().Send(gomock.Any()).Return(nil).MinTimes(1)
 	mockWebsiteData.EXPECT().Recv().Return(nil, &SenderTestError{}).MinTimes(1)
 	mockWebsiteData.EXPECT().Close()
 
-	err := sut.SendData(1, [][]byte{{2},}, nil, &CrawlerTaskRequest{addr: "example.com"})
+	err := sut.SendData(1, [][]byte{{2}}, nil, &CrawlerTaskRequest{addr: "example.com"})
 
 	if err.Error() != errorMessage {
 		t.Fail()
 	}
 }
-

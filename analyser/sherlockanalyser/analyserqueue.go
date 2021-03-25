@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	swd "github.com/ob-algdatii-20ss/SherlockGopher/sherlockwatchdog"
+	swd "github.com/DerAlexx/SherlockGopher/sherlockwatchdog"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -20,7 +20,7 @@ type AnalyserQueue struct {
 	state    int
 	mutex    *sync.Mutex
 	saver    neoSaverInterface
-	cache 	AnalyserCacheInterface
+	cache    AnalyserCacheInterface
 }
 
 /*

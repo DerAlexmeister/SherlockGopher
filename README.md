@@ -1,4 +1,4 @@
-<p align="center"><img alt="Sherlock Gopher" src="https://github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen/blob/develop/assets/sherlockgopher.png" width="200" height="200"></p>
+<p align="center"><img alt="Sherlock Gopher" src="https://github.com/DerAlexx/leistungsnachweis-dievierausrufezeichen/blob/develop/assets/sherlockgopher.png" width="200" height="200"></p>
 
 # Sherlock Gopher
 
@@ -19,7 +19,7 @@ Sherlock Gopher is a distributed System which will crawl over a given website an
 
 ## System architecture
 
-<p align="center"><img alt="Sherlock Gopher" src="https://github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen/blob/develop/assets/general/ServiceDest.png" width="550" height="550"></p>
+<p align="center"><img alt="Sherlock Gopher" src="https://github.com/DerAlexx/leistungsnachweis-dievierausrufezeichen/blob/develop/assets/general/ServiceDest.png" width="550" height="550"></p>
 
 ## Contributors
 

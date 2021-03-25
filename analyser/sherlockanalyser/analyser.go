@@ -6,10 +6,10 @@ import (
 	"sync"
 	"time"
 
-	swd "github.com/ob-algdatii-20ss/SherlockGopher/sherlockwatchdog"
+	swd "github.com/DerAlexx/SherlockGopher/sherlockwatchdog"
 	log "github.com/sirupsen/logrus"
 
-	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
+	proto "github.com/DerAlexx/SherlockGopher/analyser/proto"
 )
 
 const (
@@ -28,6 +28,7 @@ type AnalyserServiceHandler struct {
 	state         int
 	delay         *time.Duration
 	idleCounter   int
+	kwriter       *KafkaWriter
 }
 
 /*
@@ -95,11 +96,13 @@ func NewAnalyserServiceHandler() *AnalyserServiceHandler {
 	watchdog := swd.NewSherlockWatchdog()
 	que.SetWatchdog(&watchdog)
 	observer := NewAnalyserObserver()
+	kwriter := NewKafkaWriter()
 	analyser := AnalyserServiceHandler{
 		AnalyserQueue: &que,
 		Dependencies:  nil,
 		observer:      observer,
 		watchdog:      &watchdog,
+		kwriter:       kwriter,
 	}
 
 	observer.SetAnalyser(&analyser)

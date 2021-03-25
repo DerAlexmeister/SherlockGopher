@@ -3,11 +3,11 @@ package main
 import (
 	"os"
 
+	proto "github.com/DerAlexx/SherlockGopher/analyser/proto"
+	"github.com/DerAlexx/SherlockGopher/analyser/sherlockanalyser"
+	crawlerproto "github.com/DerAlexx/SherlockGopher/sherlockcrawler/proto"
+	"github.com/DerAlexx/SherlockGopher/sherlockneo"
 	"github.com/micro/go-micro"
-	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
-	"github.com/ob-algdatii-20ss/SherlockGopher/analyser/sherlockanalyser"
-	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto"
-	"github.com/ob-algdatii-20ss/SherlockGopher/sherlockneo"
 	log "github.com/sirupsen/logrus"
 )
 

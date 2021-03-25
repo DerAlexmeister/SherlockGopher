@@ -8,9 +8,9 @@ import (
 	context "context"
 	reflect "reflect"
 
+	crawlerwebserverproto "github.com/DerAlexx/SherlockGopher/sherlockcrawler/proto"
 	gomock "github.com/golang/mock/gomock"
 	client "github.com/micro/go-micro/client"
-	crawlerwebserverproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto"
 )
 
 // MockCrawlerService is a mock of CrawlerService interface

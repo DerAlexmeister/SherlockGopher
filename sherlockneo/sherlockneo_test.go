@@ -10,9 +10,9 @@ import (
 
 	"github.com/go-playground/assert/v2"
 
+	"github.com/DerAlexx/SherlockGopher/sherlockneo/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/neo4j/neo4j-go-driver/neo4j"
-	"github.com/ob-algdatii-20ss/SherlockGopher/sherlockneo/mocks"
 )
 
 type testError struct{}

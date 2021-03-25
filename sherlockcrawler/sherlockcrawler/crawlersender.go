@@ -41,7 +41,7 @@ func (sherlock *SherlockCrawler) produce(ctx context.Context, task *CrawlerTaskR
 		tmp := &sherlockkafka.KafkaTask{
 			TaskID:            task.GetTaskID(),
 			Addr:              task.GetAddr(),
-			TaskState:         task.GetTaskState(),
+			TaskState:         int(task.GetTaskState()),
 			TaskError:         task.GetTaskError(),
 			TaskErrorTry:      task.GetTryError(),
 			Response:          task.response,
@@ -69,7 +69,7 @@ func (sherlock *SherlockCrawler) produce(ctx context.Context, task *CrawlerTaskR
 	return nil
 }
 
-func consume(ctx context.Context) {
+func (sherlock *SherlockCrawler) consume(ctx context.Context) {
 	// initialize a new reader with the brokers and topic
 	// the groupID identifies the consumer and prevents
 	// it from receiving duplicate messages
@@ -84,7 +84,11 @@ func consume(ctx context.Context) {
 			panic("could not read message " + err.Error())
 		}
 		// after receiving the message create task
-		var stringurl string
-		url := json.Unmarshal(msg.Value, &stringurl)
+		stringurl := sherlockkafka.KafkaUrl{}
+		err = json.Unmarshal(msg.Value, &stringurl)
+		if err != nil {
+			panic("parsing json failed" + err.Error())
+		}
+		sherlock.NextCreateTask(stringurl.URL)
 	}
 }

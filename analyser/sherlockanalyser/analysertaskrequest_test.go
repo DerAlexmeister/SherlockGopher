@@ -10,11 +10,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/DerAlexx/SherlockGopher/analyser/sherlockanalyser/test"
+	crawlerproto "github.com/DerAlexx/SherlockGopher/sherlockcrawler/proto"
+	neo "github.com/DerAlexx/SherlockGopher/sherlockneo"
 	"github.com/golang/mock/gomock"
 	jp "github.com/jpillora/go-tld"
-	"github.com/ob-algdatii-20ss/SherlockGopher/analyser/sherlockanalyser/test"
-	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto"
-	neo "github.com/ob-algdatii-20ss/SherlockGopher/sherlockneo"
 )
 
 var testData = []struct {

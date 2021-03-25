@@ -1,8 +1,9 @@
 package sherlockanalyser
 
 import (
-	"github.com/ob-algdatii-20ss/SherlockGopher/sherlockwatchdog"
 	"testing"
+
+	"github.com/DerAlexx/SherlockGopher/sherlockwatchdog"
 )
 
 func getTestQueue() AnalyserQueue {
@@ -106,7 +107,6 @@ func TestGetAllTaskIds(t *testing.T) {
 
 func TestGetStatusOfQueue(t *testing.T) {
 	que := getTestQueue()
-
 
 	cData := GetExampleCData()
 	cData.setAddr(cData.addr + "1")

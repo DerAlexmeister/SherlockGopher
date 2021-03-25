@@ -9,13 +9,13 @@ import (
 	"sync"
 	"time"
 
-	neo "github.com/ob-algdatii-20ss/SherlockGopher/sherlockneo"
+	neo "github.com/DerAlexx/SherlockGopher/sherlockneo"
 	log "github.com/sirupsen/logrus"
 
-	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto"
+	crawlerproto "github.com/DerAlexx/SherlockGopher/sherlockcrawler/proto"
 
+	model "github.com/DerAlexx/SherlockGopher/analyser/sherlockparser"
 	jp "github.com/jpillora/go-tld"
-	model "github.com/ob-algdatii-20ss/SherlockGopher/analyser/sherlockparser"
 )
 
 /*

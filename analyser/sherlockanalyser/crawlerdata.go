@@ -18,6 +18,11 @@ type CrawlerData struct {
 	responseTime      time.Duration
 }
 
+func NewCrawlerData() *CrawlerData {
+	data := CrawlerData{}
+	return &data
+}
+
 /*
 getTaskID will return the id of a given task.
 */

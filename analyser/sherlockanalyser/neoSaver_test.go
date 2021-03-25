@@ -2,11 +2,12 @@ package sherlockanalyser
 
 import (
 	"fmt"
-	"github.com/golang/mock/gomock"
-	neo "github.com/ob-algdatii-20ss/SherlockGopher/sherlockneo"
-	"github.com/ob-algdatii-20ss/SherlockGopher/sherlockneo/mocks"
 	"net/http"
 	"testing"
+
+	neo "github.com/DerAlexx/SherlockGopher/sherlockneo"
+	"github.com/DerAlexx/SherlockGopher/sherlockneo/mocks"
+	"github.com/golang/mock/gomock"
 )
 
 func TestSave(t *testing.T) {
@@ -32,10 +33,10 @@ func TestSave(t *testing.T) {
 
 	header := http.Header{}
 	cd := CrawlerData{
-		responseHeader:    &header,
-		statusCode: 200,
-		responseTime: 200,
-		taskError: fmt.Errorf("test"),
+		responseHeader: &header,
+		statusCode:     200,
+		responseTime:   200,
+		taskError:      fmt.Errorf("test"),
 	}
 
 	task := NewTask(&cd)

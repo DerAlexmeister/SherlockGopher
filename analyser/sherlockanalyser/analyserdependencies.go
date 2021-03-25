@@ -1,8 +1,8 @@
 package sherlockanalyser
 
 import (
+	crawlerproto "github.com/DerAlexx/SherlockGopher/sherlockcrawler/proto"
 	"github.com/neo4j/neo4j-go-driver/neo4j"
-	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto"
 )
 
 /*

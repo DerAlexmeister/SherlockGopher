@@ -7,14 +7,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	analyserproto "github.com/DerAlexx/SherlockGopher/analyser/proto"
+	crawlerproto "github.com/DerAlexx/SherlockGopher/sherlockcrawler/proto"
+	"github.com/DerAlexx/SherlockGopher/sherlockneo/mocks"
+	mockanalyser "github.com/DerAlexx/SherlockGopher/webserver/webserver/mocks/analyser"
+	mockcrawler "github.com/DerAlexx/SherlockGopher/webserver/webserver/mocks/crawler"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/assert/v2"
 	"github.com/golang/mock/gomock"
-	analyserproto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
-	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto"
-	"github.com/ob-algdatii-20ss/SherlockGopher/sherlockneo/mocks"
-	mockanalyser "github.com/ob-algdatii-20ss/SherlockGopher/webserver/webserver/mocks/analyser"
-	mockcrawler "github.com/ob-algdatii-20ss/SherlockGopher/webserver/webserver/mocks/crawler"
 )
 
 const (

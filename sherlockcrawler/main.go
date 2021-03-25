@@ -6,11 +6,11 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	aproto "github.com/DerAlexx/SherlockGopher/analyser/proto"
+	proto "github.com/DerAlexx/SherlockGopher/sherlockcrawler/proto"
 	"github.com/micro/go-micro"
-	aproto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
-	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto"
 
-	sherlock "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/sherlockcrawler"
+	sherlock "github.com/DerAlexx/SherlockGopher/sherlockcrawler/sherlockcrawler"
 )
 
 const (

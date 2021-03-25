@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto"
+	proto "github.com/DerAlexx/SherlockGopher/sherlockcrawler/proto"
 )
 
 const (
@@ -440,11 +440,9 @@ func TestGetterAndSetter(t *testing.T) {
 	}
 }
 
-func TestManageFinishedTasks(t *testing.T){
+func TestManageFinishedTasks(t *testing.T) {
 	sut := NewSherlockCrawlerService()
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	sut.manageFinishedTasks(&wg)
 }
-
-

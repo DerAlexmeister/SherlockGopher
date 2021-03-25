@@ -3,9 +3,9 @@ package webserver
 import (
 	"net/http"
 
+	sherlockneo "github.com/DerAlexx/SherlockGopher/sherlockneo"
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
-	sherlockneo "github.com/ob-algdatii-20ss/SherlockGopher/sherlockneo"
 )
 
 /*

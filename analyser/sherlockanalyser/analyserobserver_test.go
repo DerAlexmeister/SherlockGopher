@@ -1,8 +1,9 @@
 package sherlockanalyser
 
 import (
-	"github.com/ob-algdatii-20ss/SherlockGopher/sherlockwatchdog"
 	"testing"
+
+	"github.com/DerAlexx/SherlockGopher/sherlockwatchdog"
 )
 
 //=======================================================================

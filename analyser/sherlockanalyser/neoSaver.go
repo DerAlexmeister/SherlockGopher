@@ -1,13 +1,14 @@
 package sherlockanalyser
 
 import (
-	log "github.com/sirupsen/logrus"
 	"strings"
 	"sync"
 
+	log "github.com/sirupsen/logrus"
+
+	neo "github.com/DerAlexx/SherlockGopher/sherlockneo"
 	jp "github.com/jpillora/go-tld"
 	"github.com/neo4j/neo4j-go-driver/neo4j"
-	neo "github.com/ob-algdatii-20ss/SherlockGopher/sherlockneo"
 )
 
 type neoSaverInterface interface {

@@ -6,12 +6,12 @@ import (
 	"sync"
 	"time"
 
-	swd "github.com/ob-algdatii-20ss/SherlockGopher/sherlockwatchdog"
+	swd "github.com/DerAlexx/SherlockGopher/sherlockwatchdog"
 	log "github.com/sirupsen/logrus"
 
+	aproto "github.com/DerAlexx/SherlockGopher/analyser/proto"
+	proto "github.com/DerAlexx/SherlockGopher/sherlockcrawler/proto"
 	"github.com/asaskevich/govalidator"
-	aproto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
-	proto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto"
 	"github.com/pkg/errors"
 )
 
@@ -183,6 +183,23 @@ func (sherlock SherlockCrawler) CreateTask(ctx context.Context, in *proto.CrawlT
 	}
 	out.Statuscode = proto.URL_STATUS_failure
 	out.Taskid = 0
+	return errors.New(message)
+}
+
+/*
+CreateTask will append the current queue with a task.
+*/
+func (sherlock SherlockCrawler) NextCreateTask(url string) error {
+	message := fmt.Sprintf("malformed or invalid url: %s", url)
+	if isValid := govalidator.IsURL(url); isValid {
+		task := NewTask()
+		task.setAddr(url)
+		if id := sherlock.getQueue().AppendQueue(&task); id > 0 {
+			log.Debug("Created task ", task.GetTaskID(), task.GetAddr())
+			return nil
+		}
+		log.Error("Could not append task ", task.GetTaskID(), task.GetAddr())
+	}
 	return errors.New(message)
 }
 

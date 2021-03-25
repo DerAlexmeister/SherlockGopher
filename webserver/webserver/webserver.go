@@ -9,9 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/neo4j/neo4j-go-driver/neo4j"
 
-	analyserproto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
-	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto"
-	sherlockneo "github.com/ob-algdatii-20ss/SherlockGopher/sherlockneo"
+	analyserproto "github.com/DerAlexx/SherlockGopher/analyser/proto"
+	crawlerproto "github.com/DerAlexx/SherlockGopher/sherlockcrawler/proto"
+	sherlockneo "github.com/DerAlexx/SherlockGopher/sherlockneo"
 )
 
 /*

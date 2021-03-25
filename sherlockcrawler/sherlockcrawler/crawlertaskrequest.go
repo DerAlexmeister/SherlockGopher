@@ -14,17 +14,17 @@ import (
 /*
 taskState will be a type representing the current taskState of the task.
 */
-type taskState int
+type TaskState int
 
 const (
 	//UNDONE will be an untouched task .
-	UNDONE taskState = 0
+	UNDONE TaskState = 0
 	//PROCESSING will be a task currently working on.
-	PROCESSING taskState = 1
+	PROCESSING TaskState = 1
 	//FINISHED will be a task which is successfully completed.
-	FINISHED taskState = 2
+	FINISHED TaskState = 2
 	//FAILED is a task which was in the state of PROCESSING but failed to complet.
-	FAILED taskState = 3
+	FAILED TaskState = 3
 )
 
 /*
@@ -33,7 +33,7 @@ CrawlerTaskRequest will be a request made by the analyser.
 type CrawlerTaskRequest struct {
 	taskID            uint64 //taskID, send every time.
 	addr              string //addr, once
-	taskState         taskState
+	taskState         TaskState
 	taskError         error //error, send as string in case there is an error then dont send a body
 	taskErrorTry      int   //never
 	response          *http.Response
@@ -44,7 +44,7 @@ type CrawlerTaskRequest struct {
 	responseTime      time.Duration //response time, once
 }
 
-func NewCrawlerTaskRequest(taskID uint64, addr string, taskState taskState, taskError error, taskErrorTry int, response *http.Response, responseHeader *http.Header, responseBody string, responseBodyBytes []byte, statusCode int, responseTime time.Duration) *CrawlerTaskRequest {
+func NewCrawlerTaskRequest(taskID uint64, addr string, taskState TaskState, taskError error, taskErrorTry int, response *http.Response, responseHeader *http.Header, responseBody string, responseBodyBytes []byte, statusCode int, responseTime time.Duration) *CrawlerTaskRequest {
 	return &CrawlerTaskRequest{taskID: taskID, addr: addr, taskState: taskState, taskError: taskError, taskErrorTry: taskErrorTry, response: response, responseHeader: responseHeader, responseBody: responseBody, responseBodyBytes: responseBodyBytes, statusCode: statusCode, responseTime: responseTime}
 }
 
@@ -76,7 +76,7 @@ func (sherlock *CrawlerTaskRequest) GetAddr() string {
 GetTaskState will return the taskState of the task.
 */
 //nolint: golint
-func (sherlock *CrawlerTaskRequest) GetTaskState() taskState {
+func (sherlock *CrawlerTaskRequest) GetTaskState() TaskState {
 	return sherlock.taskState
 }
 
@@ -160,7 +160,7 @@ func (sherlock *CrawlerTaskRequest) setAddr(addr string) {
 /*
 setResponse will set the response of the Request to a given CrawlerTaskRequest.
 */
-func (sherlock *CrawlerTaskRequest) setTaskState(taskState taskState) {
+func (sherlock *CrawlerTaskRequest) setTaskState(taskState TaskState) {
 	sherlock.taskState = taskState
 }
 

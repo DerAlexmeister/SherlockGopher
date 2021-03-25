@@ -6,9 +6,9 @@ package mock_analysertowebserver
 
 import (
 	context "context"
+	analysertowebserver "github.com/DerAlexx/SherlockGopher/analyser/proto"
 	gomock "github.com/golang/mock/gomock"
 	client "github.com/micro/go-micro/client"
-	analysertowebserver "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
 	reflect "reflect"
 )
 

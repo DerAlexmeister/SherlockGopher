@@ -3,8 +3,8 @@ package test
 import (
 	"context"
 
+	crawlerproto "github.com/DerAlexx/SherlockGopher/sherlockcrawler/proto"
 	"github.com/micro/go-micro/client"
-	crawlerproto "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/proto"
 )
 
 type TAnalyserInterfaceService struct {

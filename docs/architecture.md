@@ -1,6 +1,6 @@
 # Docs of the System architecture
 
-<p align="center"><img alt="Sherlock Gopher" src="https://github.com/ob-algdatii-20ss/leistungsnachweis-dievierausrufezeichen/blob/develop/assets/general/ServiceDest.png" width="550" height="550"></p>
+<p align="center"><img alt="Sherlock Gopher" src="https://github.com/DerAlexx/leistungsnachweis-dievierausrufezeichen/blob/develop/assets/general/ServiceDest.png" width="550" height="550"></p>
 
 ## Neo4j
 

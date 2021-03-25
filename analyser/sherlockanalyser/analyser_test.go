@@ -3,13 +3,14 @@ package sherlockanalyser
 import (
 	"context"
 	"fmt"
-	"github.com/golang/mock/gomock"
 	"net/http"
 	"strconv"
 	"testing"
 	"time"
 
-	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
+	"github.com/golang/mock/gomock"
+
+	proto "github.com/DerAlexx/SherlockGopher/analyser/proto"
 )
 
 func TestAnalyserGetterSetter(t *testing.T) {
@@ -44,7 +45,6 @@ func TestManageTasks(t *testing.T) {
 		statusCode:        200,
 		responseTime:      0,
 	}
-
 
 	mockCtrl := gomock.NewController(t)
 	mockNeoSaver := NewMockneoSaverInterface(mockCtrl)

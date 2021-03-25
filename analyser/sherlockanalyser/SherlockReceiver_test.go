@@ -9,11 +9,11 @@ import (
 	"strings"
 	"testing"
 
-	crawler "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/sherlockcrawler"
+	crawler "github.com/DerAlexx/SherlockGopher/sherlockcrawler/sherlockcrawler"
 
+	proto "github.com/DerAlexx/SherlockGopher/analyser/proto"
+	mock "github.com/DerAlexx/SherlockGopher/sherlockcrawler/sherlockcrawler/mocks"
 	"github.com/golang/mock/gomock"
-	proto "github.com/ob-algdatii-20ss/SherlockGopher/analyser/proto"
-	mock "github.com/ob-algdatii-20ss/SherlockGopher/sherlockcrawler/sherlockcrawler/mocks"
 )
 
 func TestWebsiteData(t *testing.T) {
