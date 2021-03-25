@@ -27,6 +27,7 @@ require (
 	github.com/neo4j-drivers/gobolt v1.7.4 // indirect
 	github.com/neo4j/neo4j-go-driver v1.7.4
 	github.com/pkg/errors v0.9.1
+	github.com/segmentio/kafka-go v0.4.12 // indirect
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.6.1
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20200122045848-3419fae592fc // indirect

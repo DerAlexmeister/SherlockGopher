@@ -35,6 +35,7 @@ type SherlockCrawler struct {
 	state           int
 	delay           *time.Duration
 	idleCounter     int
+	kwriter         *KafkaWriter
 }
 
 /*
@@ -113,6 +114,7 @@ func NewSherlockCrawlerService() *SherlockCrawler {
 	que.SetWatchdog(&watchdog)
 	observer := NewCrawlerObserver()
 	streamQue := NewCrawlerQueue()
+	kwriter := NewKafkaWriter()
 
 	crawler := SherlockCrawler{
 		Queue:        &que,
@@ -120,6 +122,7 @@ func NewSherlockCrawlerService() *SherlockCrawler {
 		observer:     observer,
 		StreamQueue:  &streamQue,
 		watchdog:     &watchdog,
+		kwriter:      kwriter,
 	}
 
 	observer.SetCrawler(&crawler)

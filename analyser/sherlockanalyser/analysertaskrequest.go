@@ -62,7 +62,7 @@ type AnalyserTaskRequest struct {
 	crawlerData  *CrawlerData
 	Dependencies *AnalyserDependency
 	saver        neoSaverInterface
-	cache 		 AnalyserCacheInterface
+	cache        AnalyserCacheInterface
 }
 
 /*
@@ -103,7 +103,7 @@ func (analyserTask *AnalyserTaskRequest) SetFileType() {
 /*
 SetSaver sets the saver.
 */
-func (analyserTask *AnalyserTaskRequest) SetSaver(saver neoSaverInterface)  {
+func (analyserTask *AnalyserTaskRequest) SetSaver(saver neoSaverInterface) {
 	analyserTask.saver = saver
 }
 
@@ -320,7 +320,7 @@ func (analyserTask *AnalyserTaskRequest) VerifyCorrectness() bool {
 
 /*
 ClearMemory will clear the memory.
- */
+*/
 func (analyserTask *AnalyserTaskRequest) ClearMemory() {
 	analyserTask.SetHTML("")
 	analyserTask.linkTags = nil
