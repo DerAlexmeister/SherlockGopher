@@ -3,6 +3,7 @@ package sherlockanalyser
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strconv"
 
 	sherlockkafka "github.com/DerAlexx/SherlockGopher/sherlockkafka"
@@ -10,7 +11,7 @@ import (
 )
 
 const (
-	topic         = "crawlertasks"
+	topic         = "test1"
 	brokerAddress = "localhost:9092"
 )
 
@@ -37,6 +38,7 @@ func (sherlock *AnalyserServiceHandler) produce(ctx context.Context, url string)
 	}
 
 	res1B, _ := json.Marshal(tmp)
+	fmt.Println(res1B)
 
 	// each kafka message has a key and value. The key is used
 	// to decide which partition (and consequently, which broker)
@@ -52,7 +54,7 @@ func (sherlock *AnalyserServiceHandler) produce(ctx context.Context, url string)
 	return nil
 }
 
-func (analyser *AnalyserServiceHandler) consume(ctx context.Context) {
+func (analyser *AnalyserServiceHandler) Consume(ctx context.Context) {
 	// initialize a new reader with the brokers and topic
 	// the groupID identifies the consumer and prevents
 	// it from receiving duplicate messages
@@ -67,6 +69,7 @@ func (analyser *AnalyserServiceHandler) consume(ctx context.Context) {
 			panic("could not read message " + err.Error())
 		}
 		// after receiving the message create task
+		fmt.Println(msg)
 
 		tmptask := sherlockkafka.KafkaTask{}
 		err = json.Unmarshal(msg.Value, &tmptask)

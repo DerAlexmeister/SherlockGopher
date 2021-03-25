@@ -3,6 +3,7 @@ package sherlockcrawler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"sync"
 
@@ -11,7 +12,7 @@ import (
 )
 
 const (
-	topic         = "crawlertasks"
+	topic         = "test1"
 	brokerAddress = "localhost:9092"
 )
 
@@ -52,6 +53,7 @@ func (sherlock *SherlockCrawler) produce(ctx context.Context, task *CrawlerTaskR
 			ResponseTime:      task.GetResponseTime()}
 
 		res1B, _ := json.Marshal(tmp)
+		fmt.Println(res1B)
 
 		// each kafka message has a key and value. The key is used
 		// to decide which partition (and consequently, which broker)
@@ -69,7 +71,7 @@ func (sherlock *SherlockCrawler) produce(ctx context.Context, task *CrawlerTaskR
 	return nil
 }
 
-func (sherlock *SherlockCrawler) consume(ctx context.Context) {
+func (sherlock *SherlockCrawler) Consume(ctx context.Context) {
 	// initialize a new reader with the brokers and topic
 	// the groupID identifies the consumer and prevents
 	// it from receiving duplicate messages
@@ -84,11 +86,12 @@ func (sherlock *SherlockCrawler) consume(ctx context.Context) {
 			panic("could not read message " + err.Error())
 		}
 		// after receiving the message create task
-		stringurl := sherlockkafka.KafkaUrl{}
+		//stringurl := sherlockkafka.KafkaUrl{}
+		var stringurl string
 		err = json.Unmarshal(msg.Value, &stringurl)
 		if err != nil {
 			panic("parsing json failed" + err.Error())
 		}
-		sherlock.NextCreateTask(stringurl.URL)
+		sherlock.NextCreateTask(stringurl)
 	}
 }

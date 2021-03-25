@@ -130,7 +130,7 @@ func (analyser *AnalyserServiceHandler) manageUndoneTasks() {
 			v.InjectDependency(analyser.Dependencies)
 			v.SetState(PROCESSING)
 			localWaitGroup.Add(1)
-			go v.Execute(&localWaitGroup)
+			go v.Execute(&localWaitGroup, analyser)
 		}
 	}
 	localWaitGroup.Wait()

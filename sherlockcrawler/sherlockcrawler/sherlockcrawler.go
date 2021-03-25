@@ -227,7 +227,9 @@ func (sherlock *SherlockCrawler) manageFinishedTasks(wg *sync.WaitGroup) {
 	for k, v := range *sherlock.getQueue().GetThisQueue() {
 		if v.GetTaskState() == FINISHED {
 			sendWG.Add(1)
-			go sherlock.SendWebsiteData(sherlock.Dependencies.Analyser(), v, &sendWG)
+			//go sherlock.SendWebsiteData(sherlock.Dependencies.Analyser(), v, &sendWG)
+			ctx := context.Background()
+			go sherlock.produce(ctx, v, &sendWG)
 			sendWG.Wait()
 			sherlock.getQueue().RemoveFromQueue(k)
 		}
@@ -253,7 +255,9 @@ func (sherlock *SherlockCrawler) manageFailedTasks(wg *sync.WaitGroup) {
 				localWaitGroup.Wait()
 			} else {
 				sendWG.Add(1)
-				go sherlock.SendWebsiteData(sherlock.Dependencies.Analyser(), v, &sendWG)
+				//go sherlock.SendWebsiteData(sherlock.Dependencies.Analyser(), v, &sendWG)
+				ctx := context.Background()
+				go sherlock.produce(ctx, v, &sendWG)
 				sendWG.Wait()
 				sherlock.getQueue().RemoveFromQueue(k)
 			}

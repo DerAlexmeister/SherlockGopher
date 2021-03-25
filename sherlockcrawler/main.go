@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -44,7 +45,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	ctx := context.Background()
 	go crawlerservice.ManageTasks()
+	crawlerservice.Consume(ctx)
 
 	if err = service.Run(); err != nil {
 		log.Fatal("Crawler->main.go->service.Run() failed!")

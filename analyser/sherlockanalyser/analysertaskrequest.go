@@ -293,10 +293,10 @@ func (analyserTask *AnalyserTaskRequest) SetLinkTags() {
 /*
 Execute will execute the task.
 */
-func (analyserTask *AnalyserTaskRequest) Execute(waitGroup *sync.WaitGroup) bool {
+func (analyserTask *AnalyserTaskRequest) Execute(waitGroup *sync.WaitGroup, analyser *AnalyserServiceHandler) bool {
 	if analyserTask.CrawlerData().getTaskError().Error() == "" {
 		analyserTask.Initialize()
-		analyserTask.Process()
+		analyserTask.Process(analyser)
 	} else {
 		analyserTask.ProcessError()
 	}
@@ -329,7 +329,7 @@ func (analyserTask *AnalyserTaskRequest) ClearMemory() {
 /*
 Process will process a valid task.
 */
-func (analyserTask *AnalyserTaskRequest) Process() {
+func (analyserTask *AnalyserTaskRequest) Process(analyser *AnalyserServiceHandler) {
 	analyserTask.SetState(PROCESSING)
 
 	if analyserTask.VerifyCorrectness() {
@@ -355,7 +355,7 @@ func (analyserTask *AnalyserTaskRequest) Process() {
 		if analyserTask.saver.GetSession() != nil {
 			defer neo.CloseSession(analyserTask.saver.GetSession())
 		}
-		analyserTask.Send()
+		analyserTask.NextSend(analyser)
 	}
 }
 
@@ -478,6 +478,24 @@ func (analyserTask *AnalyserTaskRequest) Send() {
 			Url: link,
 		}
 		_, err := serv.CreateTask(context.TODO(), message)
+		if err != nil {
+			log.Error("Error while sending to crawler")
+			log.Error(err)
+		}
+	}
+}
+
+func (analyserTask *AnalyserTaskRequest) NextSend(analyser *AnalyserServiceHandler) {
+	analyserTask.SetState(SENDTOCRAWLER)
+
+	log.WithFields(log.Fields{
+		"analyserID": analyserTask.getID(),
+		"links":      analyserTask.FoundLinks(),
+	}).Info("SEND LINKS TO CRAWLER")
+
+	for _, link := range analyserTask.FoundLinks() {
+		ctx := context.Background()
+		err := analyser.produce(ctx, link)
 		if err != nil {
 			log.Error("Error while sending to crawler")
 			log.Error(err)

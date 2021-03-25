@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	proto "github.com/DerAlexx/SherlockGopher/analyser/proto"
@@ -53,7 +54,9 @@ func main() {
 
 	err := proto.RegisterAnalyserHandler(service.Server(), AnalyserService)
 
+	ctx := context.Background()
 	go AnalyserService.ManageTasks()
+	AnalyserService.Consume(ctx)
 
 	if err != nil {
 		log.Fatal("Analyser->main.go->RegisterAnalyserHandler failed!")
