@@ -99,3 +99,6 @@ venv.bak/
 .dmypy.json
 dmypy.json
 .pyre/
+
+conf
+data
