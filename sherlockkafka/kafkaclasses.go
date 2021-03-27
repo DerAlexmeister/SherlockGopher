@@ -25,3 +25,8 @@ type KafkaTask struct {
 	StatusCode        int            `json:"statuscode"`        //statusCode, once
 	ResponseTime      time.Duration  `json:"responstime"`       //response time, once
 }
+
+type KafkaScreenshot struct {
+	Picture []byte	`json:"picture"`
+	URL     string	`json:"url"`
+}

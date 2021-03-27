@@ -65,8 +65,6 @@ def DatabaseRetreiveData():
     return res
 
 
-
-
 def DownloadImage():
 
     filePathToImage = "/tmp/tmp"
@@ -100,9 +98,3 @@ def DownloadImage():
                 databaseInsertData(pair[0], 1, listExifTags)
             else:
                 databaseInsertData(pair[0], 0, None)
-
-databaseDeleteTable()
-databaseCreateTable()
-DownloadImage()
-a = DatabaseRetreiveData()
-print (a)

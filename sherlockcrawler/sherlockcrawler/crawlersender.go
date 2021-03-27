@@ -87,11 +87,11 @@ func (sherlock *SherlockCrawler) Consume(ctx context.Context) {
 		}
 		// after receiving the message create task
 		//stringurl := sherlockkafka.KafkaUrl{}
-		var stringurl string
-		err = json.Unmarshal(msg.Value, &stringurl)
+		tmpurl := sherlockkafka.KafkaUrl{}
+		err = json.Unmarshal(msg.Value, &tmpurl)
 		if err != nil {
 			panic("parsing json failed" + err.Error())
 		}
-		sherlock.NextCreateTask(stringurl)
+		sherlock.NextCreateTask(tmpurl.URL)
 	}
 }

@@ -1,0 +1,58 @@
+version: "3"
+services:
+    zookeeper:
+        image: wurstmeister/zookeeper
+        ports: 
+            - "2181:2181"
+    kafka:
+        image: wurstmeister/kafka
+        ports:
+            - "9092:9092"
+        environment: 
+            KAFKA_ADVERTISED_HOST_NAME: 10.0.2.15
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    mongodb_container:
+        image: mongo:latest
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: rootpassword
+        ports:
+            - 27017:27017
+        volumes:
+            - mongodb_data_container:/data/db
+    postgres:
+        image: postgres
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        ports:
+            - 5432:5432
+    neo4j:
+        image: neo4j:3.5
+        restart: unless-stopped
+        ports:
+            - 7474:7474
+            - 7687:7687
+        volumes:
+            - ./conf:/conf
+            - ./data:/data
+            - ./import:/import
+            - ./logs:/logs
+            - ./plugins:/plugins
+    frontend: 
+        build: 
+            context: .
+            dockerfile: frontend/dockerfile
+        container_name: frontend  
+        ports:
+            - "8080:8080"
+    webserver: 
+        build: 
+            context: .
+            dockerfile: webserver/dockerfile
+        container_name: webserver  
+        ports:
+            - "8081:8081"
+volumes:
+    mongodb_data_container:
+    db-data:
+        driver: local
