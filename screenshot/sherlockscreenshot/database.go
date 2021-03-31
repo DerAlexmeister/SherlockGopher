@@ -15,7 +15,7 @@ var (
 )
 
 type DB struct {
-	client *mongo.Client
+	Client *mongo.Client
 }
 
 func Connect() *DB {
@@ -30,12 +30,12 @@ func Connect() *DB {
 		log.Fatal(err)
 	}
 	return &DB{
-		client: client,
+		Client: client,
 	}
 }
 
 func (db *DB) Save(input *Screenshot) {
-	collection := db.client.Database("dbscreenshots").Collection("screenshots")
+	collection := db.Client.Database("dbscreenshots").Collection("screenshots")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	_, err := collection.InsertOne(ctx, input)
@@ -45,7 +45,7 @@ func (db *DB) Save(input *Screenshot) {
 }
 
 func (db *DB) ReturnAllScreenshots() []*Screenshot {
-	collection := db.client.Database("dbscreenshots").Collection("screenshots")
+	collection := db.Client.Database("dbscreenshots").Collection("screenshots")
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	cur, err := collection.Find(ctx, bson.D{})

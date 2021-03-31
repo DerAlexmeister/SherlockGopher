@@ -45,9 +45,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	ctx := context.Background()
 	go crawlerservice.ManageTasks()
-	crawlerservice.Consume(ctx)
 
 	if err = service.Run(); err != nil {
 		log.Fatal("Crawler->main.go->service.Run() failed!")
@@ -55,6 +53,8 @@ func main() {
 	} else {
 		log.Infof("Service %s started as intended... ", serviceName)
 	}
+
+	crawlerservice.ReceiveUrlFromAnalyser(context.TODO())
 }
 
 func SetupLogging() {

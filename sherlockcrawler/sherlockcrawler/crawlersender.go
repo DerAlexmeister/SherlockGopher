@@ -12,53 +12,58 @@ import (
 )
 
 const (
-	topic         = "test1"
-	brokerAddress = "localhost:9092"
+	topictask         = "tasktoanalyser"
+	topicurl         = "urltocrawler"
+	brokerAddress = "0.0.0.0:9092"
 )
 
-/*
-CrawlerTaskRequest will be a request made by the analyser.
-*/
 type KafkaWriter struct {
 	writer kafka.Writer
 }
 
-func NewKafkaWriter() *KafkaWriter {
+func NewKafkaWriter(brokAddress string, topic string) *KafkaWriter {
 	return &KafkaWriter{
 		writer: kafka.Writer{
-			Addr:  kafka.TCP(brokerAddress),
+			Addr:  kafka.TCP(brokAddress),
 			Topic: topic,
 		},
 	}
 }
 
-func (sherlock *SherlockCrawler) produce(ctx context.Context, task *CrawlerTaskRequest, wg *sync.WaitGroup) error {
+func convert(task *CrawlerTaskRequest) *sherlockkafka.KafkaTask {
+	tmp := sherlockkafka.KafkaTask{}
+	tmpmap := make(map[string][]string)
+	for headerkey, headerValue := range *task.responseHeader {
+		tmpmap[headerkey] = headerValue
+	}
+	tmp.TaskID =            task.taskID
+	tmp.Addr = task.addr
+	tmp.TaskError =          task.taskError
+	tmp.StatusCode =         task.statusCode
+	tmp.ResponseBodyBytes =  task.responseBodyBytes
+	tmp.ResponseHeader =     	tmpmap
+	tmp.ResponseTime =       task.responseTime
+	return &tmp
+}
+
+func (sherlock *SherlockCrawler) SendTaskToAnalyser(ctx context.Context, task *CrawlerTaskRequest, wg *sync.WaitGroup) error {
 
 	if task.GetTaskError() != nil {
 		wg.Done()
 	} else {
 		(*task).setTaskState(PROCESSING)
 
-		tmp := &sherlockkafka.KafkaTask{
-			TaskID:            task.GetTaskID(),
-			Addr:              task.GetAddr(),
-			TaskState:         int(task.GetTaskState()),
-			TaskError:         task.GetTaskError(),
-			TaskErrorTry:      task.GetTryError(),
-			Response:          task.response,
-			ResponseHeader:    task.responseHeader,
-			ResponseBody:      task.GetResponseBody(),
-			ResponseBodyBytes: task.GetResponseBodyInBytes(),
-			StatusCode:        task.GetStatusCode(),
-			ResponseTime:      task.GetResponseTime()}
+		tmp := convert(task)
 
 		res1B, _ := json.Marshal(tmp)
 		fmt.Println(res1B)
 
+		kwriter := NewKafkaWriter(topictask, brokerAddress)
+
 		// each kafka message has a key and value. The key is used
 		// to decide which partition (and consequently, which broker)
 		// the message gets published on
-		err := sherlock.kwriter.writer.WriteMessages(ctx, kafka.Message{
+		err := kwriter.writer.WriteMessages(ctx, kafka.Message{
 			Key: []byte(strconv.Itoa(0)),
 			// create an arbitrary message payload for the value
 			Value: res1B,
@@ -71,13 +76,13 @@ func (sherlock *SherlockCrawler) produce(ctx context.Context, task *CrawlerTaskR
 	return nil
 }
 
-func (sherlock *SherlockCrawler) Consume(ctx context.Context) {
+func (sherlock *SherlockCrawler) ReceiveUrlFromAnalyser(ctx context.Context) {
 	// initialize a new reader with the brokers and topic
 	// the groupID identifies the consumer and prevents
 	// it from receiving duplicate messages
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: []string{brokerAddress},
-		Topic:   topic,
+		Topic:   topictask,
 	})
 	for {
 		// the `ReadMessage` method blocks until we receive the next event
@@ -87,7 +92,7 @@ func (sherlock *SherlockCrawler) Consume(ctx context.Context) {
 		}
 		// after receiving the message create task
 		//stringurl := sherlockkafka.KafkaUrl{}
-		tmpurl := sherlockkafka.KafkaUrl{}
+		var tmpurl sherlockkafka.KafkaUrl
 		err = json.Unmarshal(msg.Value, &tmpurl)
 		if err != nil {
 			panic("parsing json failed" + err.Error())

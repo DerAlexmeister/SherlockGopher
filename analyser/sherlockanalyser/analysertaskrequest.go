@@ -485,6 +485,8 @@ func (analyserTask *AnalyserTaskRequest) Send() {
 	}
 }
 
+
+
 func (analyserTask *AnalyserTaskRequest) NextSend(analyser *AnalyserServiceHandler) {
 	analyserTask.SetState(SENDTOCRAWLER)
 
@@ -494,8 +496,7 @@ func (analyserTask *AnalyserTaskRequest) NextSend(analyser *AnalyserServiceHandl
 	}).Info("SEND LINKS TO CRAWLER")
 
 	for _, link := range analyserTask.FoundLinks() {
-		ctx := context.Background()
-		err := analyser.produce(ctx, link)
+		err := analyser.SendUrlToCrawler(context.TODO(), link)
 		if err != nil {
 			log.Error("Error while sending to crawler")
 			log.Error(err)

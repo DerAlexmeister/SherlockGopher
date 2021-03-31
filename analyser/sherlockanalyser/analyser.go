@@ -96,13 +96,13 @@ func NewAnalyserServiceHandler() *AnalyserServiceHandler {
 	watchdog := swd.NewSherlockWatchdog()
 	que.SetWatchdog(&watchdog)
 	observer := NewAnalyserObserver()
-	kwriter := NewKafkaWriter()
+	writer := NewKafkaWriter(topictask, brokerAddress)
 	analyser := AnalyserServiceHandler{
 		AnalyserQueue: &que,
 		Dependencies:  nil,
 		observer:      observer,
 		watchdog:      &watchdog,
-		kwriter:       kwriter,
+		kwriter:       writer,
 	}
 
 	observer.SetAnalyser(&analyser)

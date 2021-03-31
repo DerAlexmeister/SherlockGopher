@@ -1,4 +1,4 @@
-from .sherlockanalysepictures.getmetadata import *
+from sherlockanalysepictures.getmetadata import *
 from flask import Flask
 from flask_script import Manager
 from flask_script import Server
@@ -10,6 +10,7 @@ app.config.update(
     CELERY_RESULT_BACKEND='redis://localhost:6379'
 )
 
+celery = make_celery(app)
 manager = Manager(app)
 
 def make_celery(app):
@@ -27,9 +28,6 @@ def make_celery(app):
 
     celery.Task = ContextTask
     return celery
-
-
-celery = make_celery(app)
 
 @celery.task()
 def getImageInIntervall():

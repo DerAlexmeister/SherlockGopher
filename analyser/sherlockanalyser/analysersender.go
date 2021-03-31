@@ -5,39 +5,40 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"net/http"
 
 	sherlockkafka "github.com/DerAlexx/SherlockGopher/sherlockkafka"
 	"github.com/segmentio/kafka-go"
 )
 
 const (
-	topic         = "test1"
-	brokerAddress = "localhost:9092"
+	topictask         = "tasktoanalyser"
+	brokerAddress = "0.0.0.0:9092"
 )
 
-/*
-KafkaWriter.
-*/
 type KafkaWriter struct {
 	writer kafka.Writer
 }
 
-func NewKafkaWriter() *KafkaWriter {
+func NewKafkaWriter(brokAddress string, topic string) *KafkaWriter {
 	return &KafkaWriter{
 		writer: kafka.Writer{
-			Addr:  kafka.TCP(brokerAddress),
+			Addr:  kafka.TCP(brokAddress),
 			Topic: topic,
 		},
 	}
 }
 
-func (sherlock *AnalyserServiceHandler) produce(ctx context.Context, url string) error {
+func convertUrlToKafkaUrl(url string) *sherlockkafka.KafkaUrl {
+	tmp := sherlockkafka.KafkaUrl{}
+	tmp.URL = url
+	return &tmp
+}
 
-	tmp := &sherlockkafka.KafkaUrl{
-		URL: url,
-	}
+func (sherlock *AnalyserServiceHandler) SendUrlToCrawler(ctx context.Context, url string) error {
 
-	res1B, _ := json.Marshal(tmp)
+	kTask := convertUrlToKafkaUrl(url)
+	res1B, _ := json.Marshal(&kTask)
 	fmt.Println(res1B)
 
 	// each kafka message has a key and value. The key is used
@@ -54,13 +55,13 @@ func (sherlock *AnalyserServiceHandler) produce(ctx context.Context, url string)
 	return nil
 }
 
-func (analyser *AnalyserServiceHandler) Consume(ctx context.Context) {
+func (analyser *AnalyserServiceHandler) ReceiveTaskFromCrawler(ctx context.Context) {
 	// initialize a new reader with the brokers and topic
 	// the groupID identifies the consumer and prevents
 	// it from receiving duplicate messages
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: []string{brokerAddress},
-		Topic:   topic,
+		Topic:   topictask,
 	})
 	for {
 		// the `ReadMessage` method blocks until we receive the next event
@@ -71,17 +72,24 @@ func (analyser *AnalyserServiceHandler) Consume(ctx context.Context) {
 		// after receiving the message create task
 		fmt.Println(msg)
 
-		tmptask := sherlockkafka.KafkaTask{}
+		var tmptask sherlockkafka.KafkaTask
 		err = json.Unmarshal(msg.Value, &tmptask)
 		if err != nil {
 			panic("parsing json failed" + err.Error())
+		}
+
+		headerMap := http.Header{}
+		for headerKey, headerValue := range tmptask.ResponseHeader {
+			for _,headVal := range headerValue{
+				headerMap.Add(headerKey, headVal)
+			}
 		}
 
 		task := NewCrawlerData()
 		task.setTaskID(tmptask.TaskID)
 		task.setAddr(tmptask.Addr)
 		task.setTaskError(tmptask.TaskError)
-		task.setResponseHeader(tmptask.ResponseHeader)
+		task.setResponseHeader(&headerMap)
 		task.setResponseBody(tmptask.ResponseBodyBytes)
 		task.setStatusCode(tmptask.StatusCode)
 		task.setResponseTime(tmptask.ResponseTime)
@@ -90,3 +98,5 @@ func (analyser *AnalyserServiceHandler) Consume(ctx context.Context) {
 		analyser.getQueue().AppendQueue(analyserTaskRequest)
 	}
 }
+
+

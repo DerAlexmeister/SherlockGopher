@@ -5,12 +5,17 @@ import (
 	"fmt"
 	"sync"
 	"time"
+	"encoding/json"
+	"strconv"
 
 	swd "github.com/DerAlexx/SherlockGopher/sherlockwatchdog"
 	log "github.com/sirupsen/logrus"
 
 	aproto "github.com/DerAlexx/SherlockGopher/analyser/proto"
 	proto "github.com/DerAlexx/SherlockGopher/sherlockcrawler/proto"
+
+	sherlockkafka "github.com/DerAlexx/SherlockGopher/sherlockkafka"
+	"github.com/segmentio/kafka-go"
 	"github.com/asaskevich/govalidator"
 	"github.com/pkg/errors"
 )
@@ -35,7 +40,6 @@ type SherlockCrawler struct {
 	state           int
 	delay           *time.Duration
 	idleCounter     int
-	kwriter         *KafkaWriter
 }
 
 /*
@@ -114,7 +118,6 @@ func NewSherlockCrawlerService() *SherlockCrawler {
 	que.SetWatchdog(&watchdog)
 	observer := NewCrawlerObserver()
 	streamQue := NewCrawlerQueue()
-	kwriter := NewKafkaWriter()
 
 	crawler := SherlockCrawler{
 		Queue:        &que,
@@ -122,7 +125,6 @@ func NewSherlockCrawlerService() *SherlockCrawler {
 		observer:     observer,
 		StreamQueue:  &streamQue,
 		watchdog:     &watchdog,
-		kwriter:      kwriter,
 	}
 
 	observer.SetCrawler(&crawler)
@@ -228,8 +230,7 @@ func (sherlock *SherlockCrawler) manageFinishedTasks(wg *sync.WaitGroup) {
 		if v.GetTaskState() == FINISHED {
 			sendWG.Add(1)
 			//go sherlock.SendWebsiteData(sherlock.Dependencies.Analyser(), v, &sendWG)
-			ctx := context.Background()
-			go sherlock.produce(ctx, v, &sendWG)
+			go sherlock.SendTaskToAnalyser(context.TODO(), v, &sendWG)
 			sendWG.Wait()
 			sherlock.getQueue().RemoveFromQueue(k)
 		}
@@ -256,8 +257,7 @@ func (sherlock *SherlockCrawler) manageFailedTasks(wg *sync.WaitGroup) {
 			} else {
 				sendWG.Add(1)
 				//go sherlock.SendWebsiteData(sherlock.Dependencies.Analyser(), v, &sendWG)
-				ctx := context.Background()
-				go sherlock.produce(ctx, v, &sendWG)
+				go sherlock.SendTaskToAnalyser(context.TODO(), v, &sendWG)
 				sendWG.Wait()
 				sherlock.getQueue().RemoveFromQueue(k)
 			}
@@ -315,6 +315,43 @@ func (sherlock *SherlockCrawler) ReceiveURL(ctx context.Context, in *proto.Submi
 	out.Recieved = false
 	out.Error = err.Error()
 	return err
+}
+
+/*
+ReceiveURL will spawn the first task in the queue in order to start the howl process.
+*/
+func (sherlock *SherlockCrawler) ReceiveUrlFromWebserver(ctx context.Context) {
+	r := kafka.NewReader(kafka.ReaderConfig{
+		Brokers: []string{brokerAddress},
+		Topic:   topicurl,
+	})
+	
+
+	w := NewKafkaWriter(topicurl, brokerAddress)
+	
+	msg, err := r.ReadMessage(ctx)
+
+	tmpurl := sherlockkafka.KafkaUrl{}
+	err = json.Unmarshal(msg.Value, &tmpurl)
+	if err != nil {
+		panic("parsing json failed" + err.Error())
+	}
+
+	task := NewTask()
+	task.setAddr(tmpurl.URL)
+	sherlock.getQueue().AppendQueue(&task)
+
+	tmpakk := &sherlockkafka.KafkaAkkRequestedURL{
+		Status: true,
+	}
+
+	res1B, _ := json.Marshal(tmpakk)
+
+	err = w.writer.WriteMessages(ctx, kafka.Message{
+		Key: []byte(strconv.Itoa(0)),
+		// create an arbitrary message payload for the value
+		Value: res1B,
+	})
 }
 
 /*

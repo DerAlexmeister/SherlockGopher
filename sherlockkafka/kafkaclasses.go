@@ -1,32 +1,81 @@
 package sherlockkafka
 
 import (
-	"net/http"
 	"time"
+
 )
 
-/*
-AnalyserTaskResponse will be a response to the crawler with the url
-*/
 type KafkaUrl struct {
 	URL string `json:"url"`
 }
 
 type KafkaTask struct {
-	TaskID            uint64         `json:"taskid"` //taskID, send every time.
-	Addr              string         `json:"addr"`   //addr, once
-	TaskState         int            `json:"taskstate"`
-	TaskError         error          `json:"taskerror"`   //error, send as string in case there is an error then dont send a body
-	TaskErrorTry      int            `json:"taskerrotry"` //never
-	Response          *http.Response `json:"response"`
-	ResponseHeader    *http.Header   `json:"responseheader"` //header, once (typ map)
-	ResponseBody      string         `json:"responsebody"`
-	ResponseBodyBytes []byte         `json:"responsebodybytes"` //body, split
-	StatusCode        int            `json:"statuscode"`        //statusCode, once
-	ResponseTime      time.Duration  `json:"responstime"`       //response time, once
+	TaskID            uint64         `json:"taskid"` 
+	Addr              string         `json:"addr"`   
+	TaskError         error          `json:"taskerror"`   
+	ResponseHeader    map[string][]string    `json:"responseheader"` 
+	ResponseBodyBytes []byte         `json:"responsebodybytes"`
+	StatusCode        int            `json:"statuscode"`      
+	ResponseTime      time.Duration  `json:"responstime"`      
 }
 
 type KafkaScreenshot struct {
 	Picture []byte	`json:"picture"`
 	URL     string	`json:"url"`
+}
+
+/*
+KafkaRequestedURL will be the struct for the post request of the domain to crawl.
+*/
+type KafkaRequestedURL struct {
+	URL string `json:"url" binding:"required"`
+}
+
+/*
+KafkaRequestedURL will be the struct for the post request of the domain to crawl.
+*/
+type KafkaAkkRequestedURL struct {
+	Status bool `json:"status" binding:"required"`
+}
+
+/*
+KafkaRequestedStatus will be the struct for the post request of the status functions.
+*/
+type KafkaRequestedStatus struct {
+	Operation string `json:"operation" binding:"required"`
+	Target    string `json:"target" binding:"required"`
+}
+
+
+func NewKafkaUrl() *KafkaUrl {
+	return &KafkaUrl{}
+}
+
+func NewKafkaTask() *KafkaTask {
+	return &KafkaTask{}
+}
+
+func NewKafkaScreenshot() *KafkaScreenshot {
+	return &KafkaScreenshot{}
+}
+
+/*
+KafkaRequestedURL will be a new instance of KafkaRequestedURL.
+*/
+func NewKafkaRequestedURL() *KafkaRequestedURL {
+	return &KafkaRequestedURL{}
+}
+
+/*
+KafkaAkkRequestedURL will be a new instance of KafkaAkkRequestedURL.
+*/
+func NewAkkKafkaRequestedURL() *KafkaAkkRequestedURL {
+	return &KafkaAkkRequestedURL{}
+}
+
+/*
+KafkaRequestedStatus will be a new instance of KafkaRequestedStatus.
+*/
+func NewKafkaRequestedStatus() *KafkaRequestedStatus {
+	return &KafkaRequestedStatus{}
 }
