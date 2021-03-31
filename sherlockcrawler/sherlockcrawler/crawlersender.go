@@ -82,7 +82,7 @@ func (sherlock *SherlockCrawler) ReceiveUrlFromAnalyser(ctx context.Context) {
 	// it from receiving duplicate messages
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: []string{brokerAddress},
-		Topic:   topictask,
+		Topic:   topicurl,
 	})
 	for {
 		// the `ReadMessage` method blocks until we receive the next event

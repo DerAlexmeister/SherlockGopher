@@ -54,6 +54,20 @@ services:
         container_name: webserver  
         ports:
             - "8081:8081"
+#    crawler: 
+#        build: 
+#            context: .
+#            dockerfile: sherlockcrawler/dockerfile
+#        container_name: crawler  
+#        ports:
+#            - "8200:8200"
+#    analyser: 
+#        build: 
+#            context: .
+#            dockerfile: analyser/dockerfile
+#        container_name: analyser  
+#        ports:
+#            - "8201:8201"
 volumes:
     mongodb_data_container:
     db-data:

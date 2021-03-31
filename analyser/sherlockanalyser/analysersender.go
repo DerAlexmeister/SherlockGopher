@@ -13,6 +13,7 @@ import (
 
 const (
 	topictask         = "tasktoanalyser"
+	topicurl         = "urltocrawler"
 	brokerAddress = "0.0.0.0:9092"
 )
 
@@ -40,11 +41,12 @@ func (sherlock *AnalyserServiceHandler) SendUrlToCrawler(ctx context.Context, ur
 	kTask := convertUrlToKafkaUrl(url)
 	res1B, _ := json.Marshal(&kTask)
 	fmt.Println(res1B)
+	kwriter := NewKafkaWriter(topicurl, brokerAddress)
 
 	// each kafka message has a key and value. The key is used
 	// to decide which partition (and consequently, which broker)
 	// the message gets published on
-	err := sherlock.kwriter.writer.WriteMessages(ctx, kafka.Message{
+	err := kwriter.writer.WriteMessages(ctx, kafka.Message{
 		Key: []byte(strconv.Itoa(0)),
 		// create an arbitrary message payload for the value
 		Value: res1B,

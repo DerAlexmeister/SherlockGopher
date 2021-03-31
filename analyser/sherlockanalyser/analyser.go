@@ -28,7 +28,6 @@ type AnalyserServiceHandler struct {
 	state         int
 	delay         *time.Duration
 	idleCounter   int
-	kwriter       *KafkaWriter
 }
 
 /*
@@ -96,13 +95,11 @@ func NewAnalyserServiceHandler() *AnalyserServiceHandler {
 	watchdog := swd.NewSherlockWatchdog()
 	que.SetWatchdog(&watchdog)
 	observer := NewAnalyserObserver()
-	writer := NewKafkaWriter(topictask, brokerAddress)
 	analyser := AnalyserServiceHandler{
 		AnalyserQueue: &que,
 		Dependencies:  nil,
 		observer:      observer,
 		watchdog:      &watchdog,
-		kwriter:       writer,
 	}
 
 	observer.SetAnalyser(&analyser)
