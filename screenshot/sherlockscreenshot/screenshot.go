@@ -12,9 +12,8 @@ import (
 )
 
 const (
-	topicConsume         = "urltoscreenshotservice"
-	topicProduce         = "sendscreenshots"
-	brokerAddress = "localhost:9092"
+	topicUrl        = "urltopic"
+	brokerAddress = "0.0.0.0:9092"
 )
 
 type Screenshot struct {
@@ -22,26 +21,60 @@ type Screenshot struct {
 	URL     string
 }
 
-func StartChrome(url string) {
-	_, cancel := chromedp.NewContext(context.Background())
-	defer cancel()
+type ScreenshotService struct {
+	Chromecontext context.Context
 }
 
-func TakeScreenshot(url string) *Screenshot {
+func NewScreenshot() *Screenshot {
+	return &Screenshot{}
+}
 
-	url = "https://golangcode.com/"
+func NewScreenshotService() *ScreenshotService {
+	ctx := startChrome()
+	screenservice := ScreenshotService{
+		Chromecontext:        ctx,
+	}
+	return &screenservice
+}
 
-	// List of actions to run in sequence (which also fills our image buffer)
+func startChrome() context.Context{
+	ctx, cancel := chromedp.NewContext(context.TODO())
+	defer cancel()
+	return ctx
+}
+
+
+func (scr *Screenshot) setPicture(pic []byte) {
+	scr.Picture = pic
+}
+
+func (scr *Screenshot) setUrl(url string) {
+	scr.URL = url
+}
+
+func (scr *Screenshot) getPicture() *[]byte {
+	return &scr.Picture
+}
+
+func (scr *Screenshot) getUrl() string {
+	return scr.URL
+}
+
+func (scrser *ScreenshotService) GetContext() context.Context {
+	return scrser.Chromecontext
+}
+
+func TakeScreenshot(url string, chromectx context.Context) *Screenshot {
+
 	var imageBuf []byte
-	if err := chromedp.Run(context.TODO(), ScreenshotTasks(url, &imageBuf)); err != nil {
+	if err := chromedp.Run(chromectx, ScreenshotTasks(url, &imageBuf)); err != nil {
 		log.Fatal(err)
 	}
-	/* Write image to file
-	filename := "golangcode.png"
-	if err := ioutil.WriteFile(filename, imageBuf, 0644); err != nil {
-		log.Fatal(err)
-	}*/
-	return &Screenshot{imageBuf, url}
+
+	tmpscr := NewScreenshot()
+	tmpscr.setPicture(imageBuf)
+	tmpscr.setUrl(url)
+	return tmpscr
 }
 
 /*
@@ -57,13 +90,13 @@ func ScreenshotTasks(url string, imageBuf *[]byte) chromedp.Tasks {
 	}
 }
 
-func (db *DB) ConsumeUrlForScreenshot(ctx context.Context) {
+func (db *DB) ConsumeUrlForScreenshot(ctx context.Context, chromectx context.Context) {
 	// initialize a new reader with the brokers and topic
 	// the groupID identifies the consumer and prevents
 	// it from receiving duplicate messages
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: []string{brokerAddress},
-		Topic:   topicConsume,
+		Topic:   topicUrl,
 	})
 	for {
 		// the `ReadMessage` method blocks until we receive the next event
@@ -78,9 +111,7 @@ func (db *DB) ConsumeUrlForScreenshot(ctx context.Context) {
 		if err != nil {
 			panic("parsing json failed" + err.Error())
 		}
-		res := TakeScreenshot(tmpurl.URL)
+		res := TakeScreenshot(tmpurl.URL, chromectx)
 		db.Save(res)
 	}
 }
-
-//TODO: python env dinge installieren, celerey docker compose, kafka consumer producer

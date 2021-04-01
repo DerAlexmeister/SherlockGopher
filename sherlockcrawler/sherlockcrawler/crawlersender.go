@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	topictask         = "tasktoanalyser"
-	topicurl         = "urltocrawler"
+	topictask         = "tasktopic"
+	topicurl         = "urltopic"
 	brokerAddress = "0.0.0.0:9092"
 )
 

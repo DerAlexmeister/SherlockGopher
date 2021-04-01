@@ -6,6 +6,7 @@ import(
 )
 
 func main() {
+	scrser := screenshot.NewScreenshotService()
 	db := screenshot.Connect()
-	go db.ConsumeUrlForScreenshot(context.TODO())
+	go db.ConsumeUrlForScreenshot(context.TODO(), scrser.GetContext())
 }
