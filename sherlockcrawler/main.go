@@ -55,7 +55,6 @@ func main() {
 		log.Infof("Service %s started as intended... ", serviceName)
 	}
 
-	
 }
 
 func SetupLogging() {

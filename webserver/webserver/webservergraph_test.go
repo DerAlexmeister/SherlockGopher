@@ -18,10 +18,6 @@ func init() {
 	gin.SetMode(gin.ReleaseMode)
 }
 
-func compareMaps(wantJSON string, have map[string]string) {
-
-}
-
 func TestGraphFetchWholeGraphHighPerformanceV1(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)

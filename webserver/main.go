@@ -93,8 +93,8 @@ func main() {
 	controller.GET("/dropit", webServerService.DropGraphTable)    // will drop the neo4j table.
 
 	//new services ba
-	controller.GET("/getmetadata/:page/", webServerService.GetMetaData)
-	controller.GET("/getscreenshots/:page/", webServerService.GetScreenshots) 
+	//controller.GET("/getmetadata/:page/", webServerService.GetMetaData)
+	controller.GET("/getscreenshots/:page/", webServerService.GetScreenshots)
 
 	//Monitor Group.
 	monitorapi := router.Group("/monitor/v1")                 //missing handler.
@@ -109,8 +109,6 @@ func main() {
 
 	graphsapi.POST("/detailsofnode", webServerService.GraphNodeDetailsV1) // get all information of a node.
 	graphsapi.POST("/search", webServerService.ReceiveURL)                // will handle the requested url which should be crawled.
-
-	
 
 	err = router.Run(getAddress())
 	if err != nil {
