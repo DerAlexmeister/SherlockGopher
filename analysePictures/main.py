@@ -38,7 +38,7 @@ class CreateDbTable(Server):
         databaseCreateTable()
         return Server.__call__(self, app, *args, **kwargs)
 
-manager.add_command('runserver', CreateDbTable(host='0.0.0.0', port=8205))
+manager.add_command('runserver', CreateDbTable(host='0.0.0.0', port=8203))
 
 if __name__ == "__main__":
     manager.run()

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"sync"
 	"time"
-	"encoding/json"
-	"strconv"
 
 	swd "github.com/DerAlexx/SherlockGopher/sherlockwatchdog"
 	log "github.com/sirupsen/logrus"
@@ -14,8 +12,6 @@ import (
 	aproto "github.com/DerAlexx/SherlockGopher/analyser/proto"
 	proto "github.com/DerAlexx/SherlockGopher/sherlockcrawler/proto"
 
-	sherlockkafka "github.com/DerAlexx/SherlockGopher/sherlockkafka"
-	"github.com/segmentio/kafka-go"
 	"github.com/asaskevich/govalidator"
 	"github.com/pkg/errors"
 )
@@ -315,43 +311,6 @@ func (sherlock *SherlockCrawler) ReceiveURL(ctx context.Context, in *proto.Submi
 	out.Recieved = false
 	out.Error = err.Error()
 	return err
-}
-
-/*
-ReceiveURL will spawn the first task in the queue in order to start the howl process.
-*/
-func (sherlock *SherlockCrawler) ReceiveUrlFromWebserver(ctx context.Context) {
-	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers: []string{brokerAddress},
-		Topic:   topicurl,
-	})
-	
-
-	w := NewKafkaWriter(topicurl, brokerAddress)
-	
-	msg, err := r.ReadMessage(ctx)
-
-	tmpurl := sherlockkafka.KafkaUrl{}
-	err = json.Unmarshal(msg.Value, &tmpurl)
-	if err != nil {
-		panic("parsing json failed" + err.Error())
-	}
-
-	task := NewTask()
-	task.setAddr(tmpurl.URL)
-	sherlock.getQueue().AppendQueue(&task)
-
-	tmpakk := &sherlockkafka.KafkaAkkRequestedURL{
-		Status: true,
-	}
-
-	res1B, _ := json.Marshal(tmpakk)
-
-	err = w.writer.WriteMessages(ctx, kafka.Message{
-		Key: []byte(strconv.Itoa(0)),
-		// create an arbitrary message payload for the value
-		Value: res1B,
-	})
 }
 
 /*

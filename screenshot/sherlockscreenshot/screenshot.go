@@ -2,7 +2,6 @@ package sherlockscreenshot
 
 import (
 	"context"
-	"log"
 	"encoding/json"
 
 	"github.com/chromedp/cdproto/page"
@@ -52,11 +51,11 @@ func (scr *Screenshot) setUrl(url string) {
 	scr.URL = url
 }
 
-func (scr *Screenshot) getPicture() *[]byte {
+func (scr *Screenshot) GetPicture() *[]byte {
 	return &scr.Picture
 }
 
-func (scr *Screenshot) getUrl() string {
+func (scr *Screenshot) GetUrl() string {
 	return scr.URL
 }
 
@@ -68,7 +67,7 @@ func TakeScreenshot(url string, chromectx context.Context) *Screenshot {
 
 	var imageBuf []byte
 	if err := chromedp.Run(chromectx, ScreenshotTasks(url, &imageBuf)); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	tmpscr := NewScreenshot()
@@ -84,7 +83,7 @@ func ScreenshotTasks(url string, imageBuf *[]byte) chromedp.Tasks {
 	return chromedp.Tasks{
 		chromedp.Navigate(url),
 		chromedp.ActionFunc(func(ctx context.Context) (err error) {
-			*imageBuf, err = page.CaptureScreenshot().WithQuality(90).Do(ctx)
+			*imageBuf, err = page.CaptureScreenshot().WithQuality(60).Do(ctx)
 			return err
 		}),
 	}

@@ -4,7 +4,10 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strconv"
+	"io/ioutil"
 
+	"github.com/go-pg/pg/v10"
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	"github.com/neo4j/neo4j-go-driver/neo4j"
@@ -12,6 +15,7 @@ import (
 	analyserproto "github.com/DerAlexx/SherlockGopher/analyser/proto"
 	crawlerproto "github.com/DerAlexx/SherlockGopher/sherlockcrawler/proto"
 	sherlockneo "github.com/DerAlexx/SherlockGopher/sherlockneo"
+	screenshot "github.com/DerAlexx/SherlockGopher/screenshot/sherlockscreenshot"
 )
 
 /*
@@ -67,6 +71,18 @@ Help function of ReceiveMetadata.
 */
 type MetaArray struct {
 	metamap map[string]interface{}
+}
+
+type ImageMetadata struct {
+	img_id int
+	condition bool
+	datetime_original string
+	model string
+	make string
+	maker_note string
+	software string
+	gps_latitude string
+	gps_longitude string
 }
 
 /*
@@ -427,4 +443,82 @@ func (server *SherlockWebserver) DropGraphTable(context *gin.Context) {
 			})
 		}
 	}
+}
+
+func getStartStop(showpersite int, page int, size int) (start int, stop int){
+	start  = page*showpersite
+	stop = start+showpersite
+
+	if page > size/showpersite || page < 0 {
+		start = 0
+		stop = showpersite
+	}
+
+	return start, stop
+}
+
+func (server *SherlockWebserver) GetScreenshots(ctx *gin.Context) {
+	imagespersite := 25
+	dbsession := screenshot.Connect()
+	allscreenshots := dbsession.ReturnAllScreenshots()
+	param := ctx.Param("page")
+	paramtoint,err := strconv.Atoi(param)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Status": "Path was malformed",
+		})
+	}
+	start, stop := getStartStop(imagespersite, paramtoint, len(allscreenshots))
+	partofallscreenshots := allscreenshots[start:stop]
+	tmpmap := make(map[int]interface{})
+	for k,v := range partofallscreenshots {
+		path := "/image/" + string(k)
+		if err := ioutil.WriteFile(path, *v.GetPicture(), 0644); err != nil {
+			panic(err)
+		}
+		tmpmap[k] = gin.H{
+			"imagepath":    path,
+			"imageurl":     v.GetUrl(),
+		}
+	}
+	ctx.JSON(http.StatusOK, tmpmap)
+}
+
+func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
+	metadatapersite := 10
+	param := ctx.Param("page")
+	paramtoint,err := strconv.Atoi(param)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"Status": "Path was malformed",
+		})
+	}
+	db := pg.Connect(&pg.Options{
+		Addr:     "0.0.0.0:5432",
+		User:     "gopher",
+		Password: "gopher",
+		Database: "metadata",
+	})
+	var tmpmeta []ImageMetadata
+    err = db.Model(&tmpmeta).Select()
+    if err != nil {
+        panic(err)
+    }
+	start, stop := getStartStop(metadatapersite, paramtoint, len(tmpmeta))
+	partofallmeta := tmpmeta[start:stop]
+	tmpmap := make(map[int]interface{})
+	for k,v := range partofallmeta {
+		tmpmap[k] = gin.H{
+			"img_id":     v.img_id,
+			"condition":     v.condition,
+			"datetime_original":     v.datetime_original,
+			"model":     v.model,
+			"make":     v.make,
+			"maker_note":     v.maker_note,
+			"software":     v.software,
+			"gps_latitude":     v.gps_latitude,
+			"gps_longitude":     v.gps_longitude,
+		}		
+	}
+	ctx.JSON(http.StatusOK, tmpmap)
 }

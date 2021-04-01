@@ -11,7 +11,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, Date, Boolean
 
 Base = declarative_base()
-DATABASE_URI = 'postgresql://gopher:gopher@localhost:5432/metadata'
+DATABASE_URI = 'postgresql://gopher:gopher@0.0.0.0:5432/metadata'
 engine = create_engine(DATABASE_URI)
 Session = sessionmaker(bind=engine)
 
@@ -72,9 +72,8 @@ def DownloadImage():
     listExifTags = []
     
 
-    #list = neo.GetImages() 
-    #liste = [(1, "https://walterj.de/hukafallsCR.jpg")]
-    listWithIdAndUrl = [(1, "https://www.aboutbenita.com/wp-content/uploads/Juli-2020-800x1000.jpg")]
+    listWithIdAndUrl = neo.GetImages() 
+    #listWithIdAndUrl = [(1, "https://www.aboutbenita.com/wp-content/uploads/Juli-2020-800x1000.jpg")]
 
     for pair in listWithIdAndUrl:
 

@@ -9,13 +9,16 @@ require (
 	github.com/coreos/etcd v3.3.18+incompatible // indirect
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.6.0
+	github.com/go-pg/pg/v10 v10.9.0
+	github.com/go-pg/zerochecker v0.2.0 // indirect
 	github.com/go-playground/assert/v2 v2.0.1
 	github.com/golang-collections/collections v0.0.0-20130729185459-604e922904d3
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/mock v1.4.3
-	github.com/golang/protobuf v1.3.5
+	github.com/golang/protobuf v1.4.3
 	github.com/google/btree v1.0.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.9.5 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jpillora/go-tld v1.0.0
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lucas-clemente/quic-go v0.14.1 // indirect
@@ -25,19 +28,25 @@ require (
 	github.com/neo4j-drivers/gobolt v1.7.4 // indirect
 	github.com/neo4j/neo4j-go-driver v1.7.4
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
-	github.com/onsi/ginkgo v1.12.0 // indirect
-	github.com/onsi/gomega v1.9.0 // indirect
+	github.com/onsi/ginkgo v1.14.2 // indirect
+	github.com/onsi/gomega v1.10.3 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/segmentio/kafka-go v0.4.12
 	github.com/sirupsen/logrus v1.6.0
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20200122045848-3419fae592fc // indirect
+	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
+	github.com/vmihailenco/bufpool v0.1.11 // indirect
+	github.com/vmihailenco/msgpack/v5 v5.3.0 // indirect
+	github.com/vmihailenco/tagparser v0.1.2 // indirect
+	go.etcd.io/etcd v3.3.25+incompatible // indirect
 	go.mongodb.org/mongo-driver v1.4.6
+	go.opentelemetry.io/otel v0.19.0 // indirect
 	go.uber.org/zap v1.13.0 // indirect
-	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d // indirect
+	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2 // indirect
 	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f // indirect
+	golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4 // indirect
 	golang.org/x/tools v0.0.0-20200422022333-3d57cf2e726e // indirect
-	google.golang.org/genproto v0.0.0-20191216164720-4f79533eabd1 // indirect
-	google.golang.org/grpc v1.26.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
+	mellium.im/sasl v0.2.1 // indirect
 )

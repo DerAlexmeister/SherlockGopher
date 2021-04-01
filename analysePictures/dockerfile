@@ -4,6 +4,6 @@ WORKDIR /app
 ADD ./analysePictures .
 ADD analysePictures/requirements.txt .
 RUN pip3 install -r requirements.txt
-EXPOSE 8205
+EXPOSE 8203
 
-CMD [ "python3", "flask", "run", "--host=0.0.0.0", "--port=8205"]
+CMD [ "python3", "flask", "run", "--host=0.0.0.0", "--port=8203"]
