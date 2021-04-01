@@ -55,6 +55,7 @@ func main() {
 	err := proto.RegisterAnalyserHandler(service.Server(), AnalyserService)
 
 	go AnalyserService.ManageTasks()
+	go AnalyserService.ReceiveTaskFromCrawler(context.TODO())
 	
 	if err != nil {
 		log.Fatal("Analyser->main.go->RegisterAnalyserHandler failed!")
@@ -65,7 +66,7 @@ func main() {
 	} else {
 		log.Infof("Service %s started as intended... ", serviceName)
 	}
-	AnalyserService.ReceiveTaskFromCrawler(context.TODO())
+	
 }
 
 /*

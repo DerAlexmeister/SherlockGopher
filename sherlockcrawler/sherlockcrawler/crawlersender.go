@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"sync"
+	"errors"
 
 	sherlockkafka "github.com/DerAlexx/SherlockGopher/sherlockkafka"
 	"github.com/segmentio/kafka-go"
@@ -21,7 +22,7 @@ type KafkaWriter struct {
 	writer kafka.Writer
 }
 
-func NewKafkaWriter(brokAddress string, topic string) *KafkaWriter {
+func NewKafkaWriter(topic string, brokAddress string) *KafkaWriter {
 	return &KafkaWriter{
 		writer: kafka.Writer{
 			Addr:  kafka.TCP(brokAddress),
@@ -38,7 +39,12 @@ func convert(task *CrawlerTaskRequest) *sherlockkafka.KafkaTask {
 	}
 	tmp.TaskID =            task.taskID
 	tmp.Addr = task.addr
-	tmp.TaskError =          task.taskError
+	if (task.taskError == nil){
+		tmperr := errors.New("")
+		tmp.TaskError =   tmperr.Error()
+	} else {
+		tmp.TaskError =  task.taskError.Error()
+	} 
 	tmp.StatusCode =         task.statusCode
 	tmp.ResponseBodyBytes =  task.responseBodyBytes
 	tmp.ResponseHeader =     	tmpmap

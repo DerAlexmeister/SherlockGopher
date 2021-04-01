@@ -52,15 +52,14 @@ func (server *SherlockWebserver) GraphMetaV1(context *gin.Context) {
 		})
 	}
 	args := make(map[string]interface{})
-	images, _ := sherlockneo.GetAmountOfImages(session, args)
-	css, _ := sherlockneo.GetAmountOfStylesheets(session, args)
-	js, _ := sherlockneo.GetAmountOfJavascriptFiles(session, args)
-	html, _ := sherlockneo.GetAmountofHTMLNodes(session, args)
-	rels, _ := sherlockneo.GetAmountOfRels(session, args)
-	nodes, _ := sherlockneo.GetAmountOfNodes(session, args)
-
 	var meta []map[string]int64
-	meta = append(meta, nodes[0], rels[0], html[0], css[0], js[0], images[0])
+	if images, _ := sherlockneo.GetAmountOfImages(session, args); len(images) != 0 {meta = append(meta, images[0])}
+	if css, _ := sherlockneo.GetAmountOfStylesheets(session, args); len(css) != 0 {meta = append(meta, css[0])}
+	if js, _ := sherlockneo.GetAmountOfJavascriptFiles(session, args); len(js) != 0 {meta = append(meta, js[0])}
+	if html, _ := sherlockneo.GetAmountofHTMLNodes(session, args); len(html) != 0 {meta = append(meta, html[0])}
+	if rels, _ := sherlockneo.GetAmountOfRels(session, args); len(rels) != 0 {meta = append(meta, rels[0])}
+	if nodes, _ := sherlockneo.GetAmountOfNodes(session, args); len(nodes) != 0 {meta = append(meta, nodes[0])}
+
 	context.JSON(http.StatusOK, meta)
 	defer sherlockneo.CloseSession(&session)
 }

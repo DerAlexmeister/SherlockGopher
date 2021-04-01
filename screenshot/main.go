@@ -7,5 +7,5 @@ import(
 
 func main() {
 	db := screenshot.Connect()
-	db.ConsumeUrlForScreenshot(context.TODO())
+	go db.ConsumeUrlForScreenshot(context.TODO())
 }

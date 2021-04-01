@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"net/http"
+	"errors"
 
 	sherlockkafka "github.com/DerAlexx/SherlockGopher/sherlockkafka"
 	"github.com/segmentio/kafka-go"
@@ -21,7 +22,7 @@ type KafkaWriter struct {
 	writer kafka.Writer
 }
 
-func NewKafkaWriter(brokAddress string, topic string) *KafkaWriter {
+func NewKafkaWriter(topic string, brokAddress string) *KafkaWriter {
 	return &KafkaWriter{
 		writer: kafka.Writer{
 			Addr:  kafka.TCP(brokAddress),
@@ -90,7 +91,7 @@ func (analyser *AnalyserServiceHandler) ReceiveTaskFromCrawler(ctx context.Conte
 		task := NewCrawlerData()
 		task.setTaskID(tmptask.TaskID)
 		task.setAddr(tmptask.Addr)
-		task.setTaskError(tmptask.TaskError)
+		task.setTaskError(errors.New(tmptask.TaskError))
 		task.setResponseHeader(&headerMap)
 		task.setResponseBody(tmptask.ResponseBodyBytes)
 		task.setStatusCode(tmptask.StatusCode)

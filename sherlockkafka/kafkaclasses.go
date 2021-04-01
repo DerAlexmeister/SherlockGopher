@@ -12,7 +12,7 @@ type KafkaUrl struct {
 type KafkaTask struct {
 	TaskID            uint64         `json:"taskid"` 
 	Addr              string         `json:"addr"`   
-	TaskError         error          `json:"taskerror"`   
+	TaskError         string          `json:"taskerror"`   
 	ResponseHeader    map[string][]string    `json:"responseheader"` 
 	ResponseBodyBytes []byte         `json:"responsebodybytes"`
 	StatusCode        int            `json:"statuscode"`      

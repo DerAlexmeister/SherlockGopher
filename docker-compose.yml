@@ -39,7 +39,7 @@ services:
             - ./logs:/logs
             - ./plugins:/plugins
         environment:
-            - NEO4J_AUTH=neo4j/graphPass
+            - NEO4J_AUTH=neo4j/test
     frontend: 
         build: 
             context: .
