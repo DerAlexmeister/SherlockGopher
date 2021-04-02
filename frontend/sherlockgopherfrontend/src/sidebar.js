@@ -45,7 +45,8 @@ export default class SidebarMenu extends React.Component {
                       <li><Link class="innerlink" to="/sitesperformence">PoS</Link></li>
                       <li><Link class="innerlink" to="/nodedetails">Find a Node</Link></li>
                       <li><Link class="innerlink" to="/controls">Controls</Link></li>
-                      <li><Link class="innerlink" to="/screenshots">Screenshotservice</Link></li>
+                      <li><Link class="innerlink" to="/screenshots">Screenshots</Link></li>
+                      <li><Link class="innerlink" to="/imagemetadata">Image Metadata</Link></li>
                     </ul>
                     <hr class="line"></hr>
                     <ul class="innerlist">

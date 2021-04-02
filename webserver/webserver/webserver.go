@@ -495,8 +495,8 @@ func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
 		})
 	}
 
-	//connect db
-	dsn := "host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai"
+	//connect db sslmode=disable TimeZone=Asia/Shanghai
+	dsn := "host=0.0.0.0 user=gopher password=gopher dbname=metadata port=5432"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	var tmpmeta []ImageMetadata

@@ -12,6 +12,7 @@ import ScriptingAPI from './scriptingapi.js'
 import Nodedetails from './nodedetails.js'
 import NodeGraph from './graph.js'
 import Screenshotservice from './screenshotservice.js'
+import Imagemetadataservice from './imagemetadataservice.js'
 
 
 const router = (
@@ -23,6 +24,7 @@ const router = (
       <Route  path="/nodedetails" component={Nodedetails}  />
       <Route  path="/controls" component={Controls}  />
       <Route  path="/screenshots" component={Screenshotservice}  />
+      <Route  path="/imagemetadata" component={Imagemetadataservice}  />
       <Route  path="/scriptingapi" component={ScriptingAPI}  />
     </div>
   </Router>
