@@ -11,6 +11,7 @@ import Controls from './controls.js';
 import ScriptingAPI from './scriptingapi.js'
 import Nodedetails from './nodedetails.js'
 import NodeGraph from './graph.js'
+import Screenshotservice from './screenshotservice.js'
 
 
 const router = (
@@ -21,7 +22,7 @@ const router = (
       <Route  path="/sitesperformence" component={SitePerformence}  />
       <Route  path="/nodedetails" component={Nodedetails}  />
       <Route  path="/controls" component={Controls}  />
-
+      <Route  path="/screenshots" component={Screenshotservice}  />
       <Route  path="/scriptingapi" component={ScriptingAPI}  />
     </div>
   </Router>
