@@ -7,11 +7,12 @@ import "./screenshotservice.css";
 export default class Screenshotservice extends React.Component {
 
   SCREENSHOT = "http://localhost:8081/graph/v1/getscreenshots"
+  BASICURL = "http://localhost:8081"
 
     state = {
-        data: [],
+        postdata: [],
         currentPage: 0,
-        maxPage: 0,
+        maxPage: 1,
         pageRange: 0,
         sdatamessage: "",
         hasSdataError: false
@@ -25,22 +26,24 @@ export default class Screenshotservice extends React.Component {
     }
 
     receivedData() {
-        axios.get(this.SCREENSHOT).then(res => {
+        axios.get(this.SCREENSHOT + "/" + this.state.currentPage).then(res => {
             try {
                 const data = res.data.map;
-                const postData = data.map(pd => <React.Fragment>
+                const postData = data.map(pd => (<React.Fragment>
                     <p>{pd.imageurl}</p>
-                    <img src={pd.imagepath} alt=""/>
-                </React.Fragment>)
+                    <img src={this.BASICURL + "/static/images/" + pd.imagepath}/>
+                </React.Fragment>))
+                
                 this.setState({
                     sdatamessage: "No error",
                     hasSdataError: false,
-                    data: postData,
+                    postData,
                     currentPage: res.data.currentpage,
                     maxPage: res.data.maxpage,
                     pageRange: res.data.pagerange,
                 })
             } catch (error) {
+                console.log(error)
                 this.setState({
                     sdatamessage: "For some Reason an Error occured. Cannot process response.",
                     hasMetaError: true,
@@ -63,8 +66,18 @@ export default class Screenshotservice extends React.Component {
         });
     };
 
-    componentDidMount() {
-        this.receivedData()
+    componentDidMount(){
+        this.interval = setInterval(() => {
+            try {
+                this.receivedData()
+            } catch(error) {
+                console.log("cannot clear state.")
+            }
+        }, 5000)
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.interval)
     }
 
     render() {
@@ -86,14 +99,14 @@ export default class Screenshotservice extends React.Component {
                                 <div>
                                     <hr></hr>
                                     <br></br>
-                                    {this.state.sliceData}
+                                    {this.state.postData}
                                     <ReactPaginate
                                         previousLabel={"<<"}
                                         nextLabel={">>"}
                                         breakLabel={"..."}
                                         breakClassName={"break-me"}
                                         pageCount={this.state.maxPage}
-                                        marginPagesDisplayed={0}
+                                        marginPagesDisplayed={1}
                                         pageRangeDisplayed={this.state.pageRange}
                                         onPageChange={this.handlePageClick}
                                         containerClassName={"pagination"}

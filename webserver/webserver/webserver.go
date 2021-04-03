@@ -67,10 +67,10 @@ type RequestedStatus struct {
 }
 
 type RequestedPagination struct {
-	Map         map[int]interface{} `json:"map" binding:"required"`
-	Maxpage     int                 `json:"maxpage" binding:"required"`
-	CurrentPage int                 `json:"currentpage" binding:"required"`
-	Pagerange   int                 `json:"pagerange" binding:"required"`
+	Map         []interface{} `json:"map" binding:"required"`
+	Maxpage     int           `json:"maxpage" binding:"required"`
+	CurrentPage int           `json:"currentpage" binding:"required"`
+	Pagerange   int           `json:"pagerange" binding:"required"`
 }
 
 /*
@@ -461,12 +461,12 @@ func getStartStopMaxPage(showpersite int, page int, size int) (start int, stop i
 	start = page * showpersite
 	stop = start + showpersite
 
-	if maxpage%showpersite != 0 {
+	if size%showpersite != 0 {
 		maxpage = (size / showpersite) + 1
 	} else {
 		maxpage = (size / showpersite)
 	}
-	if page == maxpage {
+	if page+1 == maxpage {
 		start = page * showpersite
 		stop = size
 	}
@@ -481,7 +481,7 @@ func getStartStopMaxPage(showpersite int, page int, size int) (start int, stop i
 	return start, stop, maxpage
 }
 
-func buildRequestedPagination(mapparam map[int]interface{}, maxpage int, currentpage int) RequestedPagination {
+func buildRequestedPagination(mapparam []interface{}, maxpage int, currentpage int) RequestedPagination {
 	tmpstruct := NewRequestedPagination()
 	tmppagerange := 0
 	tmpstruct.Map = mapparam
@@ -512,16 +512,17 @@ func (server *SherlockWebserver) GetScreenshots(ctx *gin.Context) {
 	}
 	start, stop, maxpage := getStartStopMaxPage(imagespersite, paramtoint, len(allscreenshots))
 	partofallscreenshots := allscreenshots[start:stop]
-	tmpmap := make(map[int]interface{})
+	var tmpmap []interface{}
 	for k, v := range partofallscreenshots {
-		path := "../images/" + strconv.Itoa(k) + ".png"
+		imagename := strconv.Itoa(k) + ".png"
+		path := "../images/" + imagename
 		if err := ioutil.WriteFile(path, *(v.GetPicture()), 0644); err != nil {
 			panic(err)
 		}
-		tmpmap[k] = gin.H{
-			"imagepath": path,
+		tmpmap = append(tmpmap, gin.H{
+			"imagepath": imagename,
 			"imageurl":  v.GetUrl(),
-		}
+		})
 	}
 	res := buildRequestedPagination(tmpmap, maxpage, paramtoint)
 	ctx.JSON(http.StatusOK, res)
@@ -555,7 +556,7 @@ func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
 
 	start, stop, maxpage := getStartStopMaxPage(metadatapersite, paramtoint, len(tmpmeta))
 	partofallmeta := tmpmeta[start:stop]
-	tmpmap := make(map[int]interface{})
+	var tmpmap []interface{}
 	for k, v := range partofallmeta {
 		tmpmap[k] = gin.H{
 			"img_id":            v.img_id,

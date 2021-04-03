@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Route, BrowserRouter as Router } from 'react-router-dom'
+import {createBrowserHistory} from 'history';
 import './index.css';
 import * as serviceWorker from './serviceWorker';
 
@@ -15,8 +16,10 @@ import Screenshotservice from './screenshotservice.js'
 import Imagemetadataservice from './imagemetadataservice.js'
 
 
+const browserHistory = createBrowserHistory();
+
 const router = (
-  <Router>
+  <Router history={browserHistory}>
     <div>
       <Route exact path="/" component={App}  />
       <Route  path="/Graph" component={NodeGraph} />

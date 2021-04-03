@@ -14,4 +14,5 @@ func main() {
 	}*/
 	allscreenshots, err := service.GetClient().ReturnAllScreenshots()
 	fmt.Println(allscreenshots, err)
+	fmt.Println(len(allscreenshots))
 }

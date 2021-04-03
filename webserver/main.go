@@ -86,6 +86,9 @@ func main() {
 	//Get Requests.
 	router.GET("/areyouthere", webServerService.Helloping)
 
+	staticrouting := router.Group("/static")
+	staticrouting.Static("/images", "../images")
+
 	//Controller Group.
 	controller := router.Group("/controller/v1")
 	controller.POST("/changestate", webServerService.ChangeState) //will change the state of the cralwer and the analyser.
