@@ -66,6 +66,13 @@ type RequestedStatus struct {
 	Target    string `json:"target" binding:"required"`
 }
 
+type RequestedPagination struct {
+	Map         map[int]interface{} `json:"map" binding:"required"`
+	Maxpage     int                 `json:"maxpage" binding:"required"`
+	CurrentPage int                 `json:"currentpage" binding:"required"`
+	Pagerange   int                 `json:"pagerange" binding:"required"`
+}
+
 /*
 MetaArray stores the JSON which contains the response of the crawler and the analyser after the webserver requests their status.
 Help function of ReceiveMetadata.
@@ -98,6 +105,10 @@ NewRequestedStatus will be a new instance of RequestedStatus.
 */
 func NewRequestedStatus() *RequestedStatus {
 	return &RequestedStatus{}
+}
+
+func NewRequestedPagination() *RequestedPagination {
+	return &RequestedPagination{}
 }
 
 /*
@@ -446,40 +457,65 @@ func (server *SherlockWebserver) DropGraphTable(context *gin.Context) {
 	}
 }
 
-/*func getStartStop(showpersite int, page int, size int) (start int, stop int) {
+func getStartStopMaxPage(showpersite int, page int, size int) (start int, stop int, maxpage int) {
 	start = page * showpersite
 	stop = start + showpersite
 
-	if page > size/showpersite || page < 0 {
+	if maxpage%showpersite != 0 {
+		maxpage = (size / showpersite) + 1
+	} else {
+		maxpage = (size / showpersite)
+	}
+	if page == maxpage {
+		start = page * showpersite
+		stop = size
+	}
+	if page > maxpage || page < 0 {
 		start = 0
 		stop = showpersite
 	}
+	if size < showpersite {
+		start = 0
+		stop = size
+	}
+	return start, stop, maxpage
+}
 
-	return start, stop
-}*/
+func buildRequestedPagination(mapparam map[int]interface{}, maxpage int, currentpage int) RequestedPagination {
+	tmpstruct := NewRequestedPagination()
+	tmppagerange := 0
+	tmpstruct.Map = mapparam
+	tmpstruct.Maxpage = maxpage
+	tmpstruct.CurrentPage = currentpage
+	if maxpage > 5 {
+		tmppagerange = 5
+	}
+	tmpstruct.Pagerange = tmppagerange
+	return *tmpstruct
+}
 
 func (server *SherlockWebserver) GetScreenshots(ctx *gin.Context) {
-	//imagespersite := 25
+	imagespersite := 25
 	dbsession := screenshot.Connect()
 	allscreenshots, err := dbsession.ReturnAllScreenshots()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"Status": "Error while reveiving data from database",
+			"Status": "Error while receiving data from database",
 		})
 	}
-	/*param := ctx.Param("page")
+	param := ctx.Param("page")
 	paramtoint, err := strconv.Atoi(param)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Status": "Path was malformed",
 		})
 	}
-	start, stop := getStartStop(imagespersite, paramtoint, len(allscreenshots))
-	partofallscreenshots := allscreenshots[start:stop]*/
+	start, stop, maxpage := getStartStopMaxPage(imagespersite, paramtoint, len(allscreenshots))
+	partofallscreenshots := allscreenshots[start:stop]
 	tmpmap := make(map[int]interface{})
-	for k, v := range allscreenshots { //partofallscreenshots
-		path := "/image/" + strconv.Itoa(k)
-		if err := ioutil.WriteFile(path, *v.GetPicture(), 0644); err != nil {
+	for k, v := range partofallscreenshots {
+		path := "../images/" + strconv.Itoa(k) + ".png"
+		if err := ioutil.WriteFile(path, *(v.GetPicture()), 0644); err != nil {
 			panic(err)
 		}
 		tmpmap[k] = gin.H{
@@ -487,20 +523,20 @@ func (server *SherlockWebserver) GetScreenshots(ctx *gin.Context) {
 			"imageurl":  v.GetUrl(),
 		}
 	}
-	ctx.JSON(http.StatusOK, tmpmap)
+	res := buildRequestedPagination(tmpmap, maxpage, paramtoint)
+	ctx.JSON(http.StatusOK, res)
 }
 
 func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
-	/*metadatapersite := 10
+	metadatapersite := 10
 	param := ctx.Param("page")
 	paramtoint, err := strconv.Atoi(param)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Status": "Path was malformed",
 		})
-	}*/
+	}
 
-	//connect db sslmode=disable TimeZone=Asia/Shanghai
 	dsn := "host=0.0.0.0 user=gopher password=gopher dbname=metadata port=5432"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -517,10 +553,10 @@ func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
 		})
 	}
 
-	//start, stop := getStartStop(metadatapersite, paramtoint, len(tmpmeta))
-	//partofallmeta := tmpmeta[start:stop]
+	start, stop, maxpage := getStartStopMaxPage(metadatapersite, paramtoint, len(tmpmeta))
+	partofallmeta := tmpmeta[start:stop]
 	tmpmap := make(map[int]interface{})
-	for k, v := range tmpmeta { //partofallmeta
+	for k, v := range partofallmeta {
 		tmpmap[k] = gin.H{
 			"img_id":            v.img_id,
 			"condition":         v.condition,
@@ -533,5 +569,6 @@ func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
 			"gps_longitude":     v.gps_longitude,
 		}
 	}
-	ctx.JSON(http.StatusOK, tmpmap)
+	res := buildRequestedPagination(tmpmap, maxpage, paramtoint)
+	ctx.JSON(http.StatusOK, res)
 }

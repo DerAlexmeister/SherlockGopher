@@ -107,8 +107,8 @@ func main() {
 	graphsapi.POST("/search", webServerService.ReceiveURL)                // will handle the requested url which should be crawled.
 
 	//new services ba
-	graphsapi.GET("/getmetadata", webServerService.GetMetaData)
-	graphsapi.GET("/getscreenshots", webServerService.GetScreenshots)
+	graphsapi.GET("/getmetadata/:page", webServerService.GetMetaData)
+	graphsapi.GET("/getscreenshots/:page", webServerService.GetScreenshots)
 
 	err = router.Run(getAddress())
 	if err != nil {

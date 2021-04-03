@@ -5,7 +5,7 @@ import axios from 'axios'
 import "./imagemetadataservice.css";
 
 export default class Imagemetadataservice extends React.Component {
-  METADATA = "http://localhost:8081/getmetadata"
+  METADATA = "http://localhost:8081/getmetadata/:page"
 
   state = {
       slicedata: [],

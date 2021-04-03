@@ -11,15 +11,33 @@ import (
 )
 
 var (
-	mongoURI = "mongodb://localhost:27017"
+	mongoURI = "mongodb://0.0.0.0:27017"
 )
 
 type DB struct {
 	Client *mongo.Client
 }
 
+func NewDB() *DB {
+	return &DB{}
+}
+
+func (db *DB) GetMongoClient() *mongo.Client {
+	return db.Client
+}
+
+func (db *DB) SetMongoClient(client *mongo.Client) {
+	db.Client = client
+}
+
 func Connect() *DB {
-	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
+	credential := options.Credential{
+		Username: "root",
+		Password: "rootpassword",
+	}
+
+	clientOpts := options.Client().ApplyURI(mongoURI).SetAuth(credential)
+	client, err := mongo.NewClient(clientOpts)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -29,13 +47,14 @@ func Connect() *DB {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return &DB{
-		Client: client,
-	}
+	res := NewDB()
+	res.SetMongoClient(client)
+
+	return res
 }
 
 func (db *DB) Save(input *Screenshot) {
-	collection := db.Client.Database("dbscreenshots").Collection("screenshots")
+	collection := db.GetMongoClient().Database("dbscreenshots").Collection("screenshots")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	_, err := collection.InsertOne(ctx, input)
@@ -45,7 +64,7 @@ func (db *DB) Save(input *Screenshot) {
 }
 
 func (db *DB) ReturnAllScreenshots() ([]*Screenshot, error) {
-	collection := db.Client.Database("dbscreenshots").Collection("screenshots")
+	collection := db.GetMongoClient().Database("dbscreenshots").Collection("screenshots")
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	cur, err := collection.Find(ctx, bson.D{})

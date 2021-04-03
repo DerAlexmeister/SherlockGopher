@@ -4,14 +4,14 @@ import (
 	"context"
 	"encoding/json"
 
+	sherlockkafka "github.com/DerAlexx/SherlockGopher/sherlockkafka"
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
-	sherlockkafka "github.com/DerAlexx/SherlockGopher/sherlockkafka"
 	"github.com/segmentio/kafka-go"
 )
 
 const (
-	topicUrl        = "urltopic"
+	topicUrl      = "urltopic"
 	brokerAddress = "0.0.0.0:9092"
 )
 
@@ -21,7 +21,9 @@ type Screenshot struct {
 }
 
 type ScreenshotService struct {
-	Chromecontext context.Context
+	Chromecontext       context.Context
+	Chromecancelcontext context.CancelFunc
+	Client              *DB
 }
 
 func NewScreenshot() *Screenshot {
@@ -29,19 +31,29 @@ func NewScreenshot() *Screenshot {
 }
 
 func NewScreenshotService() *ScreenshotService {
-	ctx := startChrome()
+	ctx, ctxcancel := startChrome()
+	client := Connect()
+
 	screenservice := ScreenshotService{
-		Chromecontext:        ctx,
+		Chromecontext:       ctx,
+		Chromecancelcontext: ctxcancel,
+		Client:              client,
 	}
 	return &screenservice
 }
 
-func startChrome() context.Context{
-	ctx, cancel := chromedp.NewContext(context.TODO())
-	defer cancel()
-	return ctx
-}
+func startChrome() (context.Context, context.CancelFunc) {
+	/*opts := []chromedp.ExecAllocatorOption{
+		chromedp.ExecPath("../../chromium/chromedriver"),
+	}
 
+	allocCtx, cancel := chromedp.NewExecAllocator(context.TODO(), opts...)
+
+	ctx, _ := chromedp.NewContext(allocCtx)*/
+
+	ctx, cancel := chromedp.NewContext(context.TODO())
+	return ctx, cancel
+}
 
 func (scr *Screenshot) setPicture(pic []byte) {
 	scr.Picture = pic
@@ -63,12 +75,21 @@ func (scrser *ScreenshotService) GetContext() context.Context {
 	return scrser.Chromecontext
 }
 
-func TakeScreenshot(url string, chromectx context.Context) *Screenshot {
+func (scrser *ScreenshotService) GetCancelContext() context.CancelFunc {
+	return scrser.Chromecancelcontext
+}
+
+func (scrser *ScreenshotService) GetClient() *DB {
+	return scrser.Client
+}
+
+func (scrser *ScreenshotService) TakeScreenshot(url string) *Screenshot {
 
 	var imageBuf []byte
-	if err := chromedp.Run(chromectx, ScreenshotTasks(url, &imageBuf)); err != nil {
+	if err := chromedp.Run(scrser.GetContext(), ScreenshotTasks(url, &imageBuf)); err != nil {
 		panic(err)
 	}
+	defer scrser.GetCancelContext()
 
 	tmpscr := NewScreenshot()
 	tmpscr.setPicture(imageBuf)
@@ -89,7 +110,7 @@ func ScreenshotTasks(url string, imageBuf *[]byte) chromedp.Tasks {
 	}
 }
 
-func (db *DB) ConsumeUrlForScreenshot(ctx context.Context, chromectx context.Context) {
+func (scrser *ScreenshotService) ConsumeUrlForScreenshot(ctx context.Context) {
 	// initialize a new reader with the brokers and topic
 	// the groupID identifies the consumer and prevents
 	// it from receiving duplicate messages
@@ -110,7 +131,7 @@ func (db *DB) ConsumeUrlForScreenshot(ctx context.Context, chromectx context.Con
 		if err != nil {
 			panic("parsing json failed" + err.Error())
 		}
-		res := TakeScreenshot(tmpurl.URL, chromectx)
-		db.Save(res)
+		res := scrser.TakeScreenshot(tmpurl.URL)
+		scrser.GetClient().Save(res)
 	}
 }

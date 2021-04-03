@@ -6,17 +6,15 @@ import "./screenshotservice.css";
 
 export default class Screenshotservice extends React.Component {
 
-  SCREENSHOT = "http://localhost:8081/getscreenshots"
+  SCREENSHOT = "http://localhost:8081/graph/v1/getscreenshots"
 
     state = {
-        slicedata: [],
-        sdatamessage: "",
-        hasSdataError: false,
-        offset: 0,
         data: [],
-        perPage: 25,
         currentPage: 0,
-        pageRage: 0
+        maxPage: 0,
+        pageRange: 0,
+        sdatamessage: "",
+        hasSdataError: false
     }
 
     constructor(props) {
@@ -28,24 +26,19 @@ export default class Screenshotservice extends React.Component {
 
     receivedData() {
         axios.get(this.SCREENSHOT).then(res => {
-            const data = res.data;
             try {
-                const slice = data.slice(this.state.offset, this.state.offset + this.state.perPage)
-                const tmpPageCount = Math.ceil(data.length / this.state.perPage);
-                const tmpPageRange = 0;
-                if (tmpPageCount > 4) {
-                    tmpPageRange = 5;
-                }
-                const postData = slice.map(pd => <React.Fragment>
+                const data = res.data.map;
+                const postData = data.map(pd => <React.Fragment>
                     <p>{pd.imageurl}</p>
                     <img src={pd.imagepath} alt=""/>
                 </React.Fragment>)
                 this.setState({
                     sdatamessage: "No error",
                     hasSdataError: false,
-                    pageCount: tmpPageCount,
-                    slicedata: postData,
-                    pageRage: tmpPageRange,
+                    data: postData,
+                    currentPage: res.data.currentpage,
+                    maxPage: res.data.maxpage,
+                    pageRange: res.data.pagerange,
                 })
             } catch (error) {
                 this.setState({
@@ -63,11 +56,8 @@ export default class Screenshotservice extends React.Component {
 
     handlePageClick = (e) => {
         const selectedPage = e.selected;
-        const offset = selectedPage * this.state.perPage;
-
         this.setState({
             currentPage: selectedPage,
-            offset: offset
         }, () => {
             this.receivedData()
         });
@@ -102,7 +92,7 @@ export default class Screenshotservice extends React.Component {
                                         nextLabel={">>"}
                                         breakLabel={"..."}
                                         breakClassName={"break-me"}
-                                        pageCount={this.state.pageCount}
+                                        pageCount={this.state.maxPage}
                                         marginPagesDisplayed={0}
                                         pageRangeDisplayed={this.state.pageRange}
                                         onPageChange={this.handlePageClick}

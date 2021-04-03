@@ -8,6 +8,5 @@ import (
 
 func main() {
 	scrser := screenshot.NewScreenshotService()
-	db := screenshot.Connect()
-	db.ConsumeUrlForScreenshot(context.TODO(), scrser.GetContext())
+	scrser.ConsumeUrlForScreenshot(context.TODO())
 }
