@@ -446,7 +446,7 @@ func (server *SherlockWebserver) DropGraphTable(context *gin.Context) {
 	}
 }
 
-func getStartStop(showpersite int, page int, size int) (start int, stop int) {
+/*func getStartStop(showpersite int, page int, size int) (start int, stop int) {
 	start = page * showpersite
 	stop = start + showpersite
 
@@ -456,13 +456,13 @@ func getStartStop(showpersite int, page int, size int) (start int, stop int) {
 	}
 
 	return start, stop
-}
+}*/
 
 func (server *SherlockWebserver) GetScreenshots(ctx *gin.Context) {
-	imagespersite := 25
+	//imagespersite := 25
 	dbsession := screenshot.Connect()
 	allscreenshots := dbsession.ReturnAllScreenshots()
-	param := ctx.Param("page")
+	/*param := ctx.Param("page")
 	paramtoint, err := strconv.Atoi(param)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -470,9 +470,9 @@ func (server *SherlockWebserver) GetScreenshots(ctx *gin.Context) {
 		})
 	}
 	start, stop := getStartStop(imagespersite, paramtoint, len(allscreenshots))
-	partofallscreenshots := allscreenshots[start:stop]
+	partofallscreenshots := allscreenshots[start:stop]*/
 	tmpmap := make(map[int]interface{})
-	for k, v := range partofallscreenshots {
+	for k, v := range allscreenshots { //partofallscreenshots
 		path := "/image/" + strconv.Itoa(k)
 		if err := ioutil.WriteFile(path, *v.GetPicture(), 0644); err != nil {
 			panic(err)
@@ -486,14 +486,14 @@ func (server *SherlockWebserver) GetScreenshots(ctx *gin.Context) {
 }
 
 func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
-	metadatapersite := 10
+	/*metadatapersite := 10
 	param := ctx.Param("page")
 	paramtoint, err := strconv.Atoi(param)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"Status": "Path was malformed",
 		})
-	}
+	}*/
 
 	//connect db sslmode=disable TimeZone=Asia/Shanghai
 	dsn := "host=0.0.0.0 user=gopher password=gopher dbname=metadata port=5432"
@@ -502,15 +502,15 @@ func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
 	var tmpmeta []ImageMetadata
 
 	// get all entries
-	_ = db.Find(&tmpmeta)
+	db.Find(&tmpmeta)
 
 	if err != nil {
 		panic(err)
 	}
-	start, stop := getStartStop(metadatapersite, paramtoint, len(tmpmeta))
-	partofallmeta := tmpmeta[start:stop]
+	//start, stop := getStartStop(metadatapersite, paramtoint, len(tmpmeta))
+	//partofallmeta := tmpmeta[start:stop]
 	tmpmap := make(map[int]interface{})
-	for k, v := range partofallmeta {
+	for k, v := range tmpmeta { //partofallmeta
 		tmpmap[k] = gin.H{
 			"img_id":            v.img_id,
 			"condition":         v.condition,

@@ -6,7 +6,7 @@ import "./screenshotservice.css";
 
 export default class Screenshotservice extends React.Component {
 
-  SCREENSHOT = "http://localhost:8081/getscreenshots/:page"
+  SCREENSHOT = "http://localhost:8081/getscreenshots"
 
     state = {
         slicedata: [],

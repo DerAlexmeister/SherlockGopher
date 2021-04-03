@@ -1,12 +1,13 @@
 package main
 
-import(
-	screenshot "github.com/DerAlexx/SherlockGopher/screenshot/sherlockscreenshot"
+import (
 	"context"
+
+	screenshot "github.com/DerAlexx/SherlockGopher/screenshot/sherlockscreenshot"
 )
 
 func main() {
 	scrser := screenshot.NewScreenshotService()
 	db := screenshot.Connect()
-	go db.ConsumeUrlForScreenshot(context.TODO(), scrser.GetContext())
+	db.ConsumeUrlForScreenshot(context.TODO(), scrser.GetContext())
 }
