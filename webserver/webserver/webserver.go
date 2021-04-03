@@ -461,7 +461,12 @@ func (server *SherlockWebserver) DropGraphTable(context *gin.Context) {
 func (server *SherlockWebserver) GetScreenshots(ctx *gin.Context) {
 	//imagespersite := 25
 	dbsession := screenshot.Connect()
-	allscreenshots := dbsession.ReturnAllScreenshots()
+	allscreenshots, err := dbsession.ReturnAllScreenshots()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Status": "Error while reveiving data from database",
+		})
+	}
 	/*param := ctx.Param("page")
 	paramtoint, err := strconv.Atoi(param)
 	if err != nil {
@@ -498,15 +503,20 @@ func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
 	//connect db sslmode=disable TimeZone=Asia/Shanghai
 	dsn := "host=0.0.0.0 user=gopher password=gopher dbname=metadata port=5432"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		panic(err)
+	}
 
 	var tmpmeta []ImageMetadata
 
 	// get all entries
-	db.Find(&tmpmeta)
-
-	if err != nil {
-		panic(err)
+	result := db.Find(&tmpmeta)
+	if result.Error != nil || result.RowsAffected == 0 {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"Status": "Error while reveiving data from database",
+		})
 	}
+
 	//start, stop := getStartStop(metadatapersite, paramtoint, len(tmpmeta))
 	//partofallmeta := tmpmeta[start:stop]
 	tmpmap := make(map[int]interface{})
@@ -524,8 +534,4 @@ func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
 		}
 	}
 	ctx.JSON(http.StatusOK, tmpmap)
-}
-
-func GetDB() *gorm.DB {
-	return nil
 }

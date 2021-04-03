@@ -44,22 +44,22 @@ func (db *DB) Save(input *Screenshot) {
 	}
 }
 
-func (db *DB) ReturnAllScreenshots() []*Screenshot {
+func (db *DB) ReturnAllScreenshots() ([]*Screenshot, error) {
 	collection := db.Client.Database("dbscreenshots").Collection("screenshots")
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	cur, err := collection.Find(ctx, bson.D{})
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	var screenshots []*Screenshot
 	for cur.Next(ctx) {
 		var screenshot *Screenshot
 		err := cur.Decode(&screenshot)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		screenshots = append(screenshots, screenshot)
 	}
-	return screenshots
+	return screenshots, nil
 }
