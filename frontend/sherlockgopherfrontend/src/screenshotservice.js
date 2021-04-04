@@ -6,8 +6,8 @@ import "./screenshotservice.css";
 
 export default class Screenshotservice extends React.Component {
 
-  SCREENSHOT = "http://localhost:8081/graph/v1/getscreenshots"
-  BASICURL = "http://localhost:8081"
+  SCREENSHOT = "http://0.0.0.0:8081/graph/v1/getscreenshots"
+  BASICURL = "http://0.0.0.0:8081"
 
     state = {
         postdata: [],
@@ -50,6 +50,7 @@ export default class Screenshotservice extends React.Component {
                 })  
             }
         }).catch(error => {
+            console.log(error)
             this.setState({
                 sdatamessage: "For some Reason an Error occured. Is the Webserver up?",
                 hasSdataError: true,
@@ -71,7 +72,7 @@ export default class Screenshotservice extends React.Component {
             try {
                 this.receivedData()
             } catch(error) {
-                console.log("cannot clear state.")
+                console.log(error)
             }
         }, 5000)
     }

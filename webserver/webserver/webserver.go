@@ -19,6 +19,10 @@ import (
 	sherlockneo "github.com/DerAlexx/SherlockGopher/sherlockneo"
 )
 
+const (
+	postgresuri = "host=0.0.0.0 user=gopher password=gopher dbname=metadata port=5432"
+)
+
 /*
 SherlockWebserver will be the webserver being the man in the middle between the frontend and the backend.
 */
@@ -498,7 +502,7 @@ func (server *SherlockWebserver) GetScreenshots(ctx *gin.Context) {
 	imagespersite := 25
 	dbsession := screenshot.Connect()
 	allscreenshots, err := dbsession.ReturnAllScreenshots()
-	if err != nil {
+	if err != nil || len(allscreenshots) == 0 {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"Status": "Error while receiving data from database",
 		})
@@ -538,8 +542,7 @@ func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
 		})
 	}
 
-	dsn := "host=0.0.0.0 user=gopher password=gopher dbname=metadata port=5432"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(postgresuri), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}

@@ -4,6 +4,11 @@ services:
         image: wurstmeister/zookeeper
         ports: 
             - "2181:2181"
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:2181"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
     kafka:
         image: wurstmeister/kafka
         ports:
@@ -11,6 +16,11 @@ services:
         environment: 
             KAFKA_ADVERTISED_HOST_NAME: 10.0.2.15
             KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:9092"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
     mongodb_container:
         image: mongo:latest
         environment:
@@ -61,6 +71,10 @@ services:
         container_name: screenshot  
         ports:
             - "8202:8202"
+        restart: on-failure
+        depends_on:
+            - zookeeper
+            - kafka
     redis:
         image: redis:latest
         container_name: redis
@@ -86,6 +100,10 @@ services:
         container_name: crawler  
         ports:
             - "8200:8200"
+        restart: on-failure
+        depends_on:
+            - zookeeper
+            - kafka
     analyser: 
         build: 
             context: .
@@ -93,6 +111,10 @@ services:
         container_name: analyser  
         ports:
             - "8201:8201"
+        restart: on-failure
+        depends_on:
+            - zookeeper
+            - kafka
 volumes:
     mongodb_data_container:
     db-data:

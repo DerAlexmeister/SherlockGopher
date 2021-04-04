@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os,sys,requests,psycopg2
-from sherlockneo import GetImages
+from .sherlockneo import GetImages
 from exif import Image
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
