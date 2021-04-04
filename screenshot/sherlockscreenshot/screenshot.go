@@ -3,6 +3,7 @@ package sherlockscreenshot
 import (
 	"context"
 	"encoding/json"
+	"os"
 
 	sherlockkafka "github.com/DerAlexx/SherlockGopher/sherlockkafka"
 	"github.com/chromedp/cdproto/page"
@@ -10,10 +11,7 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-const (
-	topicUrl      = "urltopic"
-	brokerAddress = "0.0.0.0:9092"
-)
+var brokerAddress, topicurl string
 
 type Screenshot struct {
 	Picture []byte
@@ -40,6 +38,19 @@ func NewScreenshotService() *ScreenshotService {
 		Client:              client,
 	}
 	return &screenservice
+}
+
+func Init() {
+	brokerAddress = readFromENV("KAFKA_BROKER", "0.0.0.0:9092")
+	topicurl = readFromENV("KAFKA_TOPIC_URL", "testurl")
+}
+
+func readFromENV(key, defaultVal string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultVal
+	}
+	return value
 }
 
 func startChrome() (context.Context, context.CancelFunc) {
@@ -116,7 +127,7 @@ func (scrser *ScreenshotService) ConsumeUrlForScreenshot(ctx context.Context) {
 	// it from receiving duplicate messages
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: []string{brokerAddress},
-		Topic:   topicUrl,
+		Topic:   topicurl,
 	})
 	for {
 		// the `ReadMessage` method blocks until we receive the next event

@@ -1,3 +1,4 @@
+import os
 from sherlockanalysepictures.getmetadata import *
 from flask import Flask
 from flask_script import Manager
@@ -5,13 +6,24 @@ from flask_script import Server
 from celery import Celery
 
 app = Flask(__name__)
-app.config.update(
-    CELERY_BROKER_URL='redis://localhost:6379',
-    CELERY_RESULT_BACKEND='redis://localhost:6379'
-)
 
-celery = make_celery(app)
-manager = Manager(app)
+def init():
+    add = readFromENV("FLASKA_URL", "0.0.0.0")
+    uri = "redis://" + add + ":6379"
+    return uri
+
+def readFromENV(key, defaultVal):
+    value = os.environ[key]
+    if value == "":
+        return defaultVal
+    return value
+
+val = init()
+
+app.config.update(
+    CELERY_BROKER_URL=val,
+    CELERY_RESULT_BACKEND=val
+)
 
 def make_celery(app):
     celery = Celery(
@@ -29,7 +41,10 @@ def make_celery(app):
     celery.Task = ContextTask
     return celery
 
-@celery.task()
+celery = make_celery(app)
+manager = Manager(app)
+
+@celery.task(name='tasks.getImageInIntervall')
 def getImageInIntervall():
     DownloadImage()
 
@@ -37,6 +52,7 @@ class CreateDbTable(Server):
     def __call__(self, app, *args, **kwargs):
         databaseCreateTable()
         return Server.__call__(self, app, *args, **kwargs)
+
 
 manager.add_command('runserver', CreateDbTable(host='0.0.0.0', port=8203))
 

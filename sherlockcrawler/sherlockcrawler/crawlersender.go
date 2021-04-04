@@ -3,20 +3,17 @@ package sherlockcrawler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"sync"
-	"errors"
 
 	sherlockkafka "github.com/DerAlexx/SherlockGopher/sherlockkafka"
 	"github.com/segmentio/kafka-go"
 )
 
-const (
-	topictask         = "tasktopic"
-	topicurl         = "urltopic"
-	brokerAddress = "0.0.0.0:9092"
-)
+var brokerAddress, topictask, topicurl string
 
 type KafkaWriter struct {
 	writer kafka.Writer
@@ -31,24 +28,38 @@ func NewKafkaWriter(topic string, brokAddress string) *KafkaWriter {
 	}
 }
 
+func Init() {
+	brokerAddress = readFromENV("KAFKA_BROKER", "0.0.0.0:9092")
+	topictask = readFromENV("KAFKA_TOPIC_TASK", "testtask")
+	topicurl = readFromENV("KAFKA_TOPIC_URL", "testurl")
+}
+
+func readFromENV(key, defaultVal string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultVal
+	}
+	return value
+}
+
 func convert(task *CrawlerTaskRequest) *sherlockkafka.KafkaTask {
 	tmp := sherlockkafka.KafkaTask{}
 	tmpmap := make(map[string][]string)
 	for headerkey, headerValue := range *task.responseHeader {
 		tmpmap[headerkey] = headerValue
 	}
-	tmp.TaskID =            task.taskID
+	tmp.TaskID = task.taskID
 	tmp.Addr = task.addr
-	if (task.taskError == nil){
+	if task.taskError == nil {
 		tmperr := errors.New("")
-		tmp.TaskError =   tmperr.Error()
+		tmp.TaskError = tmperr.Error()
 	} else {
-		tmp.TaskError =  task.taskError.Error()
-	} 
-	tmp.StatusCode =         task.statusCode
-	tmp.ResponseBodyBytes =  task.responseBodyBytes
-	tmp.ResponseHeader =     	tmpmap
-	tmp.ResponseTime =       task.responseTime
+		tmp.TaskError = task.taskError.Error()
+	}
+	tmp.StatusCode = task.statusCode
+	tmp.ResponseBodyBytes = task.responseBodyBytes
+	tmp.ResponseHeader = tmpmap
+	tmp.ResponseTime = task.responseTime
 	return &tmp
 }
 

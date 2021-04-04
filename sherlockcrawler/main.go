@@ -45,6 +45,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	sherlock.Init()
+
 	go crawlerservice.ManageTasks()
 	go crawlerservice.ReceiveUrlFromAnalyser(context.TODO())
 

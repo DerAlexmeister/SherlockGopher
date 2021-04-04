@@ -3,20 +3,17 @@ package sherlockanalyser
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"strconv"
-	"net/http"
 	"errors"
+	"fmt"
+	"net/http"
+	"os"
+	"strconv"
 
 	sherlockkafka "github.com/DerAlexx/SherlockGopher/sherlockkafka"
 	"github.com/segmentio/kafka-go"
 )
 
-const (
-	topictask         = "tasktopic"
-	topicurl         = "urltopic"
-	brokerAddress = "0.0.0.0:9092"
-)
+var brokerAddress, topictask, topicurl string
 
 type KafkaWriter struct {
 	writer kafka.Writer
@@ -29,6 +26,20 @@ func NewKafkaWriter(topic string, brokAddress string) *KafkaWriter {
 			Topic: topic,
 		},
 	}
+}
+
+func Init() {
+	brokerAddress = readFromENV("KAFKA_BROKER", "0.0.0.0:9092")
+	topictask = readFromENV("KAFKA_TOPIC_TASK", "testtask")
+	topicurl = readFromENV("KAFKA_TOPIC_URL", "testurl")
+}
+
+func readFromENV(key, defaultVal string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultVal
+	}
+	return value
 }
 
 func convertUrlToKafkaUrl(url string) *sherlockkafka.KafkaUrl {
@@ -83,7 +94,7 @@ func (analyser *AnalyserServiceHandler) ReceiveTaskFromCrawler(ctx context.Conte
 
 		headerMap := http.Header{}
 		for headerKey, headerValue := range tmptask.ResponseHeader {
-			for _,headVal := range headerValue{
+			for _, headVal := range headerValue {
 				headerMap.Add(headerKey, headVal)
 			}
 		}
@@ -101,5 +112,3 @@ func (analyser *AnalyserServiceHandler) ReceiveTaskFromCrawler(ctx context.Conte
 		analyser.getQueue().AppendQueue(analyserTaskRequest)
 	}
 }
-
-

@@ -11,7 +11,19 @@ from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, Date, Boolean
 
 Base = declarative_base()
-DATABASE_URI = 'postgresql://gopher:gopher@0.0.0.0:5432/metadata'
+
+def init():
+    add = readFromENV("FLASKA_URL", "0.0.0.0")
+    uri = "postgresql://gopher:gopher@" + add + ":5432/metadata"
+    return uri
+
+def readFromENV(key, defaultVal):
+    value = os.environ[key]
+    if value == "":
+        return defaultVal
+    return value
+
+DATABASE_URI = init()
 engine = create_engine(DATABASE_URI)
 Session = sessionmaker(bind=engine)
 
