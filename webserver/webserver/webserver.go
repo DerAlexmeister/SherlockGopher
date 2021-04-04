@@ -3,8 +3,10 @@ package webserver
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/asaskevich/govalidator"
@@ -19,9 +21,20 @@ import (
 	sherlockneo "github.com/DerAlexx/SherlockGopher/sherlockneo"
 )
 
-const (
-	postgresuri = "host=0.0.0.0 user=gopher password=gopher dbname=metadata port=5432"
-)
+var postgresuri string
+
+func Init() {
+	tmp := readFromENV("POSTG_URL", "0.0.0.0")
+	postgresuri = "host=" + tmp + " user=gopher password=gopher dbname=metadata port=5432"
+}
+
+func readFromENV(key, defaultVal string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultVal
+	}
+	return value
+}
 
 /*
 SherlockWebserver will be the webserver being the man in the middle between the frontend and the backend.
@@ -120,6 +133,7 @@ New will return a new instance of the SherlockWebserver.
 */
 func New() *SherlockWebserver {
 	ldriver, err := sherlockneo.GetNewDatabaseConnection()
+	Init()
 	if err == nil {
 		return &SherlockWebserver{
 			Driver: ldriver,
@@ -549,8 +563,11 @@ func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
 
 	var tmpmeta []ImageMetadata
 
+	dat := map[string]interface{}{}
+	fmt.Println(dat)
+
 	// get all entries
-	result := db.Find(&tmpmeta)
+	result := db.Table("metadata").Find(&dat)
 	if result.Error != nil || result.RowsAffected == 0 {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"Status": "Error while reveiving data from database",

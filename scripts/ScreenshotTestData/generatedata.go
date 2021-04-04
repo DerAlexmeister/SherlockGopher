@@ -8,11 +8,15 @@ import (
 
 func main() {
 	service := screenshot.NewScreenshotService()
-	/*for i := 0; i < 2; i++ {
+	defer service.GetCancelContext()
+	for i := 0; i < 2; i++ {
 		tmp := service.TakeScreenshot("https://golangcode.com/")
-		service.GetClient().Save(tmp)
-	}*/
-	allscreenshots, err := service.GetClient().ReturnAllScreenshots()
-	fmt.Println(allscreenshots, err)
-	fmt.Println(len(allscreenshots))
+		fmt.Println(tmp)
+		//service.GetClient().Save(tmp)
+	}
+	/*
+		allscreenshots, err := service.GetClient().ReturnAllScreenshots()
+		fmt.Println(allscreenshots, err)
+		fmt.Println(len(allscreenshots))
+	*/
 }

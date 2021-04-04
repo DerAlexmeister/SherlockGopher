@@ -16,7 +16,7 @@ import (
 
 const (
 	//ADDRESS of the Neo4j Dockercontainer.
-	ADDRESS string = "bolt://0.0.0.0:7687"
+	ADDRESS string = "bolt://10.0.2.15:7687" //"bolt://0.0.0.0:7687"
 
 	//USER will be the user of the db.
 	USER string = "neo4j" //Standard username change this in production.

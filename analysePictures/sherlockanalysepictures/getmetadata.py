@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os,sys,requests,psycopg2
-from .sherlockneo import GetImages
+#from .sherlockneo import GetImages
 from exif import Image
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -12,16 +12,19 @@ from sqlalchemy import Column, Integer, String, Date, Boolean
 
 Base = declarative_base()
 
+def readFromENV(key, defaultVal):
+    try:
+        value = os.environ[key]
+        if value is None or value == "":
+            return defaultVal
+        return value
+    except:
+        return defaultVal
+
 def init():
     add = readFromENV("FLASKA_URL", "0.0.0.0")
     uri = "postgresql://gopher:gopher@" + add + ":5432/metadata"
-    return uri
-
-def readFromENV(key, defaultVal):
-    value = os.environ[key]
-    if value == "":
-        return defaultVal
-    return value
+    return uri     
 
 DATABASE_URI = init()
 engine = create_engine(DATABASE_URI)
@@ -72,7 +75,7 @@ def databaseInsertData(img_id, cond, listWithExif):
 
 def DatabaseRetreiveData():
     s = Session()
-    res = s.query(Mdata).first()
+    res = s.query(Mdata).all()
     s.close()
     return res
 
@@ -85,7 +88,7 @@ def DownloadImage():
     
 
     listWithIdAndUrl = neo.GetImages() 
-    #listWithIdAndUrl = [(1, "https://www.aboutbenita.com/wp-content/uploads/Juli-2020-800x1000.jpg")]
+    #listWithIdAndUrl = [(6, "https://www.aboutbenita.com/wp-content/uploads/Foto-07.01.21-21-07-58-1.jpg")]
 
     for pair in listWithIdAndUrl:
 

@@ -10,9 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var (
-	mongoURI = "mongodb://0.0.0.0:27017"
-)
+var mongoURI string
 
 type DB struct {
 	Client *mongo.Client
@@ -30,7 +28,13 @@ func (db *DB) SetMongoClient(client *mongo.Client) {
 	db.Client = client
 }
 
+func InitDB() {
+	tmp := readFromENV("POSTG_URL", "0.0.0.0")
+	mongoURI = "mongodb://" + tmp + ":27017"
+}
+
 func Connect() *DB {
+	InitDB()
 	credential := options.Credential{
 		Username: "root",
 		Password: "rootpassword",

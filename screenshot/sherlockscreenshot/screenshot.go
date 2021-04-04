@@ -31,6 +31,7 @@ func NewScreenshot() *Screenshot {
 func NewScreenshotService() *ScreenshotService {
 	ctx, ctxcancel := startChrome()
 	client := Connect()
+	Init()
 
 	screenservice := ScreenshotService{
 		Chromecontext:       ctx,
@@ -54,14 +55,6 @@ func readFromENV(key, defaultVal string) string {
 }
 
 func startChrome() (context.Context, context.CancelFunc) {
-	/*opts := []chromedp.ExecAllocatorOption{
-		chromedp.ExecPath("../../chromium/chromedriver"),
-	}
-
-	allocCtx, cancel := chromedp.NewExecAllocator(context.TODO(), opts...)
-
-	ctx, _ := chromedp.NewContext(allocCtx)*/
-
 	ctx, cancel := chromedp.NewContext(context.TODO())
 	return ctx, cancel
 }
@@ -100,7 +93,6 @@ func (scrser *ScreenshotService) TakeScreenshot(url string) *Screenshot {
 	if err := chromedp.Run(scrser.GetContext(), ScreenshotTasks(url, &imageBuf)); err != nil {
 		panic(err)
 	}
-	defer scrser.GetCancelContext()
 
 	tmpscr := NewScreenshot()
 	tmpscr.setPicture(imageBuf)

@@ -11,5 +11,6 @@ func main() {
 	log.Info("Started screenshot")
 	screenshot.Init()
 	scrser := screenshot.NewScreenshotService()
+	defer scrser.GetCancelContext()
 	scrser.ConsumeUrlForScreenshot(context.TODO())
 }

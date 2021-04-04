@@ -2,7 +2,7 @@
 
 from neo4j import GraphDatabase
 
-URL = "bolt://localhost:7687"
+URL = "bolt://10.0.2.15:7687" #"bolt://0.0.0.0:7687"
 USER = "neo4j"
 PASS = "test"
 
