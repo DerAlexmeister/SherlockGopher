@@ -665,8 +665,6 @@ func TestChangeStateBadJSON(t *testing.T) {
 
 	sut.ChangeState(c)
 
-	fmt.Println()
-
 	assert.Equal(t, "400 Bad Request", w.Result().Status)
 	assert.Equal(t, "{\"Status\":\"Error while reveiving Requested Status\"}{\"Status\":{}}{\"Status\":\"Unknown Target, expected Crawler, Analyser or All\"}", w.Body.String())
 }

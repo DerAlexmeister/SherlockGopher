@@ -1,4 +1,5 @@
 import React from 'react';
+import 'bootstrap/dist/css/bootstrap.css';
 import SearchBar from './searchbar.js';
 import ReactPaginate from 'react-paginate';
 import axios from 'axios'
@@ -26,20 +27,26 @@ export default class Imagemetadataservice extends React.Component {
     receivedData() {
         axios.get(this.METADATA + "/" + this.state.currentPage).then(res => {
             try {
-                const data = res.data;
+                const data = res.data.map;
                 const postData = data.map(pd => <React.Fragment>
-                        <table>
-                            <tr><th>Zustand</th><td>{pd.condition}</td></tr>
-                            <tr><th>Datum</th><td>{pd.datetime_original}</td></tr>
-                            <tr><th>Gerät</th><td>{pd.model}</td></tr>
-                            <tr><th></th><td>{pd.make}</td></tr>
-                            <tr><th>Beschreibung</th><td>{pd.maker_note}</td></tr>
-                            <tr><th>Software</th><td>{pd.software}</td></tr>
-                            <tr><th>GPS-Längengrad</th><td>{pd.gps_latitude}</td></tr>
-                            <tr><th>GPS-Breitengrad</th><td>{pd.gps_longitude}</td></tr>
-                        </table>
-                        <br></br>
-                        <br></br>
+
+                        <div class="card">
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                            <li class="list-group-item">Image URL: {pd.img_url}</li>
+                            <li class="list-group-item">ID: {pd.img_id}</li>
+                            <li class="list-group-item">Zustand: {pd.condition}</li>
+                            <li class="list-group-item">Datum: {pd.datetime_original}</li>
+                            <li class="list-group-item">Gerät: {pd.model}</li>
+                            <li class="list-group-item">Kameraherstellers: {pd.make}</li>
+                            <li class="list-group-item">Beschreibung: {pd.maker_note}</li>
+                            <li class="list-group-item">Software: {pd.software}</li>
+                            <li class="list-group-item">GPS-Längengrad: {pd.gps_latitude}</li>
+                            <li class="list-group-item">GPS-Breitengrad: {pd.gps_longitude}</li>
+                        </ul>
+                        </div>
+                        </div>
+                        <hr></hr>
                     </React.Fragment>)
                 this.setState({
                     sdatamessage: "No error",
@@ -67,7 +74,6 @@ export default class Imagemetadataservice extends React.Component {
 
     handlePageClick = (e) => {
         const selectedPage = e.selected;
-        const offset = selectedPage * this.state.perPage;
         this.setState({
             currentPage: selectedPage,
         }, () => {
@@ -82,7 +88,7 @@ export default class Imagemetadataservice extends React.Component {
             } catch(error) {
                 console.log(error)
             }
-        }, 5000)
+        }, 10000)
     }
 
     componentWillUnmount() {

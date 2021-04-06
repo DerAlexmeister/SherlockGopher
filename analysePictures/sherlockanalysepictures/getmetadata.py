@@ -33,6 +33,7 @@ Session = sessionmaker(bind=engine)
 class Mdata(Base):
     __tablename__ = 'metadata'
     img_id = Column(Integer, primary_key = True)
+    img_url = Column(String(50))
     condition = Column(Boolean)
     datetime_original = Column(String(50))  
     model = Column(String(50))
@@ -42,8 +43,9 @@ class Mdata(Base):
     gps_latitude = Column(String(50))
     gps_longitude = Column(String(50))
 
-    def __init__(self, img_id, condition, datetime_original, model, make, maker_note, software, gps_latitude, gps_longitude):
+    def __init__(self, img_id, img_url, condition, datetime_original, model, make, maker_note, software, gps_latitude, gps_longitude):
         self.img_id = img_id
+        self.img_url = img_url
         self.condition = condition
         self.datetime_original = datetime_original
         self.model = model
@@ -63,11 +65,11 @@ def databaseDeleteTable():
     Base.metadata.drop_all(engine)
  
 
-def databaseInsertData(img_id, cond, listWithExif):
+def databaseInsertData(img_id, cond, listWithExif, imgurl):
     s = Session()
     latitude = "{}".format(listWithExif[5])
     longtitude = "{}".format(listWithExif[6])
-    object1 = Mdata(img_id, cond, listWithExif[0], listWithExif[1], listWithExif[2], listWithExif[3], listWithExif[4], latitude, longtitude)
+    object1 = Mdata(img_id, imgurl, cond, listWithExif[0], listWithExif[1], listWithExif[2], listWithExif[3], listWithExif[4], latitude, longtitude)
 
     s.add(object1)
     s.commit()
@@ -85,7 +87,6 @@ def DownloadImage():
     filePathToImage = "/tmp/tmp"
     relevantExifTags = ["datetime_original", "model", "make", "maker_note", "software", "gps_latitude", "gps_longitude"]
     listExifTags = []
-    
 
     listWithIdAndUrl = neo.GetImages() 
     #listWithIdAndUrl = [(6, "https://www.aboutbenita.com/wp-content/uploads/Foto-07.01.21-21-07-58-1.jpg")]
@@ -109,6 +110,6 @@ def DownloadImage():
                         listExifTags.append((myImage.get(currentRelevantExifTag)))
                     else:
                         listExifTags.append(None)
-                databaseInsertData(pair[0], 1, listExifTags)
+                databaseInsertData(pair[0], 1, listExifTags, pair[1])
             else:
-                databaseInsertData(pair[0], 0, None)
+                databaseInsertData(pair[0], 0, None, pair[1])

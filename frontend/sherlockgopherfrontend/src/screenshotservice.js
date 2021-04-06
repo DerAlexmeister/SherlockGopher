@@ -2,6 +2,7 @@ import React from 'react';
 import SearchBar from './searchbar.js';
 import ReactPaginate from 'react-paginate';
 import axios from 'axios'
+import 'bootstrap/dist/css/bootstrap.css';
 import "./screenshotservice.css";
 
 export default class Screenshotservice extends React.Component {
@@ -30,8 +31,13 @@ export default class Screenshotservice extends React.Component {
             try {
                 const data = res.data.map;
                 const postData = data.map(pd => (<React.Fragment>
-                    <p>{pd.imageurl}</p>
-                    <img src={this.BASICURL + "/static/images/" + pd.imagepath}/>
+
+                    <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{pd.imageurl}</h5>
+                    </div>
+                    <img src={this.BASICURL + "/static/images/" + pd.imagepath} class="card-img-bottom" alt="..."/>
+                    </div>
                 </React.Fragment>))
                 
                 this.setState({

@@ -3,7 +3,6 @@ package webserver
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -42,6 +41,7 @@ SherlockWebserver will be the webserver being the man in the middle between the 
 type SherlockWebserver struct {
 	Dependency *SherlockWebServerDependency
 	Driver     neo4j.Driver
+	PGdriver   *gorm.DB
 }
 
 /*
@@ -100,6 +100,7 @@ type MetaArray struct {
 
 type ImageMetadata struct {
 	img_id            int
+	img_url           string
 	condition         bool
 	datetime_original string
 	model             string
@@ -133,10 +134,12 @@ New will return a new instance of the SherlockWebserver.
 */
 func New() *SherlockWebserver {
 	ldriver, err := sherlockneo.GetNewDatabaseConnection()
+	pgdriver := connectToPostgresDb()
 	Init()
 	if err == nil {
 		return &SherlockWebserver{
-			Driver: ldriver,
+			Driver:   ldriver,
+			PGdriver: pgdriver,
 		}
 	}
 	return &SherlockWebserver{}
@@ -475,6 +478,15 @@ func (server *SherlockWebserver) DropGraphTable(context *gin.Context) {
 	}
 }
 
+func isNil(i interface{}) string {
+	switch i.(type) {
+	case nil:
+		return "-"
+	default:
+		return i.(string)
+	}
+}
+
 func getStartStopMaxPage(showpersite int, page int, size int) (start int, stop int, maxpage int) {
 	start = page * showpersite
 	stop = start + showpersite
@@ -546,6 +558,14 @@ func (server *SherlockWebserver) GetScreenshots(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+func connectToPostgresDb() *gorm.DB {
+	db, err := gorm.Open(postgres.Open(postgresuri), &gorm.Config{})
+	if err != nil {
+		panic(err)
+	}
+	return db
+}
+
 func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
 	metadatapersite := 10
 	param := ctx.Param("page")
@@ -556,30 +576,38 @@ func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
 		})
 	}
 
-	db, err := gorm.Open(postgres.Open(postgresuri), &gorm.Config{})
-	if err != nil {
-		panic(err)
-	}
-
-	var tmpmeta []ImageMetadata
-
-	dat := map[string]interface{}{}
-	fmt.Println(dat)
-
 	// get all entries
-	result := db.Table("metadata").Find(&dat)
+	resultmap := []map[string]interface{}{}
+	result := server.PGdriver.Table("metadata").Find(&resultmap)
 	if result.Error != nil || result.RowsAffected == 0 {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"Status": "Error while reveiving data from database",
 		})
 	}
 
-	start, stop, maxpage := getStartStopMaxPage(metadatapersite, paramtoint, len(tmpmeta))
+	var tmpmeta []ImageMetadata
+
+	for i := range resultmap {
+		tmp := ImageMetadata{}
+		tmp.img_id = int(resultmap[i]["img_id"].(int32))
+		tmp.img_url = isNil(resultmap[i]["img_url"])
+		tmp.condition = resultmap[i]["condition"].(bool)
+		tmp.datetime_original = isNil(resultmap[i]["datetime_original"])
+		tmp.model = isNil(resultmap[i]["model"])
+		tmp.make = isNil(resultmap[i]["make"])
+		tmp.software = isNil(resultmap[i]["software"])
+		tmp.gps_longitude = isNil(resultmap[i]["gps_longitude"])
+		tmp.gps_latitude = isNil(resultmap[i]["gps_latitude"])
+		tmpmeta = append(tmpmeta, tmp)
+	}
+
+	start, stop, maxpage := getStartStopMaxPage(metadatapersite, paramtoint, int(result.RowsAffected))
 	partofallmeta := tmpmeta[start:stop]
 	var tmpmap []interface{}
-	for k, v := range partofallmeta {
-		tmpmap[k] = gin.H{
+	for _, v := range partofallmeta {
+		tmpmap = append(tmpmap, gin.H{
 			"img_id":            v.img_id,
+			"img_url":           v.img_url,
 			"condition":         v.condition,
 			"datetime_original": v.datetime_original,
 			"model":             v.model,
@@ -588,7 +616,7 @@ func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
 			"software":          v.software,
 			"gps_latitude":      v.gps_latitude,
 			"gps_longitude":     v.gps_longitude,
-		}
+		})
 	}
 	res := buildRequestedPagination(tmpmap, maxpage, paramtoint)
 	ctx.JSON(http.StatusOK, res)
