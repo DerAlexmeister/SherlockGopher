@@ -13,12 +13,19 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
+// kafka topics and broker address
 var brokerAddress, topictask, topicurl string
 
+/*
+KafkaWriter to write into kafak topics
+*/
 type KafkaWriter struct {
 	writer kafka.Writer
 }
 
+/*
+NewKafkaWriter creates a new KafakWriter instance
+*/
 func NewKafkaWriter(topic string, brokAddress string) *KafkaWriter {
 	return &KafkaWriter{
 		writer: kafka.Writer{
@@ -28,12 +35,18 @@ func NewKafkaWriter(topic string, brokAddress string) *KafkaWriter {
 	}
 }
 
+/*
+Init prepares urls for kafka
+*/
 func Init() {
 	brokerAddress = readFromENV("KAFKA_BROKER", "0.0.0.0:9092")
 	topictask = readFromENV("KAFKA_TOPIC_TASK", "testtask")
 	topicurl = readFromENV("KAFKA_TOPIC_URL", "testurl")
 }
 
+/*
+readFromENV allows docker usage
+*/
 func readFromENV(key, defaultVal string) string {
 	value := os.Getenv(key)
 	if value == "" {
@@ -42,12 +55,18 @@ func readFromENV(key, defaultVal string) string {
 	return value
 }
 
+/*
+convertUrlToKafkaUrl creates a new KafkaUrl with a url
+*/
 func convertUrlToKafkaUrl(url string) *sherlockkafka.KafkaUrl {
 	tmp := sherlockkafka.KafkaUrl{}
 	tmp.URL = url
 	return &tmp
 }
 
+/*
+SendUrlToCrawler is a kafka producer, sending urls to the crawler
+*/
 func (sherlock *AnalyserServiceHandler) SendUrlToCrawler(ctx context.Context, url string) error {
 
 	kTask := convertUrlToKafkaUrl(url)
@@ -69,6 +88,9 @@ func (sherlock *AnalyserServiceHandler) SendUrlToCrawler(ctx context.Context, ur
 	return nil
 }
 
+/*
+SendUrlToCrawler is a kafka consumer, receiving tasks from the crawler
+*/
 func (analyser *AnalyserServiceHandler) ReceiveTaskFromCrawler(ctx context.Context) {
 	// initialize a new reader with the brokers and topic
 	// the groupID identifies the consumer and prevents

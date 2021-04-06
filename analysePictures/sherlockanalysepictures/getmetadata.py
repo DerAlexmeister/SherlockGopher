@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os,sys,requests,psycopg2
-#from .sherlockneo import GetImages
 from exif import Image
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -12,6 +11,7 @@ from sqlalchemy import Column, Integer, String, Date, Boolean
 
 Base = declarative_base()
 
+# sets host ip, neccessary for docker and local env
 def readFromENV(key, defaultVal):
     try:
         value = os.environ[key]
@@ -21,6 +21,7 @@ def readFromENV(key, defaultVal):
     except:
         return defaultVal
 
+# prepares url
 def init():
     add = readFromENV("FLASKA_URL", "0.0.0.0")
     uri = "postgresql://gopher:gopher@" + add + ":5432/metadata"
@@ -30,6 +31,7 @@ DATABASE_URI = init()
 engine = create_engine(DATABASE_URI)
 Session = sessionmaker(bind=engine)
 
+# DB class
 class Mdata(Base):
     __tablename__ = 'metadata'
     img_id = Column(Integer, primary_key = True)
@@ -55,16 +57,19 @@ class Mdata(Base):
         self.gps_latitude = gps_latitude
         self.gps_longitude = gps_longitude
 
+    # for print debugging
     def __str__(self):
         return "{},{},{},{},".format(self.img_id, self.software, self.gps_latitude, self.gps_longitude)
 
+# create database
 def databaseCreateTable():
     Base.metadata.create_all(engine)
 
+# drops database
 def databaseDeleteTable():
     Base.metadata.drop_all(engine)
  
-
+# inserts exif data in database
 def databaseInsertData(img_id, cond, listWithExif, imgurl):
     s = Session()
     latitude = "{}".format(listWithExif[5])
@@ -75,13 +80,14 @@ def databaseInsertData(img_id, cond, listWithExif, imgurl):
     s.commit()
     s.close()
 
+# return all entries from dp
 def DatabaseRetreiveData():
     s = Session()
     res = s.query(Mdata).all()
     s.close()
     return res
 
-
+# downloads all images that are currently in the neo4j database, analyses their exif data, then saves them in the postgres db
 def DownloadImage():
 
     filePathToImage = "/tmp/tmp"
@@ -89,6 +95,7 @@ def DownloadImage():
     listExifTags = []
 
     listWithIdAndUrl = neo.GetImages() 
+    #for test purpose
     #listWithIdAndUrl = [(6, "https://www.aboutbenita.com/wp-content/uploads/Foto-07.01.21-21-07-58-1.jpg")]
 
     for pair in listWithIdAndUrl:

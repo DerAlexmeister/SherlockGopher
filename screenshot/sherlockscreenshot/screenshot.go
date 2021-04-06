@@ -13,21 +13,33 @@ import (
 
 var brokerAddress, topicurl string
 
+/*
+Screenshot stores an image as byte array and the url of it
+*/
 type Screenshot struct {
 	Picture []byte
 	URL     string
 }
 
+/*
+ScreenshotService stores the context for chromedp and db connection
+*/
 type ScreenshotService struct {
 	Chromecontext       context.Context
 	Chromecancelcontext context.CancelFunc
 	Client              *DB
 }
 
+/*
+NewScreenshot creates a new instance of Screenshot
+*/
 func NewScreenshot() *Screenshot {
 	return &Screenshot{}
 }
 
+/*
+NewScreenshotService creates a new instance of ScreenshotService
+*/
 func NewScreenshotService() *ScreenshotService {
 	ctx, ctxcancel := startChrome()
 	client := Connect()
@@ -41,11 +53,17 @@ func NewScreenshotService() *ScreenshotService {
 	return &screenservice
 }
 
+/*
+Init prepares urls for kafka
+*/
 func Init() {
 	brokerAddress = readFromENV("KAFKA_BROKER", "0.0.0.0:9092")
 	topicurl = readFromENV("KAFKA_TOPIC_URL", "testurl")
 }
 
+/*
+readFromENV allows docker usage
+*/
 func readFromENV(key, defaultVal string) string {
 	value := os.Getenv(key)
 	if value == "" {
@@ -87,6 +105,9 @@ func (scrser *ScreenshotService) GetClient() *DB {
 	return scrser.Client
 }
 
+/*
+TakeScreenshot takes a screenshot of a website
+*/
 func (scrser *ScreenshotService) TakeScreenshot(url string) *Screenshot {
 
 	var imageBuf []byte
@@ -113,6 +134,9 @@ func ScreenshotTasks(url string, imageBuf *[]byte) chromedp.Tasks {
 	}
 }
 
+/*
+ConsumeUrlForScreenshot is a kafka consumer, receiving urls from the analyser, making a screenshot of the website and saving it in the mongo db database
+*/
 func (scrser *ScreenshotService) ConsumeUrlForScreenshot(ctx context.Context) {
 	// initialize a new reader with the brokers and topic
 	// the groupID identifies the consumer and prevents

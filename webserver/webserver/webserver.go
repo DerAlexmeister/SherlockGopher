@@ -22,11 +22,17 @@ import (
 
 var postgresuri string
 
+/*
+Init prepares urls for postgres
+*/
 func Init() {
 	tmp := readFromENV("POSTG_URL", "0.0.0.0")
 	postgresuri = "host=" + tmp + " user=gopher password=gopher dbname=metadata port=5432"
 }
 
+/*
+readFromENV allows docker usage
+*/
 func readFromENV(key, defaultVal string) string {
 	value := os.Getenv(key)
 	if value == "" {
@@ -83,6 +89,9 @@ type RequestedStatus struct {
 	Target    string `json:"target" binding:"required"`
 }
 
+/*
+RequestedPagination  will be the struct for the post request of the metadata and screenshot service.
+*/
 type RequestedPagination struct {
 	Map         []interface{} `json:"map" binding:"required"`
 	Maxpage     int           `json:"maxpage" binding:"required"`
@@ -125,6 +134,9 @@ func NewRequestedStatus() *RequestedStatus {
 	return &RequestedStatus{}
 }
 
+/*
+NewRequestedStatus will be a new instance of RequestedPagination.
+*/
 func NewRequestedPagination() *RequestedPagination {
 	return &RequestedPagination{}
 }
@@ -478,6 +490,9 @@ func (server *SherlockWebserver) DropGraphTable(context *gin.Context) {
 	}
 }
 
+/*
+isNil checks wheter a interface is nil or not
+*/
 func isNil(i interface{}) string {
 	switch i.(type) {
 	case nil:
@@ -487,6 +502,9 @@ func isNil(i interface{}) string {
 	}
 }
 
+/*
+getStartStopMaxPage is a help function for the frontend pagination
+*/
 func getStartStopMaxPage(showpersite int, page int, size int) (start int, stop int, maxpage int) {
 	start = page * showpersite
 	stop = start + showpersite
@@ -511,6 +529,9 @@ func getStartStopMaxPage(showpersite int, page int, size int) (start int, stop i
 	return start, stop, maxpage
 }
 
+/*
+buildRequestedPagination builds the response for the frontend
+*/
 func buildRequestedPagination(mapparam []interface{}, maxpage int, currentpage int) RequestedPagination {
 	tmpstruct := NewRequestedPagination()
 	tmppagerange := 0
@@ -524,6 +545,9 @@ func buildRequestedPagination(mapparam []interface{}, maxpage int, currentpage i
 	return *tmpstruct
 }
 
+/*
+GetScreenshots gets al screenshot data from the mongo db, picks 25 entries depending on the current pagination page.
+*/
 func (server *SherlockWebserver) GetScreenshots(ctx *gin.Context) {
 	imagespersite := 25
 	dbsession := screenshot.Connect()
@@ -566,6 +590,9 @@ func connectToPostgresDb() *gorm.DB {
 	return db
 }
 
+/*
+GetMetaData gets all metadata entries from the postgres db, picks 10 entries depending on the current pagination page.
+*/
 func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
 	metadatapersite := 10
 	param := ctx.Param("page")

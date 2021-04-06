@@ -12,10 +12,16 @@ import (
 
 var mongoURI string
 
+/*
+DB is a mongo db client
+*/
 type DB struct {
 	Client *mongo.Client
 }
 
+/*
+NewDB creates a new instance of a DB
+*/
 func NewDB() *DB {
 	return &DB{}
 }
@@ -28,11 +34,17 @@ func (db *DB) SetMongoClient(client *mongo.Client) {
 	db.Client = client
 }
 
+/*
+InitDB allows docker usage
+*/
 func InitDB() {
 	tmp := readFromENV("POSTG_URL", "0.0.0.0")
 	mongoURI = "mongodb://" + tmp + ":27017"
 }
 
+/*
+Connect() creates a connection to the mongo db database
+*/
 func Connect() *DB {
 	InitDB()
 	credential := options.Credential{
@@ -57,6 +69,9 @@ func Connect() *DB {
 	return res
 }
 
+/*
+Save saves a Screenshot in the mongo db database
+*/
 func (db *DB) Save(input *Screenshot) {
 	collection := db.GetMongoClient().Database("dbscreenshots").Collection("screenshots")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -67,6 +82,9 @@ func (db *DB) Save(input *Screenshot) {
 	}
 }
 
+/*
+ReturnAllScreenshots returns all entries from the mongo db database
+*/
 func (db *DB) ReturnAllScreenshots() ([]*Screenshot, error) {
 	collection := db.GetMongoClient().Database("dbscreenshots").Collection("screenshots")
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)

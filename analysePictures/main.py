@@ -7,11 +7,13 @@ from celery import Celery
 
 app = Flask(__name__)
 
+# prepare redis and flask url
 def init():
     add = readFromENV("FLASKA_URL", "0.0.0.0")
     uri = "redis://" + add + ":6379"
     return uri
 
+# allows docker usage
 def readFromENV(key, defaultVal):
     value = os.environ[key]
     if value == "":
@@ -25,6 +27,7 @@ app.config.update(
     CELERY_RESULT_BACKEND=val
 )
 
+# create celery app
 def make_celery(app):
     celery = Celery(
         app.import_name,
@@ -44,6 +47,7 @@ def make_celery(app):
 celery = make_celery(app)
 manager = Manager(app)
 
+# background task to download images
 @celery.task(name='tasks.getImageInIntervall')
 def getImageInIntervall():
     DownloadImage()
@@ -53,7 +57,7 @@ class CreateDbTable(Server):
         databaseCreateTable()
         return Server.__call__(self, app, *args, **kwargs)
 
-
+# create db on startup
 manager.add_command('runserver', CreateDbTable(host='0.0.0.0', port=8203))
 
 if __name__ == "__main__":

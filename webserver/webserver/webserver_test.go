@@ -27,15 +27,6 @@ func (err *WebserverTestError) Error() string {
 	return "This error is expected!"
 }
 
-func TestSendHelloPing(t *testing.T) { // TODO drüber schauen.
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	sut := New()
-	sut.Helloping(c)
-
-	assert.Equal(t, 200, w.Result().StatusCode)
-}
-
 //nolint: misspell
 func TestReceiveUrl(t *testing.T) {
 	w := httptest.NewRecorder()
