@@ -302,6 +302,7 @@ func (sherlock *SherlockCrawler) ReceiveURL(ctx context.Context, in *proto.Submi
 		log.Info("Received URL from web server, will result in a new task with address .", in.GetURL())
 		task := NewTask()
 		task.setAddr(in.GetURL())
+		task.setRoot(true)
 		sherlock.getQueue().AppendQueue(&task)
 		out.Recieved = true
 		return nil

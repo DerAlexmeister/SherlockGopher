@@ -84,7 +84,7 @@ export default class NodeGraph extends React.Component {
     getGraphData() {
         try {
             Axios.get(
-                this.ALLINFORMATIONPERFORMANCE
+                this.ALLINFORMATIONPERFORMANCE + "/0"
             ).then(res => {
                 const response = res.data
                 this.setState({

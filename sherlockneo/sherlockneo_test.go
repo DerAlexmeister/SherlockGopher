@@ -273,7 +273,7 @@ func Test_GetAllNodesAndTheirRelationshipsOptimized(t *testing.T) {
 	mockResult.EXPECT().Record().Return(mockRecord).MinTimes(1)
 	mockSession.EXPECT().Close().Times(1)
 
-	result, err := GetAllNodesAndTheirRelationshipsOptimized(mockSession, nil)
+	result, err := GetAllNodesAndTheirRelationshipsOptimized(mockSession, nil, "MATCH (n)-[r]->(k) RETURN n.Address as Source, n.FileType as SourceType, Type(r) as Relationship, k.Address as Destination, k.FileType as DestinationType")
 
 	if fmt.Sprint(result) != "map[links:[map[color:#24A144 label:Requires source:www.example.com/0 target:www.example.com/1]] nodes:[map[color:#7CA9EF id:www.example.com/0] map[color:#7CA9EF id:www.example.com/1]]]" || err != nil {
 		t.Fail()
@@ -292,7 +292,7 @@ func Test_GetAllNodesAndTheirRelationships(t *testing.T) {
 	mockResult := mocks.NewMockResult(mockCtrl)
 	mockSession := mocks.NewMockSession(mockCtrl)
 
-	mockSession.EXPECT().Run(fmt.Sprint(getAllRels()), nil).Return(mockResult, nil).Times(1)
+	mockSession.EXPECT().Run(fmt.Sprint(GetAllRels()), nil).Return(mockResult, nil).Times(1)
 
 	first := mockResult.EXPECT().Next().Return(true).Times(1)
 	second := mockResult.EXPECT().Next().Return(false).Times(1)

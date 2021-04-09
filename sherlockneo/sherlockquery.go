@@ -86,7 +86,27 @@ const (
 
 	//connector will connect two nodes
 	connector string = "MERGE (a%s {Address:\"%s\" %s}) MERGE (b%s {Address:\"%s\" %s}) MERGE (a)-[r:%s]->(b)"
+
+	//rootnode
+	rootnode string = "Match (r) where exists(r.root) return r"
+
+	//getchildren
+	children string = "Match (parent)-[r]-(child) where parent.id = {%d} return parent, r,child"
 )
+
+/*
+getRootNode will the first node of the graph.
+*/
+func GetRoot() string {
+	return rootnode
+}
+
+/*
+getChildren will return all children of the given node (by id).
+*/
+func GetChildren() string {
+	return children
+}
 
 /*
 getdropgraphQuery will return the query for droping the entire graph.
@@ -224,7 +244,7 @@ func getResponseTimeInTableAndStatusCode() string {
 /*
 GetAllRels will return the query to get all relationships.
 */
-func getAllRels() string {
+func GetAllRels() string {
 	return returnallrels
 }
 

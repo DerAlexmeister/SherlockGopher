@@ -106,7 +106,7 @@ func CloseSession(session *neo4j.Session) {
 GetAllNodesAndTheirRelationships will return all nodes with address and the rels to other nodes.
 */
 func GetAllNodesAndTheirRelationships(session neo4j.Session, args map[string]interface{}) ([]map[string]string, error) {
-	results, err := session.Run(getAllRels(), args)
+	results, err := session.Run(GetAllRels(), args)
 	if err != nil {
 		return make([]map[string]string, 0), err
 	}
@@ -172,8 +172,8 @@ func containsNode(node string, arr *[]string) bool {
 /*
 GetAllNodesAndTheirRelationshipsOptimized will return all nodes with address and the rels to other nodes optimized for  the frontend.
 */
-func GetAllNodesAndTheirRelationshipsOptimized(session neo4j.Session, args map[string]interface{}) (map[string][]map[string]string, error) {
-	results, err := session.Run(getAllRels(), args)
+func GetAllNodesAndTheirRelationshipsOptimized(session neo4j.Session, args map[string]interface{}, query string) (map[string][]map[string]string, error) {
+	results, err := session.Run(query, args)
 	if err != nil {
 		return make(map[string][]map[string]string), err
 	}

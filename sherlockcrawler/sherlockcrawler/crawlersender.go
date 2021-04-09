@@ -89,6 +89,10 @@ func (sherlock *SherlockCrawler) SendTaskToAnalyser(ctx context.Context, task *C
 	} else {
 		(*task).setTaskState(PROCESSING)
 
+		if task.GetRoot() {
+			task.responseHeader.Add("root", "true")
+		}
+
 		tmp := convert(task)
 
 		res1B, _ := json.Marshal(tmp)

@@ -2,6 +2,7 @@ package webserver
 
 import (
 	"net/http"
+	"strconv"
 
 	sherlockneo "github.com/DerAlexx/SherlockGopher/sherlockneo"
 	"github.com/asaskevich/govalidator"
@@ -12,6 +13,25 @@ import (
 GraphFetchWholeGraphHighPerformanceV1 will be a high performance endpoint to get optimized json for the Frontend.
 */
 func (server *SherlockWebserver) GraphFetchWholeGraphHighPerformanceV1(context *gin.Context) {
+	param := context.Param("query")
+	paramtoint, err := strconv.Atoi(param)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"Status": "Path was malformed",
+		})
+	}
+	var query string
+	switch paramtoint {
+	case 0:
+		query = sherlockneo.GetAllRels()
+	case 1:
+		query = sherlockneo.GetRoot()
+	case 2:
+		query = sherlockneo.GetChildren()
+	default:
+		query = sherlockneo.GetAllRels()
+	}
+
 	session, err := sherlockneo.GetSession(server.Driver)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{
@@ -19,7 +39,7 @@ func (server *SherlockWebserver) GraphFetchWholeGraphHighPerformanceV1(context *
 		})
 	} else {
 		args := make(map[string]interface{})
-		graph, _ := sherlockneo.GetAllNodesAndTheirRelationshipsOptimized(session, args)
+		graph, _ := sherlockneo.GetAllNodesAndTheirRelationshipsOptimized(session, args, query)
 		context.JSON(http.StatusOK, graph)
 	}
 }
@@ -53,12 +73,24 @@ func (server *SherlockWebserver) GraphMetaV1(context *gin.Context) {
 	}
 	args := make(map[string]interface{})
 	var meta []map[string]int64
-	if images, _ := sherlockneo.GetAmountOfImages(session, args); len(images) != 0 {meta = append(meta, images[0])}
-	if css, _ := sherlockneo.GetAmountOfStylesheets(session, args); len(css) != 0 {meta = append(meta, css[0])}
-	if js, _ := sherlockneo.GetAmountOfJavascriptFiles(session, args); len(js) != 0 {meta = append(meta, js[0])}
-	if html, _ := sherlockneo.GetAmountofHTMLNodes(session, args); len(html) != 0 {meta = append(meta, html[0])}
-	if rels, _ := sherlockneo.GetAmountOfRels(session, args); len(rels) != 0 {meta = append(meta, rels[0])}
-	if nodes, _ := sherlockneo.GetAmountOfNodes(session, args); len(nodes) != 0 {meta = append(meta, nodes[0])}
+	if images, _ := sherlockneo.GetAmountOfImages(session, args); len(images) != 0 {
+		meta = append(meta, images[0])
+	}
+	if css, _ := sherlockneo.GetAmountOfStylesheets(session, args); len(css) != 0 {
+		meta = append(meta, css[0])
+	}
+	if js, _ := sherlockneo.GetAmountOfJavascriptFiles(session, args); len(js) != 0 {
+		meta = append(meta, js[0])
+	}
+	if html, _ := sherlockneo.GetAmountofHTMLNodes(session, args); len(html) != 0 {
+		meta = append(meta, html[0])
+	}
+	if rels, _ := sherlockneo.GetAmountOfRels(session, args); len(rels) != 0 {
+		meta = append(meta, rels[0])
+	}
+	if nodes, _ := sherlockneo.GetAmountOfNodes(session, args); len(nodes) != 0 {
+		meta = append(meta, nodes[0])
+	}
 
 	context.JSON(http.StatusOK, meta)
 	defer sherlockneo.CloseSession(&session)

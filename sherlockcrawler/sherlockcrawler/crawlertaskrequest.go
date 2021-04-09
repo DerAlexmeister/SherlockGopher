@@ -42,6 +42,7 @@ type CrawlerTaskRequest struct {
 	responseBodyBytes []byte        //body, split
 	statusCode        int           //statusCode, once
 	responseTime      time.Duration //response time, once
+	root              bool
 }
 
 func NewCrawlerTaskRequest(taskID uint64, addr string, taskState TaskState, taskError error, taskErrorTry int, response *http.Response, responseHeader *http.Header, responseBody string, responseBodyBytes []byte, statusCode int, responseTime time.Duration) *CrawlerTaskRequest {
@@ -63,6 +64,13 @@ GetTaskID will return the id of a given task.
 */
 func (sherlock *CrawlerTaskRequest) GetTaskID() uint64 {
 	return sherlock.taskID
+}
+
+/*
+GetRoot indicates the root node.
+*/
+func (sherlock *CrawlerTaskRequest) GetRoot() bool {
+	return sherlock.root
 }
 
 /*
@@ -169,6 +177,13 @@ setResponse will set the response of the Request to a given CrawlerTaskRequest.
 */
 func (sherlock *CrawlerTaskRequest) setResponse(response *http.Response) {
 	sherlock.response = response
+}
+
+/*
+setResponse will set the response of the Request to a given CrawlerTaskRequest.
+*/
+func (sherlock *CrawlerTaskRequest) setRoot(b bool) {
+	sherlock.root = b
 }
 
 /*
