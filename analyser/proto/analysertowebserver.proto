@@ -17,23 +17,7 @@ service Analyser {
      StateRPC can be called to get the state of the analyser
      */
     rpc StateRPC(StateRequest) returns (StateResponse) {}
-
-    // Stream http response to analyser
-    //rpc Upload(stream Chunk) returns (stream UploadStatus) {}
-
-    rpc WebsiteData(stream CrawlerPackage) returns (stream CrawlerAck) {}
 }
-
-message CrawlerAck {
-    uint64 id = 1;
-}
-
-message CrawlerPackage {
-    uint64 id = 1;
-    bytes content = 2;
-}
-
-
 
 /*
 WorkloadRequest requests the status of the queue
@@ -89,52 +73,3 @@ enum AnalyserStateEnum {
         Clean = 3;
         Idle = 4;
 }
-
-// Streamer Stuff
-
-/*
-Chunk represents a chunk of a http response.
-*/
-message Chunk {
-        bytes Content = 1;
-        uint64 TaskId = 2;
-        string Address = 3;
-        string TaskError = 4;
-        repeated HeaderArray Header = 5;
-        int32 StatusCode = 6;
-        int64 ResponseTime = 7;
-        uint64 NumberOfPackets = 8;
-}
-
-/*
-HeaderArray consists of keys and values
-*/
-message HeaderArray {
-        string Key = 1;
-        repeated HeaderArrayValue ValueArr = 2;
-}
-
-/*
-HeaderArray consists of keys and values
-*/
-message HeaderArrayValue {
-        string Value = 1;
-}
-
-/*
-UploadStatusCode gives information. the receiver sends a ok if he received all chunks.
-*/
-enum UploadStatusCode {
-        Ok = 0;
-        Failed = 1;
-}
-
-/*
-UploadStatus is the response from the receiver.
-*/
-message UploadStatus {
-        UploadStatusCode Code = 2;
-}
-
-
-

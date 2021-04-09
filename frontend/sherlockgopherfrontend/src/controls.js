@@ -8,6 +8,8 @@ import ControlGraph from './metagraph.js'
 
 export default class Controls extends React.Component {
 
+    DROPPGENDPOINT = "http://0.0.0.0:8081/controller/v1/droppg"
+    DROPMGENDPOINT = "http://0.0.0.0:8081/controller/v1/dropmg"
     DROPITENDPOINT = "http://0.0.0.0:8081/controller/v1/dropit"
     CHANGESTATUS = "http://0.0.0.0:8081/controller/v1/changestate"
     STATUSENDPOINT = "http://0.0.0.0:8081/controller/v1/status"
@@ -33,6 +35,8 @@ export default class Controls extends React.Component {
     constructor(props) {
         super(props);
 
+        this.dropPg = this.dropPg.bind(this);
+        this.dropMg = this.dropMg.bind(this);
         this.dropIt = this.dropIt.bind(this);
         this.areyouthere = this.areyouthere.bind(this);
         this.submitStatusToWebserver = this.submitStatusToWebserver.bind(this);
@@ -96,6 +100,64 @@ export default class Controls extends React.Component {
     */
     dropIt() {
         Axios.get(this.DROPITENDPOINT).then( res => {
+            const response = res.data;
+            try {
+                this.setState({
+                    message: response.Message,
+                    haserror: false,
+                    showmessage: true,
+                })
+            } catch (error) {
+                this.setState({
+                    message: "Cannot read the response for DropTable",
+                    haserror: true,
+                    showmessage: true,
+                })
+            }
+        }).catch(error => {
+            this.setState({
+                message: "An error occured while trying to drop the table. Is the Database online aswell as the Webserver?",
+                haserror: true,
+                showmessage: true,
+            })
+            console.log(error)
+        })
+    }
+
+    /*
+    dropMg will send a droptable to the webserver which will drop the table.
+    */
+    dropMg() {
+        Axios.get(this.DROPMGENDPOINT).then( res => {
+            const response = res.data;
+            try {
+                this.setState({
+                    message: response.Message,
+                    haserror: false,
+                    showmessage: true,
+                })
+            } catch (error) {
+                this.setState({
+                    message: "Cannot read the response for DropTable",
+                    haserror: true,
+                    showmessage: true,
+                })
+            }
+        }).catch(error => {
+            this.setState({
+                message: "An error occured while trying to drop the table. Is the Database online aswell as the Webserver?",
+                haserror: true,
+                showmessage: true,
+            })
+            console.log(error)
+        })
+    }
+
+    /*
+    dropPg will send a droptable to the webserver which will drop the table.
+    */
+    dropPg() {
+        Axios.get(this.DROPPGENDPOINT).then( res => {
             const response = res.data;
             try {
                 this.setState({
@@ -275,8 +337,18 @@ export default class Controls extends React.Component {
                             <p>Check with one click whether or not the webserver is alive.</p>
                             <button onClick={this.areyouthere} type="submit" class="btn btn-secondary">Are you there?</button>
                             <hr></hr>
+                        </div>
+                        <hr></hr>
+                        <div class="alert alert-dark" role="alert">
+                            <h5 class="alert-heading">Database Management</h5>
                             <p>Delete the current Neo4J-Database.</p>
                             <button onClick={this.dropIt} type="submit" class="btn btn-danger">Drop it!</button>
+                            <hr></hr>
+                            <p>Delete the current MongoDB-Database.</p>
+                            <button onClick={this.dropMg} type="submit" class="btn btn-danger">Drop it!</button>
+                            <hr></hr>
+                            <p>Delete the current Postgres-Database.</p>
+                            <button onClick={this.dropMg} type="submit" class="btn btn-danger">Drop it!</button>
                         </div>
                         <hr></hr>
                         <div class="alert alert-dark" role="alert">

@@ -95,26 +95,6 @@ func (mr *MockAnalyserServiceMockRecorder) StateRPC(ctx, in interface{}, opts ..
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StateRPC", reflect.TypeOf((*MockAnalyserService)(nil).StateRPC), varargs...)
 }
 
-// WebsiteData mocks base method
-func (m *MockAnalyserService) WebsiteData(ctx context.Context, opts ...client.CallOption) (analysertowebserver.Analyser_WebsiteDataService, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "WebsiteData", varargs...)
-	ret0, _ := ret[0].(analysertowebserver.Analyser_WebsiteDataService)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// WebsiteData indicates an expected call of WebsiteData
-func (mr *MockAnalyserServiceMockRecorder) WebsiteData(ctx interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WebsiteData", reflect.TypeOf((*MockAnalyserService)(nil).WebsiteData), varargs...)
-}
-
 // MockAnalyser_WebsiteDataService is a mock of Analyser_WebsiteDataService interface
 type MockAnalyser_WebsiteDataService struct {
 	ctrl     *gomock.Controller
@@ -178,35 +158,6 @@ func (m *MockAnalyser_WebsiteDataService) Close() error {
 func (mr *MockAnalyser_WebsiteDataServiceMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockAnalyser_WebsiteDataService)(nil).Close))
-}
-
-// Send mocks base method
-func (m *MockAnalyser_WebsiteDataService) Send(arg0 *analysertowebserver.CrawlerPackage) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Send indicates an expected call of Send
-func (mr *MockAnalyser_WebsiteDataServiceMockRecorder) Send(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockAnalyser_WebsiteDataService)(nil).Send), arg0)
-}
-
-// Recv mocks base method
-func (m *MockAnalyser_WebsiteDataService) Recv() (*analysertowebserver.CrawlerAck, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Recv")
-	ret0, _ := ret[0].(*analysertowebserver.CrawlerAck)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Recv indicates an expected call of Recv
-func (mr *MockAnalyser_WebsiteDataServiceMockRecorder) Recv() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recv", reflect.TypeOf((*MockAnalyser_WebsiteDataService)(nil).Recv))
 }
 
 // MockAnalyserHandler is a mock of AnalyserHandler interface
@@ -274,20 +225,6 @@ func (mr *MockAnalyserHandlerMockRecorder) StateRPC(arg0, arg1, arg2 interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StateRPC", reflect.TypeOf((*MockAnalyserHandler)(nil).StateRPC), arg0, arg1, arg2)
 }
 
-// WebsiteData mocks base method
-func (m *MockAnalyserHandler) WebsiteData(arg0 context.Context, arg1 analysertowebserver.Analyser_WebsiteDataStream) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WebsiteData", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// WebsiteData indicates an expected call of WebsiteData
-func (mr *MockAnalyserHandlerMockRecorder) WebsiteData(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WebsiteData", reflect.TypeOf((*MockAnalyserHandler)(nil).WebsiteData), arg0, arg1)
-}
-
 // MockAnalyser_WebsiteDataStream is a mock of Analyser_WebsiteDataStream interface
 type MockAnalyser_WebsiteDataStream struct {
 	ctrl     *gomock.Controller
@@ -351,33 +288,4 @@ func (m *MockAnalyser_WebsiteDataStream) Close() error {
 func (mr *MockAnalyser_WebsiteDataStreamMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockAnalyser_WebsiteDataStream)(nil).Close))
-}
-
-// Send mocks base method
-func (m *MockAnalyser_WebsiteDataStream) Send(arg0 *analysertowebserver.CrawlerAck) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Send indicates an expected call of Send
-func (mr *MockAnalyser_WebsiteDataStreamMockRecorder) Send(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockAnalyser_WebsiteDataStream)(nil).Send), arg0)
-}
-
-// Recv mocks base method
-func (m *MockAnalyser_WebsiteDataStream) Recv() (*analysertowebserver.CrawlerPackage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Recv")
-	ret0, _ := ret[0].(*analysertowebserver.CrawlerPackage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Recv indicates an expected call of Recv
-func (mr *MockAnalyser_WebsiteDataStreamMockRecorder) Recv() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recv", reflect.TypeOf((*MockAnalyser_WebsiteDataStream)(nil).Recv))
 }

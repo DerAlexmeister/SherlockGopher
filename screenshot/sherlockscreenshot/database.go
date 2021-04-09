@@ -83,6 +83,19 @@ func (db *DB) Save(input *Screenshot) {
 }
 
 /*
+DropDB deletes all entries in the dbscreenshots database by deleting the screenshots Collection
+*/
+func (db *DB) DropDB() error {
+	collection := db.GetMongoClient().Database("dbscreenshots").Collection("screenshots")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := collection.Drop(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
+/*
 ReturnAllScreenshots returns all entries from the mongo db database
 */
 func (db *DB) ReturnAllScreenshots() ([]*Screenshot, error) {

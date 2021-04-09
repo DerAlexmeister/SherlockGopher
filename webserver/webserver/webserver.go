@@ -48,6 +48,7 @@ type SherlockWebserver struct {
 	Dependency *SherlockWebServerDependency
 	Driver     neo4j.Driver
 	PGdriver   *gorm.DB
+	MGdriver   *screenshot.DB
 }
 
 /*
@@ -120,6 +121,8 @@ type ImageMetadata struct {
 	gps_longitude     string
 }
 
+type metadata struct{}
+
 /*
 NewRequestedURL will be a new instance of RequestedURL.
 */
@@ -146,12 +149,14 @@ New will return a new instance of the SherlockWebserver.
 */
 func New() *SherlockWebserver {
 	ldriver, err := sherlockneo.GetNewDatabaseConnection()
-	pgdriver := connectToPostgresDb()
 	Init()
+	pgdriver := connectToPostgresDb()
+	mgdriver := screenshot.Connect()
 	if err == nil {
 		return &SherlockWebserver{
 			Driver:   ldriver,
 			PGdriver: pgdriver,
+			MGdriver: mgdriver,
 		}
 	}
 	return &SherlockWebserver{}
@@ -491,6 +496,40 @@ func (server *SherlockWebserver) DropGraphTable(context *gin.Context) {
 }
 
 /*
+DropMongoTable should drop the mongo table.
+*/
+func (server *SherlockWebserver) DropMongoTable(context *gin.Context) {
+	err := server.MGdriver.DropDB()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"Message": "A Problem occurred while trying to drop the Database",
+		})
+	} else {
+		context.JSON(http.StatusOK, gin.H{
+			"Message": "Dropped the table.",
+		})
+	}
+}
+
+/*
+DropPostgresTable should drop the postgres table.
+*/
+func (server *SherlockWebserver) DropPostgresTable(context *gin.Context) {
+
+	err := server.PGdriver.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&metadata{})
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"Message": "A Problem occurred while trying to drop the Database",
+		})
+	} else {
+		context.JSON(http.StatusOK, gin.H{
+			"Message": "Dropped the table.",
+		})
+	}
+}
+
+/*
 isNil checks wheter a interface is nil or not
 */
 func isNil(i interface{}) string {
@@ -550,8 +589,7 @@ GetScreenshots gets al screenshot data from the mongo db, picks 25 entries depen
 */
 func (server *SherlockWebserver) GetScreenshots(ctx *gin.Context) {
 	imagespersite := 25
-	dbsession := screenshot.Connect()
-	allscreenshots, err := dbsession.ReturnAllScreenshots()
+	allscreenshots, err := server.MGdriver.ReturnAllScreenshots()
 	if err != nil || len(allscreenshots) == 0 {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"Status": "Error while receiving data from database",

@@ -94,6 +94,8 @@ func main() {
 	controller.POST("/changestate", webServerService.ChangeState) //will change the state of the cralwer and the analyser.
 	controller.GET("/status", webServerService.GetServiceStatus)  // will return the status of the analyser/crawler service.
 	controller.GET("/dropit", webServerService.DropGraphTable)    // will drop the neo4j table.
+	controller.GET("/droppg", webServerService.DropMongoTable)    // will drop the mongo table.
+	controller.GET("/dropmg", webServerService.DropPostgresTable) // will drop the postgres table.
 
 	//Monitor Group.
 	monitorapi := router.Group("/monitor/v1")                 //missing handler.
