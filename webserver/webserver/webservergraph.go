@@ -1,6 +1,7 @@
 package webserver
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -8,6 +9,17 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 )
+
+type RequestedAddress struct {
+	Address string `json:"address" binding:"required"`
+}
+
+/*
+NewRequestedAddress will be a new instance of RequestedAddress.
+*/
+func NewRequestedAddress() *RequestedAddress {
+	return &RequestedAddress{}
+}
 
 /*
 GraphFetchWholeGraphHighPerformanceV1 will be a high performance endpoint to get optimized json for the Frontend.
@@ -27,7 +39,19 @@ func (server *SherlockWebserver) GraphFetchWholeGraphHighPerformanceV1(context *
 	case 1:
 		query = sherlockneo.GetRoot()
 	case 2:
-		query = sherlockneo.GetChildren()
+		var add = NewRequestedAddress()
+		err := context.BindJSON(add)
+		if err != nil || len(add.Address) == 0 {
+			context.JSON(http.StatusInternalServerError, gin.H{
+				"Status": "Error while reveiving Requested Address",
+			})
+		}
+		if len(add.Address) == 0 {
+			fmt.Println("1")
+		}
+		fmt.Println(add.Address)
+		query = fmt.Sprintf(sherlockneo.GetChildren(), add.Address)
+
 	default:
 		query = sherlockneo.GetAllRels()
 	}

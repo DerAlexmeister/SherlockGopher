@@ -106,7 +106,8 @@ func main() {
 	graphsapi.GET("/meta", webServerService.GraphMetaV1) // Get all meta information about neo4j.
 	graphsapi.GET("/all", webServerService.GraphFetchWholeGraphV1)
 	graphsapi.GET("/alloptimized/:query", webServerService.GraphFetchWholeGraphHighPerformanceV1) // Will return the entire graph, maybe build a stream.
-	graphsapi.GET("/performenceofsites", webServerService.GraphPerformanceOfSitesV1)              //Will return address with statuscode and reponsetime.
+	graphsapi.POST("/alloptimized/:query", webServerService.GraphFetchWholeGraphHighPerformanceV1)
+	graphsapi.GET("/performenceofsites", webServerService.GraphPerformanceOfSitesV1) //Will return address with statuscode and reponsetime.
 
 	graphsapi.POST("/detailsofnode", webServerService.GraphNodeDetailsV1) // get all information of a node.
 	graphsapi.POST("/search", webServerService.ReceiveURL)                // will handle the requested url which should be crawled.

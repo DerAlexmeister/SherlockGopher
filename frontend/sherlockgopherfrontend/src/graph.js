@@ -42,6 +42,10 @@ export default class NodeGraph extends React.Component {
 
         //Data
         responseData:[],
+        savedata: {
+            "nodes":[],
+            "links": []
+        },
         data: {
             "nodes":[],
             "links": []
@@ -50,6 +54,9 @@ export default class NodeGraph extends React.Component {
 
     constructor(props) {
         super(props);
+        this.prepArray = this.prepArray.bind(this)
+        this.getChildrenOfNode = this.getChildrenOfNode.bind(this);
+        this.getRoot = this.getRoot.bind(this);
         this.getMetaInformation = this.getMetaInformation.bind(this);
         this.getGraphData = this.getGraphData.bind(this);
         this.handleChange = this.handleChange.bind(this);
@@ -88,7 +95,7 @@ export default class NodeGraph extends React.Component {
             ).then(res => {
                 const response = res.data
                 this.setState({
-                    data: response
+                        data: response
                 })
             }).catch(error => {
                 this.setState({
@@ -98,18 +105,44 @@ export default class NodeGraph extends React.Component {
                 })
             });
         } catch (error) {
-            console.log("An error occured while trying to get the Metadata.");
+            console.log("An error occured while trying to get the Metadata(all).");
         }
     }
+
+    getRoot(){
+        try {
+            Axios.get(
+                this.ALLINFORMATIONPERFORMANCE + "/1"
+            ).then(res => {
+                const response = res.data
+                this.setState({
+                        data: response,
+                        savedata: response,
+                })
+            }).catch(error => {
+                this.setState({
+                    metaError: "Cannot fetch the rootgraphdata, Error: " + String(error),
+                    metahasError: true,
+                    showMetaError: true,
+                })
+            });
+        } catch (error) {
+            console.log("An error occured while trying to get the Metadata(root).");
+        }
+    }
+
 
     /*
     componentDidMount will mount the component.
     */
     componentDidMount() {
+        this.getRoot()
         this.interval = setTimeout(async () => {
             try {
                 this.getMetaInformation()
-                this.getGraphData()
+                if(!this.state.is2d){
+                    this.getGraphData()
+                }
                 console.log("hallo")
             } catch (error) {
                 console.log("An error occured while trying to get the Metadata.")
@@ -118,7 +151,9 @@ export default class NodeGraph extends React.Component {
         this.interval = setInterval(async () => {
             try {
                 this.getMetaInformation()
-                this.getGraphData()
+                if(!this.state.is2d){
+                    this.getGraphData()
+                }
                 this.setState({
                     seconds: 60,
                 })
@@ -152,7 +187,10 @@ export default class NodeGraph extends React.Component {
           { 
             is2d: !this.state.is2d
           }
-        );  
+        ); 
+        if (this.state.is2d){
+            this.getRoot()
+        } 
     }
     
     /*
@@ -172,6 +210,52 @@ export default class NodeGraph extends React.Component {
             return []
         }
     }
+
+    prepArray(array, id, index) {
+        for (let key in array.nodes) {
+            if(array.nodes[key] == id){
+                array.nodes[key].index = index
+            }
+        }
+        for (let key in array.links) {
+            array.links[key].source.index = index
+        }
+        return array;
+    }
+
+    getChildrenOfNode(node, event){  
+        try {
+            Axios.post(
+                this.ALLINFORMATIONPERFORMANCE + "/2",  JSON.stringify({
+                    "address": node.id,
+                })
+            ).then(res => {
+                const resp = res.data
+                const tmpdata = {
+                    "nodes":[],
+                    "links": []
+                }
+                console.log("resp", resp)
+                tmpdata.nodes = this.state.savedata.nodes.concat(resp.nodes)
+                tmpdata.links = this.state.savedata.links.concat(resp.links)
+                console.log("tmpdata", tmpdata)
+                this.setState({
+                    data: tmpdata,
+                    savedata: tmpdata,
+                })
+                console.log("savedata", this.state.savedata)
+                console.log("data", this.state.data)
+            }).catch(error => {
+                this.setState({
+                    metaError: "Cannot fetch the childrengraphdata, Error: " + String(error),
+                    metahasError: true,
+                    showMetaError: true,
+                })
+            });
+        } catch (error) {
+                console.log("An error occured while trying to get the Metadata.");
+        }  
+    }
     
     /*
     getGraph will return the graph or a message.
@@ -187,6 +271,7 @@ export default class NodeGraph extends React.Component {
             linkDirectionalArrowRelPos={1}
             linkLabel={"label"}
             showNavInfo={false}
+            onNodeClick={this.getChildrenOfNode}
         />)
         } else if (!is2d && data["nodes"] !== undefined && data["links"] !== undefined) {
             return (<ForceGraph3D 

@@ -88,10 +88,10 @@ const (
 	connector string = "MERGE (a%s {Address:\"%s\" %s}) MERGE (b%s {Address:\"%s\" %s}) MERGE (a)-[r:%s]->(b)"
 
 	//rootnode
-	rootnode string = "Match (r) where exists(r.root) return r"
+	rootnode string = "Match (n)-[r]->(k) where n.Root = 'x' RETURN n.Address as Source, n.FileType as SourceType, Type(r) as Relationship, k.Address as Destination, k.FileType as DestinationType"
 
 	//getchildren
-	children string = "Match (parent)-[r]-(child) where parent.id = {%d} return parent, r,child"
+	children string = "Match (n)-[r]->(k) where n.Address = '%s' RETURN n.Address as Source, n.FileType as SourceType, Type(r) as Relationship, k.Address as Destination, k.FileType as DestinationType"
 )
 
 /*
@@ -102,7 +102,7 @@ func GetRoot() string {
 }
 
 /*
-getChildren will return all children of the given node (by id).
+getChildren will return all children of the given node (by address).
 */
 func GetChildren() string {
 	return children

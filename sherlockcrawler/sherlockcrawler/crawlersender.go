@@ -40,8 +40,8 @@ Init prepares urls for kafka
 */
 func Init() {
 	brokerAddress = readFromENV("KAFKA_BROKER", "0.0.0.0:9092")
-	topictask = readFromENV("KAFKA_TOPIC_TASK", "testtask")
-	topicurl = readFromENV("KAFKA_TOPIC_URL", "testurl")
+	topictask = "testtask1"
+	topicurl = "testurl1"
 }
 
 /*
@@ -90,7 +90,9 @@ func (sherlock *SherlockCrawler) SendTaskToAnalyser(ctx context.Context, task *C
 		(*task).setTaskState(PROCESSING)
 
 		if task.GetRoot() {
-			task.responseHeader.Add("root", "true")
+			task.responseHeader.Add("root", "x")
+			fmt.Println(task.responseHeader)
+			fmt.Println("found root")
 		}
 
 		tmp := convert(task)

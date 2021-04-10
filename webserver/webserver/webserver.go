@@ -138,7 +138,7 @@ func NewRequestedStatus() *RequestedStatus {
 }
 
 /*
-NewRequestedStatus will be a new instance of RequestedPagination.
+NewRequestedPagination will be a new instance of RequestedPagination.
 */
 func NewRequestedPagination() *RequestedPagination {
 	return &RequestedPagination{}
