@@ -1,7 +1,3 @@
-/*
-Will represent the graph in the frontend.
-*/
-
 //React Standard
 import 'bootstrap/dist/css/bootstrap.css';
 import React from "react";
@@ -16,7 +12,7 @@ import SearchBar from './searchbar.js';
 //Stylesheets
 import './assets/css/App.css';
 
-export default class NodeGraph extends React.Component {
+export default class Testgraph extends React.Component {
     
     METAINFORMATION = "http://0.0.0.0:8081/graph/v1/meta"
     ALLINFORMATIONPERFORMANCE = "http://0.0.0.0:8081/graph/v1/alloptimized"
@@ -26,6 +22,7 @@ export default class NodeGraph extends React.Component {
         is2d: true,
 
         seconds: 60,
+        rootid: "",
 
         //MetaInformation State
         metaError: "",
@@ -43,6 +40,10 @@ export default class NodeGraph extends React.Component {
         //Data
         responseData:[],
         data: {
+            "nodes":[],
+            "links": []
+        },
+        prunedTree: {
             "nodes":[],
             "links": []
         },
@@ -235,12 +236,30 @@ export default class NodeGraph extends React.Component {
                 console.log("An error occured while trying to get the Metadata.");
         }  
     }
+
+    getPrunedTree(node){
+        const visibleNodes = [];
+        const visibleLinks = [];
+        (function traverseTree(node = nodesById[rootId]) {
+            visibleNodes.push(node);
+            if (node.collapsed) return;
+            visibleLinks.push(...node.childLinks);
+            node.childLinks
+              .map(link => ((typeof link.target) === 'object') ? link.target : nodesById[link.target]) // get child node
+              .forEach(traverseTree);
+        })
+    }
+
+    click(node, event){ 
+        node.collapsed = !node.collapsed;
+        this.getPrunedTree(node)
+    }
     
     /*
     getGraph will return the graph or a message.
     */
-    getGraph(data, is2d) {
-        if (is2d && data["nodes"] !== undefined && data["links"] !== undefined) {
+    getGraph(data) {
+        if (data["nodes"] !== undefined && data["links"] !== undefined) {
             return (<ForceGraph2D
             graphData={data}
             nodeLabel="id"
@@ -251,23 +270,8 @@ export default class NodeGraph extends React.Component {
             linkDirectionalArrowRelPos={1}
             linkLabel={"label"}
             showNavInfo={false}
-            onNodeClick={this.getChildrenOfNode}
+            onNodeClick={this.click}
         />)
-        } else if (!is2d && data["nodes"] !== undefined && data["links"] !== undefined) {
-            return (<ForceGraph3D 
-                                showNavInfo={false}
-                                width={1145}
-                                height={600}
-                                backgroundColor={"#f7f9f9"}
-                                graphData={data}
-                                linkDirectionalArrowLength={1.5}
-                                linkDirectionalArrowRelPos={1}
-                                nodeThreeObject={node => {
-                                    const sprite = new SpriteText(node.id);
-                                    sprite.color = node.color;
-                                    sprite.textHeight = 8;
-                                    return sprite;
-                }} />)
         } else {
             return (
                 <div class="alert alert-warning">No nodes in the Database or there is no connection</div>
@@ -276,7 +280,7 @@ export default class NodeGraph extends React.Component {
     }
 
     render() {     
-        const {is2d, data, metaError, metahasError, showMetaError, metadata, seconds} = this.state
+        const {data, metaError, metahasError, showMetaError, metadata, seconds} = this.state
         var finalmetadata = this.makeMetaDataIterable(metadata)
         return (
           <div>
@@ -302,8 +306,6 @@ export default class NodeGraph extends React.Component {
                     <hr></hr>
                     <div class="custom-control custom-switch">
                         <input onClick={this.handleChange} type="checkbox" class="custom-control-input" id="customSwitches"></input>
-                        <label class="custom-control-label" for="customSwitches">Switch to {!is2d ? "2D" : "3D"}</label>
-                        <span style={{color: "#273746"}}> | </span>
                         <span style={{backgroundColor:"#7CA9EF"}} class="badge badge-pill badge-dark htmlnode"> HTML </span> 
                         <span style={{color: "#d5d8dc"}}>   </span>
                         <span style={{backgroundColor:"#E891BC"}}  class="badge badge-pill badge-success"> Stylesheets </span>
@@ -326,7 +328,7 @@ export default class NodeGraph extends React.Component {
                                 width: "100%",
                                 padding: "10px"}}>
                         { 
-                            this.getGraph(data, is2d)
+                            this.getGraph(data)
                         }
                     </div>
               </div>
@@ -334,3 +336,4 @@ export default class NodeGraph extends React.Component {
         )
     }
 }
+

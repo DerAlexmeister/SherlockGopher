@@ -14,6 +14,7 @@ import Nodedetails from './nodedetails.js'
 import NodeGraph from './graph.js'
 import Screenshotservice from './screenshotservice.js'
 import Imagemetadataservice from './imagemetadataservice.js'
+import Testgraph from './testgraph.js'
 
 
 const browserHistory = createBrowserHistory();
@@ -28,6 +29,7 @@ const router = (
       <Route  path="/controls" component={Controls}  />
       <Route  path="/screenshots" component={Screenshotservice}  />
       <Route  path="/imagemetadata" component={Imagemetadataservice}  />
+      <Route  path="/testgraph" component={Testgraph}  />
       <Route  path="/scriptingapi" component={ScriptingAPI}  />
     </div>
   </Router>

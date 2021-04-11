@@ -33,24 +33,21 @@ func (server *SherlockWebserver) GraphFetchWholeGraphHighPerformanceV1(context *
 		})
 	}
 	var query string
+	var add = NewRequestedAddress()
 	switch paramtoint {
 	case 0:
 		query = sherlockneo.GetAllRels()
 	case 1:
 		query = sherlockneo.GetRoot()
 	case 2:
-		var add = NewRequestedAddress()
 		err := context.BindJSON(add)
 		if err != nil || len(add.Address) == 0 {
 			context.JSON(http.StatusInternalServerError, gin.H{
 				"Status": "Error while reveiving Requested Address",
 			})
 		}
-		if len(add.Address) == 0 {
-			fmt.Println("1")
-		}
-		fmt.Println(add.Address)
 		query = fmt.Sprintf(sherlockneo.GetChildren(), add.Address)
+		fmt.Println(add.Address)
 
 	default:
 		query = sherlockneo.GetAllRels()
@@ -64,8 +61,24 @@ func (server *SherlockWebserver) GraphFetchWholeGraphHighPerformanceV1(context *
 	} else {
 		args := make(map[string]interface{})
 		graph, _ := sherlockneo.GetAllNodesAndTheirRelationshipsOptimized(session, args, query)
+		if paramtoint == 2 {
+			for k, v := range graph["links"] {
+				if v["target"] == add.Address {
+					removeFromSlice(graph["links"], k)
+				}
+			}
+			for k, v := range graph["nodes"] {
+				if v["id"] == add.Address {
+					removeFromSlice(graph["nodes"], k)
+				}
+			}
+		}
 		context.JSON(http.StatusOK, graph)
 	}
+}
+
+func removeFromSlice(slice []map[string]string, s int) []map[string]string {
+	return append(slice[:s], slice[s+1:]...)
 }
 
 /*

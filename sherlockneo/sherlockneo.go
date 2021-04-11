@@ -218,6 +218,7 @@ func GetAllNodesAndTheirRelationshipsOptimized(session neo4j.Session, args map[s
 		"links": InCaseIsEmpty(rels),
 	}
 	defer CloseSession(&session)
+	fmt.Println(appendNodeAndRel)
 	return appendNodeAndRel, nil
 }
 
