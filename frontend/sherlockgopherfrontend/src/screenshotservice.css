@@ -26,3 +26,12 @@
 .pagination > li:first-child > a, .pagination > li:first-child > span, .pagination > li:last-child > a, .pagination > li:last-child > span{
     border-radius: unset
 }
+.card-img-bottom{
+    max-width: 40%;
+    height: auto;
+    position:relative;
+    left:30%
+}
+.card-title{
+    font-size: xx-large;
+}

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os,sys,requests,psycopg2
+from .sherlockneo import GetImages
 from exif import Image
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -34,9 +35,8 @@ Session = sessionmaker(bind=engine)
 # DB class
 class Mdata(Base):
     __tablename__ = 'metadata'
-    img_id = Column(Integer, primary_key = True)
-    img_url = Column(String(50))
-    condition = Column(Boolean)
+    neo4j_node_id = Column(Integer, primary_key = True)
+    img_url = Column(String(500))
     datetime_original = Column(String(50))  
     model = Column(String(50))
     make = Column(String(50))
@@ -45,10 +45,9 @@ class Mdata(Base):
     gps_latitude = Column(String(50))
     gps_longitude = Column(String(50))
 
-    def __init__(self, img_id, img_url, condition, datetime_original, model, make, maker_note, software, gps_latitude, gps_longitude):
-        self.img_id = img_id
+    def __init__(self, neo4j_node_id, img_url, datetime_original, model, make, maker_note, software, gps_latitude, gps_longitude):
+        self.neo4j_node_id = neo4j_node_id
         self.img_url = img_url
-        self.condition = condition
         self.datetime_original = datetime_original
         self.model = model
         self.make = make
@@ -57,9 +56,6 @@ class Mdata(Base):
         self.gps_latitude = gps_latitude
         self.gps_longitude = gps_longitude
 
-    # for print debugging
-    def __str__(self):
-        return "{},{},{},{},".format(self.img_id, self.software, self.gps_latitude, self.gps_longitude)
 
 # create database
 def databaseCreateTable():
@@ -70,15 +66,18 @@ def databaseDeleteTable():
     Base.metadata.drop_all(engine)
  
 # inserts exif data in database
-def databaseInsertData(img_id, cond, listWithExif, imgurl):
+def databaseInsertData(node_id, listWithExif, imgurl):
     s = Session()
-    latitude = "{}".format(listWithExif[5])
-    longtitude = "{}".format(listWithExif[6])
-    object1 = Mdata(img_id, imgurl, cond, listWithExif[0], listWithExif[1], listWithExif[2], listWithExif[3], listWithExif[4], latitude, longtitude)
-
-    s.add(object1)
-    s.commit()
-    s.close()
+    exists = s.query(Mdata.neo4j_node_id).filter_by(neo4j_node_id=node_id).first() is not None
+    if exists:
+        return
+    else:   
+        latitude = "{}".format(listWithExif[5])
+        longtitude = "{}".format(listWithExif[6])
+        object1 = Mdata(node_id, imgurl, listWithExif[0], listWithExif[1], listWithExif[2], listWithExif[3], listWithExif[4], latitude, longtitude)
+        s.add(object1)
+        s.commit()
+        s.close()
 
 # return all entries from dp
 def DatabaseRetreiveData():
@@ -94,9 +93,9 @@ def DownloadImage():
     relevantExifTags = ["datetime_original", "model", "make", "maker_note", "software", "gps_latitude", "gps_longitude"]
     listExifTags = []
 
-    listWithIdAndUrl = neo.GetImages() 
+    listWithIdAndUrl = GetImages() 
     #for test purpose
-    #listWithIdAndUrl = [(6, "https://www.aboutbenita.com/wp-content/uploads/Foto-07.01.21-21-07-58-1.jpg")]
+    #listWithIdAndUrl = [(6, "https://www.aboutbenita.com/wp-content/uploads/benita-thenhaus-body.jpg")]
 
     for pair in listWithIdAndUrl:
 
@@ -110,13 +109,10 @@ def DownloadImage():
         #get metadata and save the result in a postgresql database
         with open(pathplusext, 'rb') as imageFile:
             myImage = Image(imageFile)
-            if myImage.has_exif:
-                availableExifTags = myImage.list_all()
-                for currentRelevantExifTag in relevantExifTags:
-                    if currentRelevantExifTag in availableExifTags:
-                        listExifTags.append((myImage.get(currentRelevantExifTag)))
-                    else:
-                        listExifTags.append(None)
-                databaseInsertData(pair[0], 1, listExifTags, pair[1])
-            else:
-                databaseInsertData(pair[0], 0, None, pair[1])
+            availableExifTags = myImage.list_all()
+            for currentRelevantExifTag in relevantExifTags:
+                if currentRelevantExifTag in availableExifTags:
+                    listExifTags.append((myImage.get(currentRelevantExifTag)))
+                else:
+                    listExifTags.append("-")
+            databaseInsertData(pair[0], listExifTags, pair[1])

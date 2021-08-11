@@ -34,15 +34,14 @@ export default class Imagemetadataservice extends React.Component {
                         <div class="card-body">
                             <ul class="list-group list-group-flush">
                             <li class="list-group-item">Image URL: {pd.img_url}</li>
-                            <li class="list-group-item">ID: {pd.img_id}</li>
-                            <li class="list-group-item">Zustand: {pd.condition}</li>
-                            <li class="list-group-item">Datum: {pd.datetime_original}</li>
-                            <li class="list-group-item">Gerät: {pd.model}</li>
-                            <li class="list-group-item">Kameraherstellers: {pd.make}</li>
-                            <li class="list-group-item">Beschreibung: {pd.maker_note}</li>
-                            <li class="list-group-item">Software: {pd.software}</li>
-                            <li class="list-group-item">GPS-Längengrad: {pd.gps_latitude}</li>
-                            <li class="list-group-item">GPS-Breitengrad: {pd.gps_longitude}</li>
+                            <li class="list-group-item">Neo4J Node ID: {pd.neo4j_node_id}</li>
+                            {pd.datetime_original != "None" && pd.datetime_original != "" ? <li class="list-group-item">Datum: {pd.datetime_original}</li> : null }
+                            {pd.model != "None" && pd.model != "" ? <li class="list-group-item">Gerät: {pd.model}</li> : null }
+                            {pd.make != "None" && pd.make != "" ? <li class="list-group-item">Kameraherstellers: {pd.make}</li> : null }
+                            {pd.maker_note != "None" && pd.maker_note != "" ? <li class="list-group-item">Beschreibung: {pd.maker_note}</li> : null }
+                            {pd.software != "None" && pd.software != "" ? <li class="list-group-item">Software: {pd.software}</li> : null }
+                            {pd.gps_latitude != "None" && pd.gps_latitude != "" ? <li class="list-group-item">GPS-Längengrad: {pd.gps_latitude}</li> : null }
+                            {pd.gps_longitude != "None" && pd.gps_longitude != "" ? <li class="list-group-item">GPS-Breitengrad: {pd.gps_longitude}</li> : null }
                         </ul>
                         </div>
                         </div>
@@ -63,11 +62,11 @@ export default class Imagemetadataservice extends React.Component {
                     hasMetaError: true,
                 })  
             }
-            }).catch(error => {
-                console.log(error)
-                this.setState({
-                    sdatamessage: "For some Reason an Error occured. Is the Webserver up?",
-                    hasSdataError: true,
+        }).catch(error => {
+            console.log(error)
+            this.setState({
+                sdatamessage: "For some Reason an Error occured. Is the Webserver down or the database empty?",
+                hasSdataError: true,
             })
         })
     }

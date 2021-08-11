@@ -109,7 +109,7 @@ type MetaArray struct {
 }
 
 type ImageMetadata struct {
-	img_id            int
+	neo4j_node_id     int
 	img_url           string
 	condition         bool
 	datetime_original string
@@ -654,7 +654,7 @@ func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
 
 	for i := range resultmap {
 		tmp := ImageMetadata{}
-		tmp.img_id = int(resultmap[i]["img_id"].(int32))
+		tmp.neo4j_node_id = int(resultmap[i]["neo4j_node_id"].(int32))
 		tmp.img_url = isNil(resultmap[i]["img_url"])
 		tmp.condition = resultmap[i]["condition"].(bool)
 		tmp.datetime_original = isNil(resultmap[i]["datetime_original"])
@@ -671,7 +671,7 @@ func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
 	var tmpmap []interface{}
 	for _, v := range partofallmeta {
 		tmpmap = append(tmpmap, gin.H{
-			"img_id":            v.img_id,
+			"neo4j_node_id":     v.neo4j_node_id,
 			"img_url":           v.img_url,
 			"condition":         v.condition,
 			"datetime_original": v.datetime_original,

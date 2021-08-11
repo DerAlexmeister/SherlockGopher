@@ -5,7 +5,7 @@ down:
 infup:
 	sudo docker-compose up zookeeper kafka mongodb_container postgres neo4j
 serup:
-	sudo docker-compose up webserver frontend analyser crawler screenshot analysepictures worker redis
+	sudo docker-compose up -- build webserver frontend analyser crawler screenshot analysepictures worker redis
 inf:
 	sudo docker-compose run zookeeper kafka mongodb_container postgres neo4j
 ser:
