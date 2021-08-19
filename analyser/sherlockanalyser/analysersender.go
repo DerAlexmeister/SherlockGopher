@@ -40,8 +40,8 @@ Init prepares urls for kafka
 */
 func Init() {
 	brokerAddress = readFromENV("KAFKA_BROKER", "0.0.0.0:9092")
-	topictask = readFromENV("KAFKA_TOPIC_TASK", "testtask")
-	topicurl = readFromENV("KAFKA_TOPIC_URL", "testurl")
+	topictask = readFromENV("KAFKA_TOPIC_TASK", "ktask")
+	topicurl = readFromENV("KAFKA_TOPIC_URL", "kurl")
 }
 
 /*

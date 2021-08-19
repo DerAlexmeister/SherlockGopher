@@ -40,27 +40,6 @@ services:
             - ./plugins:/plugins
         environment:
             - NEO4J_AUTH=neo4j/test
-    redis:
-        image: redis:latest
-        container_name: redis
-        hostname: redis
-        ports:
-            - "6379:6379"   
-    worker:
-        build: 
-            context: .
-            dockerfile: analysePictures/dockerfile
-        hostname: worker
-        user: nobody
-        command: "celery -A main.celery worker --loglevel=info"   
-        volumes:
-            - ./analysePictures:/main
-        links:
-            - redis
-        depends_on:
-            - redis
-        environment:
-            - FLASKA_URL=10.0.2.15
     analysepictures: 
         build: 
             context: .
@@ -70,10 +49,6 @@ services:
             - "8203:8203"
         volumes:
             - ./analysePictures:/main
-        links:
-            - redis
-        depends_on:
-            - redis
         environment:
             - FLASKA_URL=10.0.2.15
     screenshot: 

@@ -97,6 +97,7 @@ def DownloadImage():
     #for test purpose
     #listWithIdAndUrl = [(6, "https://www.aboutbenita.com/wp-content/uploads/benita-thenhaus-body.jpg")]
 
+    # check list empty else sleep
     for pair in listWithIdAndUrl:
 
         response = requests.get(pair[1])
