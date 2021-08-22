@@ -65,7 +65,7 @@ func Connect() *DB {
 	}
 	res := NewDB()
 	res.SetMongoClient(client)
-
+	res.DropDB()
 	return res
 }
 

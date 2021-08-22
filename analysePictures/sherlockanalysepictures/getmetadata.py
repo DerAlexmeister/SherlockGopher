@@ -97,23 +97,24 @@ def DownloadImage():
     #for test purpose
     #listWithIdAndUrl = [(6, "https://www.aboutbenita.com/wp-content/uploads/benita-thenhaus-body.jpg")]
 
-    # check list empty else sleep
-    for pair in listWithIdAndUrl:
+    # check list
+    if listWithIdAndUrl is not None and isinstance(listWithIdAndUrl, list) and len(listWithIdAndUrl) != 0:
+        for pair in listWithIdAndUrl:
 
-        response = requests.get(pair[1])
-        _, fileExtension = os.path.splitext(pair[1])
-        pathplusext = filePathToImage+fileExtension
-        file = open(pathplusext, "wb")
-        file.write(response.content)
-        file.close()
-        
-        #get metadata and save the result in a postgresql database
-        with open(pathplusext, 'rb') as imageFile:
-            myImage = Image(imageFile)
-            availableExifTags = myImage.list_all()
-            for currentRelevantExifTag in relevantExifTags:
-                if currentRelevantExifTag in availableExifTags:
-                    listExifTags.append((myImage.get(currentRelevantExifTag)))
-                else:
-                    listExifTags.append("-")
-            databaseInsertData(pair[0], listExifTags, pair[1])
+            response = requests.get(pair[1])
+            _, fileExtension = os.path.splitext(pair[1])
+            pathplusext = filePathToImage+fileExtension
+            file = open(pathplusext, "wb")
+            file.write(response.content)
+            file.close()
+            
+            #get metadata and save the result in a postgresql database
+            with open(pathplusext, 'rb') as imageFile:
+                myImage = Image(imageFile)
+                availableExifTags = myImage.list_all()
+                for currentRelevantExifTag in relevantExifTags:
+                    if currentRelevantExifTag in availableExifTags:
+                        listExifTags.append((myImage.get(currentRelevantExifTag)))
+                    else:
+                        listExifTags.append("-")
+                databaseInsertData(pair[0], listExifTags, pair[1])

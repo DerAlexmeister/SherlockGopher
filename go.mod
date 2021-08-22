@@ -8,7 +8,7 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20200108200545-475eaeb16496
 	github.com/chromedp/cdproto v0.0.0-20210323015217-0942afbea50e
 	github.com/chromedp/chromedp v0.6.10
-	github.com/geziyor/geziyor v0.0.0-20210128175025-129402d754a6 // indirect
+	github.com/geziyor/geziyor v0.0.0-20210128175025-129402d754a6
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.6.0
 	github.com/go-pg/pg v8.0.7+incompatible
@@ -47,6 +47,7 @@ require (
 	github.com/vmihailenco/msgpack/v4 v4.3.11 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.3.0 // indirect
 	github.com/vmihailenco/tagparser v0.1.2 // indirect
+	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
 	go.mongodb.org/mongo-driver v1.4.6
 	go.opentelemetry.io/otel v0.19.0 // indirect
 	go.uber.org/zap v1.13.0 // indirect

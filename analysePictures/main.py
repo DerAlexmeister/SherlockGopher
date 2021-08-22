@@ -18,7 +18,7 @@ manager = Manager(app)
 
 class CreateDbTable(Server):
 
-    @scheduler.task("interval", id="image", seconds=20, timezone=pytz.UTC)
+    @scheduler.task("interval", id="image", seconds=60, timezone=pytz.UTC)
     def getImageInIntervall():
         DownloadImage()
     

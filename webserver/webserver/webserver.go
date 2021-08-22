@@ -148,18 +148,15 @@ func NewRequestedPagination() *RequestedPagination {
 New will return a new instance of the SherlockWebserver.
 */
 func New() *SherlockWebserver {
-	ldriver, err := sherlockneo.GetNewDatabaseConnection()
+	ldriver, _ := sherlockneo.GetNewDatabaseConnection()
 	Init()
-	pgdriver := connectToPostgresDb()
+	pgdriver, _ := connectToPostgresDb()
 	mgdriver := screenshot.Connect()
-	if err == nil {
-		return &SherlockWebserver{
-			Driver:   ldriver,
-			PGdriver: pgdriver,
-			MGdriver: mgdriver,
-		}
+	return &SherlockWebserver{
+		Driver:   ldriver,
+		PGdriver: pgdriver,
+		MGdriver: mgdriver,
 	}
-	return &SherlockWebserver{}
 }
 
 /*
@@ -620,12 +617,12 @@ func (server *SherlockWebserver) GetScreenshots(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-func connectToPostgresDb() *gorm.DB {
+func connectToPostgresDb() (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.Open(postgresuri), &gorm.Config{})
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return db
+	return db, nil
 }
 
 /*

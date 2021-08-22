@@ -1,12 +1,13 @@
 package sherlockcrawler
 
 import (
-	"io/ioutil"
 	"net/http"
 	"sync"
 	"time"
 
+	"github.com/geziyor/geziyor"
 	log "github.com/sirupsen/logrus"
+	"go.etcd.io/etcd/client"
 
 	"github.com/pkg/errors"
 )
@@ -247,36 +248,24 @@ func (sherlock *CrawlerTaskRequest) MakeRequestAndStoreResponse(waitGroup *sync.
 		sherlock.SetWaitGroupDone(waitGroup)
 		return false
 	}
+
 	startTime := time.Now()
+	geziyor.NewGeziyor(&geziyor.Options{
+		StartRequestsFunc: func(g *geziyor.Geziyor) {
+			g.GetRendered(sherlock.addr, g.Opt.ParseFunc)
+		},
+		ParseFunc: func(g *geziyor.Geziyor, r *client.Response) {
+			t := time.Now()
+			respT := t.Sub(startTime)
+			sherlock.setResponseTime(respT)
+			sherlock.setResponse(re.Response)
+			sherlock.setResponseHeader(&re.Header)
+			sherlock.setResponseBody(string(re.Body))
+			sherlock.setResponseBodyInBytes(re.Body)
+			sherlock.setStatusCode(re.StatusCode)
+		},
+	}).Start()
 
-	client := &http.Client{}
-	response, err := client.Get(sherlock.addr)
-
-	if err != nil {
-		sherlock.taskError = err
-		sherlock.setTaskState(FAILED)
-		sherlock.taskErrorTry++
-
-		sherlock.SetWaitGroupDone(waitGroup)
-		return false
-	}
-	t := time.Now()
-	respT := t.Sub(startTime)
-	sherlock.setResponseTime(respT)
-	defer response.Body.Close()
-
-	bodyBytes, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		sherlock.onError(err)
-		sherlock.SetWaitGroupDone(waitGroup)
-		return false
-	}
-
-	sherlock.setResponse(response)
-	sherlock.setResponseHeader(&response.Header)
-	sherlock.setResponseBody(string(bodyBytes))
-	sherlock.setResponseBodyInBytes(bodyBytes)
-	sherlock.setStatusCode(response.StatusCode)
 	sherlock.setTaskError(nil)
 	sherlock.setTaskState(FINISHED)
 
