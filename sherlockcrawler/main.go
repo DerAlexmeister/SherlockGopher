@@ -28,6 +28,7 @@ func main() {
 	fmt.Printf("[+] Successfully initialized the serivce %s", serviceName)
 
 	crawlerservice := sherlock.NewSherlockCrawlerService()
+	defer crawlerservice.BrowserCancelcontext()
 
 	deps := sherlock.SherlockDependencies{
 		Analyser: func() aproto.AnalyserService {

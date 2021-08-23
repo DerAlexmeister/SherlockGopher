@@ -70,10 +70,12 @@ func convert(task *CrawlerTaskRequest) *sherlockkafka.KafkaTask {
 		tmp.TaskError = task.taskError.Error()
 	}
 	tmp.StatusCode = task.statusCode
+	fmt.Println(task.statusCode)
 	tmp.ResponseBodyBytes = task.responseBodyBytes
+	fmt.Println(task.responseBodyBytes)
 	tmp.ResponseHeader = tmpmap
 	tmp.ResponseTime = task.responseTime
-	if task.GetResponseHeader() != nil {
+	if task != nil && task.responseHeader != nil && task.GetResponseHeader() != nil && len(*task.responseHeader) > 0 {
 		for headerkey, headerValue := range task.GetResponseHeader() {
 			tmpmap[headerkey] = headerValue
 		}
@@ -94,7 +96,7 @@ func (sherlock *SherlockCrawler) SendTaskToAnalyser(ctx context.Context, task *C
 		tmp := convert(task)
 
 		res1B, _ := json.Marshal(tmp)
-		fmt.Println(res1B)
+		//fmt.Println(res1B)
 
 		kwriter := NewKafkaWriter(topictask, brokerAddress)
 

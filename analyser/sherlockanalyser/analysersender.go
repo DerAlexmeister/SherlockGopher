@@ -106,7 +106,7 @@ func (analyser *AnalyserServiceHandler) ReceiveTaskFromCrawler(ctx context.Conte
 			panic("could not read message " + err.Error())
 		}
 		// after receiving the message create task
-		fmt.Println(msg)
+		//fmt.Println(msg)
 
 		var tmptask sherlockkafka.KafkaTask
 		err = json.Unmarshal(msg.Value, &tmptask)
@@ -126,7 +126,9 @@ func (analyser *AnalyserServiceHandler) ReceiveTaskFromCrawler(ctx context.Conte
 		task.setAddr(tmptask.Addr)
 		task.setTaskError(errors.New(tmptask.TaskError))
 		task.setResponseHeader(&headerMap)
+		fmt.Println(tmptask.ResponseBodyBytes)
 		task.setResponseBody(tmptask.ResponseBodyBytes)
+		fmt.Println(tmptask.StatusCode)
 		task.setStatusCode(tmptask.StatusCode)
 		task.setResponseTime(tmptask.ResponseTime)
 		analyserTaskRequest := NewTask(task)

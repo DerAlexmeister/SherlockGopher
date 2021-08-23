@@ -273,8 +273,7 @@ func listenForNetworkEvent(ctx context.Context, sherlock *CrawlerTaskRequest) {
 							fmt.Println(res)
 							sherlock.setResponseHeader(&res)
 						} else {
-							res := http.Header{}
-							sherlock.setResponseHeader(&res)
+							sherlock.setResponseHeader(nil)
 						}
 						statuscode := resp.Status
 						sherlock.setResponseBody(string(body))

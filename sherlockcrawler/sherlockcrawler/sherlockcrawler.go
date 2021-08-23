@@ -28,16 +28,17 @@ SherlockCrawler will be the crawlerService.
 */
 //nolint: structcheck
 type SherlockCrawler struct {
-	StreamQueue     CrawlerQueueInterface //Queue with all tasks
-	Dependencies    *SherlockDependencies
-	Queue           *CrawlerQueue //Queue with all tasks
-	observer        CrawlerObserverInterface
-	watchdog        swd.WatchdogInterface
-	analyserService *aproto.AnalyserService
-	state           int
-	delay           *time.Duration
-	idleCounter     int
-	Browsercontext  context.Context
+	StreamQueue          CrawlerQueueInterface //Queue with all tasks
+	Dependencies         *SherlockDependencies
+	Queue                *CrawlerQueue //Queue with all tasks
+	observer             CrawlerObserverInterface
+	watchdog             swd.WatchdogInterface
+	analyserService      *aproto.AnalyserService
+	state                int
+	delay                *time.Duration
+	idleCounter          int
+	Browsercontext       context.Context
+	BrowserCancelcontext context.CancelFunc
 }
 
 /*
@@ -107,30 +108,9 @@ func NewSherlockDependencies() *SherlockDependencies {
 	return &SherlockDependencies{}
 }
 
-func startBrowser() context.Context {
-	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.Flag("disable-gpu", true),
-		chromedp.NoDefaultBrowserCheck,
-		chromedp.Flag("headless", true),
-		chromedp.Flag("ignore-certificate-errors", true),
-	)
-
-	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
-	defer cancel()
-
-	// also set up a custom logger
-	taskCtx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
-	defer cancel()
-
-	// create a timeout
-	taskCtx, cancel = context.WithTimeout(taskCtx, 10*time.Second)
-	defer cancel()
-
-	// ensure that the browser process is started
-	if err := chromedp.Run(taskCtx); err != nil {
-		panic(err)
-	}
-	return taskCtx
+func startBrowser() (context.Context, context.CancelFunc) {
+	ctx, cancel := chromedp.NewContext(context.TODO())
+	return ctx, cancel
 }
 
 /*
@@ -142,15 +122,16 @@ func NewSherlockCrawlerService() *SherlockCrawler {
 	que.SetWatchdog(&watchdog)
 	observer := NewCrawlerObserver()
 	streamQue := NewCrawlerQueue()
-	ctx := startBrowser()
+	ctx, cctx := startBrowser()
 
 	crawler := SherlockCrawler{
-		Queue:          &que,
-		Dependencies:   nil,
-		observer:       observer,
-		StreamQueue:    &streamQue,
-		watchdog:       &watchdog,
-		Browsercontext: ctx,
+		Queue:                &que,
+		Dependencies:         nil,
+		observer:             observer,
+		StreamQueue:          &streamQue,
+		watchdog:             &watchdog,
+		Browsercontext:       ctx,
+		BrowserCancelcontext: cctx,
 	}
 
 	observer.SetCrawler(&crawler)
