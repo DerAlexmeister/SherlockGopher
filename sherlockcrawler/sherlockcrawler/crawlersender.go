@@ -61,9 +61,6 @@ convert creates a new KafkaTask with a CrawlerTaskRequest
 func convert(task *CrawlerTaskRequest) *sherlockkafka.KafkaTask {
 	tmp := sherlockkafka.KafkaTask{}
 	tmpmap := make(map[string][]string)
-	for headerkey, headerValue := range *task.responseHeader {
-		tmpmap[headerkey] = headerValue
-	}
 	tmp.TaskID = task.taskID
 	tmp.Addr = task.addr
 	if task.taskError == nil {
@@ -76,6 +73,11 @@ func convert(task *CrawlerTaskRequest) *sherlockkafka.KafkaTask {
 	tmp.ResponseBodyBytes = task.responseBodyBytes
 	tmp.ResponseHeader = tmpmap
 	tmp.ResponseTime = task.responseTime
+	if task.GetResponseHeader() != nil {
+		for headerkey, headerValue := range task.GetResponseHeader() {
+			tmpmap[headerkey] = headerValue
+		}
+	}
 	return &tmp
 }
 

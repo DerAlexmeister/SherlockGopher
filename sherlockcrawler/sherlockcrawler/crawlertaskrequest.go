@@ -1,13 +1,16 @@
 package sherlockcrawler
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
 
-	"github.com/geziyor/geziyor"
+	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/cdproto/network"
+	"github.com/chromedp/chromedp"
 	log "github.com/sirupsen/logrus"
-	"go.etcd.io/etcd/client"
 
 	"github.com/pkg/errors"
 )
@@ -43,6 +46,7 @@ type CrawlerTaskRequest struct {
 	responseBodyBytes []byte        //body, split
 	statusCode        int           //statusCode, once
 	responseTime      time.Duration //response time, once
+	bcontext          context.Context
 }
 
 func NewCrawlerTaskRequest(taskID uint64, addr string, taskState TaskState, taskError error, taskErrorTry int, response *http.Response, responseHeader *http.Header, responseBody string, responseBodyBytes []byte, statusCode int, responseTime time.Duration) *CrawlerTaskRequest {
@@ -71,6 +75,13 @@ GetAddr getter for the address.
 */
 func (sherlock *CrawlerTaskRequest) GetAddr() string {
 	return sherlock.addr
+}
+
+/*
+GetAddr getter for the address.
+*/
+func (sherlock *CrawlerTaskRequest) GetBContext() context.Context {
+	return sherlock.bcontext
 }
 
 /*
@@ -159,6 +170,13 @@ func (sherlock *CrawlerTaskRequest) setAddr(addr string) {
 }
 
 /*
+setAddr will set the addr to a given CrawlerTaskRequest.
+*/
+func (sherlock *CrawlerTaskRequest) setBContext(ctx context.Context) {
+	sherlock.bcontext = ctx
+}
+
+/*
 setResponse will set the response of the Request to a given CrawlerTaskRequest.
 */
 func (sherlock *CrawlerTaskRequest) setTaskState(taskState TaskState) {
@@ -230,6 +248,45 @@ func (sherlock *CrawlerTaskRequest) onError(err error) {
 	sherlock.setTaskState(FAILED)
 }
 
+func listenForNetworkEvent(ctx context.Context, sherlock *CrawlerTaskRequest) {
+	chromedp.ListenTarget(
+		ctx,
+		func(ev interface{}) {
+			if ev, ok := ev.(*network.EventResponseReceived); ok {
+				go func() {
+					c := chromedp.FromContext(ctx)
+					rbp := network.GetResponseBody(ev.RequestID)
+					body, err := rbp.Do(cdp.WithExecutor(ctx, c.Target))
+					if err != nil {
+						sherlock.setTaskError(err)
+						fmt.Println(err)
+					} else {
+						resp := ev.Response
+						if len(resp.Headers) > 0 {
+							fmt.Println("Headersold")
+							fmt.Println(resp.Headers)
+							res := make(http.Header)
+							for k, v := range resp.Headers {
+								res.Add(k, v.(string))
+							}
+							fmt.Println("Headers")
+							fmt.Println(res)
+							sherlock.setResponseHeader(&res)
+						} else {
+							res := http.Header{}
+							sherlock.setResponseHeader(&res)
+						}
+						statuscode := resp.Status
+						sherlock.setResponseBody(string(body))
+						sherlock.setResponseBodyInBytes(body)
+						sherlock.setStatusCode(int(statuscode))
+					}
+				}()
+			}
+		},
+	)
+}
+
 /*
 MakeRequestAndStoreResponse will make a request and store the result in the field response of the task.
 */
@@ -249,22 +306,19 @@ func (sherlock *CrawlerTaskRequest) MakeRequestAndStoreResponse(waitGroup *sync.
 		return false
 	}
 
+	ctx := sherlock.GetBContext()
+
 	startTime := time.Now()
-	geziyor.NewGeziyor(&geziyor.Options{
-		StartRequestsFunc: func(g *geziyor.Geziyor) {
-			g.GetRendered(sherlock.addr, g.Opt.ParseFunc)
-		},
-		ParseFunc: func(g *geziyor.Geziyor, r *client.Response) {
-			t := time.Now()
-			respT := t.Sub(startTime)
-			sherlock.setResponseTime(respT)
-			sherlock.setResponse(re.Response)
-			sherlock.setResponseHeader(&re.Header)
-			sherlock.setResponseBody(string(re.Body))
-			sherlock.setResponseBodyInBytes(re.Body)
-			sherlock.setStatusCode(re.StatusCode)
-		},
-	}).Start()
+	listenForNetworkEvent(ctx, sherlock)
+
+	chromedp.Run(ctx,
+		network.Enable(),
+		chromedp.Navigate(`https://web-scraping-playground-site.firebaseapp.com/`),
+		chromedp.WaitVisible(`body`, chromedp.BySearch),
+	)
+	t := time.Now()
+	respT := t.Sub(startTime)
+	sherlock.setResponseTime(respT)
 
 	sherlock.setTaskError(nil)
 	sherlock.setTaskState(FINISHED)
