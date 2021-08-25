@@ -7,7 +7,6 @@ import (
 	"time"
 
 	swd "github.com/DerAlexx/SherlockGopher/sherlockwatchdog"
-	"github.com/chromedp/chromedp"
 	log "github.com/sirupsen/logrus"
 
 	aproto "github.com/DerAlexx/SherlockGopher/analyser/proto"
@@ -28,17 +27,15 @@ SherlockCrawler will be the crawlerService.
 */
 //nolint: structcheck
 type SherlockCrawler struct {
-	StreamQueue          CrawlerQueueInterface //Queue with all tasks
-	Dependencies         *SherlockDependencies
-	Queue                *CrawlerQueue //Queue with all tasks
-	observer             CrawlerObserverInterface
-	watchdog             swd.WatchdogInterface
-	analyserService      *aproto.AnalyserService
-	state                int
-	delay                *time.Duration
-	idleCounter          int
-	Browsercontext       context.Context
-	BrowserCancelcontext context.CancelFunc
+	StreamQueue     CrawlerQueueInterface //Queue with all tasks
+	Dependencies    *SherlockDependencies
+	Queue           *CrawlerQueue //Queue with all tasks
+	observer        CrawlerObserverInterface
+	watchdog        swd.WatchdogInterface
+	analyserService *aproto.AnalyserService
+	state           int
+	delay           *time.Duration
+	idleCounter     int
 }
 
 /*
@@ -108,11 +105,6 @@ func NewSherlockDependencies() *SherlockDependencies {
 	return &SherlockDependencies{}
 }
 
-func startBrowser() (context.Context, context.CancelFunc) {
-	ctx, cancel := chromedp.NewContext(context.TODO())
-	return ctx, cancel
-}
-
 /*
 NewSherlockCrawlerService will return a new sherlockCrawler instance.
 */
@@ -122,16 +114,13 @@ func NewSherlockCrawlerService() *SherlockCrawler {
 	que.SetWatchdog(&watchdog)
 	observer := NewCrawlerObserver()
 	streamQue := NewCrawlerQueue()
-	ctx, cctx := startBrowser()
 
 	crawler := SherlockCrawler{
-		Queue:                &que,
-		Dependencies:         nil,
-		observer:             observer,
-		StreamQueue:          &streamQue,
-		watchdog:             &watchdog,
-		Browsercontext:       ctx,
-		BrowserCancelcontext: cctx,
+		Queue:        &que,
+		Dependencies: nil,
+		observer:     observer,
+		StreamQueue:  &streamQue,
+		watchdog:     &watchdog,
 	}
 
 	observer.SetCrawler(&crawler)
@@ -151,13 +140,6 @@ func (sherlock *SherlockCrawler) InjectDependency(deps *SherlockDependencies) {
 	sherlock.Dependencies = deps
 	serv := sherlock.Dependencies.Analyser()
 	sherlock.analyserService = &serv
-}
-
-/*
-getDependency will return a pointer to the dependencies instance of this service.
-*/
-func (sherlock *SherlockCrawler) GetBrowserContext() context.Context {
-	return sherlock.Browsercontext
 }
 
 /*
@@ -188,7 +170,6 @@ func (sherlock SherlockCrawler) CreateTask(ctx context.Context, in *proto.CrawlT
 	message := fmt.Sprintf("malformed or invalid url: %s", in.GetUrl())
 	if isValid := govalidator.IsURL(in.GetUrl()); isValid {
 		task := NewTask()
-		task.setBContext(sherlock.GetBrowserContext())
 		task.setAddr(in.GetUrl())
 		if id := sherlock.getQueue().AppendQueue(&task); id > 0 {
 			out.Statuscode = proto.URL_STATUS_ok
@@ -210,7 +191,6 @@ func (sherlock SherlockCrawler) NextCreateTask(url string) error {
 	message := fmt.Sprintf("malformed or invalid url: %s", url)
 	if isValid := govalidator.IsURL(url); isValid {
 		task := NewTask()
-		task.setBContext(sherlock.GetBrowserContext())
 		task.setAddr(url)
 		if id := sherlock.getQueue().AppendQueue(&task); id > 0 {
 			log.Debug("Created task ", task.GetTaskID(), task.GetAddr())
@@ -321,7 +301,6 @@ func (sherlock *SherlockCrawler) ReceiveURL(ctx context.Context, in *proto.Submi
 	if isValid := govalidator.IsURL(in.GetURL()); isValid {
 		log.Info("Received URL from web server, will result in a new task with address .", in.GetURL())
 		task := NewTask()
-		task.setBContext(sherlock.GetBrowserContext())
 		task.setAddr(in.GetURL())
 		sherlock.getQueue().AppendQueue(&task)
 		out.Recieved = true

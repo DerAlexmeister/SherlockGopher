@@ -10,7 +10,7 @@ admin_client = KafkaAdminClient(
 )
 
 topic_list = []
-topic_list.append("ktask")
+topic_list.append("testtask1")
 admin_client.delete_topics(topic_list, timeout_ms=30)
 
 consumer = KafkaConsumer(

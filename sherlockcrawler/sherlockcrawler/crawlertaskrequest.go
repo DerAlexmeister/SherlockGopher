@@ -2,14 +2,12 @@ package sherlockcrawler
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"sync"
 	"time"
 
-	"github.com/chromedp/cdproto/cdp"
-	"github.com/chromedp/cdproto/network"
-	"github.com/chromedp/chromedp"
+	"github.com/geziyor/geziyor"
+	"github.com/geziyor/geziyor/client"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/pkg/errors"
@@ -248,44 +246,6 @@ func (sherlock *CrawlerTaskRequest) onError(err error) {
 	sherlock.setTaskState(FAILED)
 }
 
-func listenForNetworkEvent(ctx context.Context, sherlock *CrawlerTaskRequest) {
-	chromedp.ListenTarget(
-		ctx,
-		func(ev interface{}) {
-			if ev, ok := ev.(*network.EventResponseReceived); ok {
-				go func() {
-					c := chromedp.FromContext(ctx)
-					rbp := network.GetResponseBody(ev.RequestID)
-					body, err := rbp.Do(cdp.WithExecutor(ctx, c.Target))
-					if err != nil {
-						sherlock.setTaskError(err)
-						fmt.Println(err)
-					} else {
-						resp := ev.Response
-						if len(resp.Headers) > 0 {
-							fmt.Println("Headersold")
-							fmt.Println(resp.Headers)
-							res := make(http.Header)
-							for k, v := range resp.Headers {
-								res.Add(k, v.(string))
-							}
-							fmt.Println("Headers")
-							fmt.Println(res)
-							sherlock.setResponseHeader(&res)
-						} else {
-							sherlock.setResponseHeader(nil)
-						}
-						statuscode := resp.Status
-						sherlock.setResponseBody(string(body))
-						sherlock.setResponseBodyInBytes(body)
-						sherlock.setStatusCode(int(statuscode))
-					}
-				}()
-			}
-		},
-	)
-}
-
 /*
 MakeRequestAndStoreResponse will make a request and store the result in the field response of the task.
 */
@@ -304,23 +264,31 @@ func (sherlock *CrawlerTaskRequest) MakeRequestAndStoreResponse(waitGroup *sync.
 		sherlock.SetWaitGroupDone(waitGroup)
 		return false
 	}
-
-	ctx := sherlock.GetBContext()
-
 	startTime := time.Now()
-	listenForNetworkEvent(ctx, sherlock)
+	geziyor.NewGeziyor(&geziyor.Options{
+		StartRequestsFunc: func(g *geziyor.Geziyor) {
+			g.GetRendered(sherlock.addr, g.Opt.ParseFunc)
+		},
+		ParseFunc: func(g *geziyor.Geziyor, r *client.Response) {
+			t := time.Now()
+			respT := t.Sub(startTime)
 
-	chromedp.Run(ctx,
-		network.Enable(),
-		chromedp.Navigate(`https://web-scraping-playground-site.firebaseapp.com/`),
-		chromedp.WaitVisible(`body`, chromedp.BySearch),
-	)
-	t := time.Now()
-	respT := t.Sub(startTime)
-	sherlock.setResponseTime(respT)
+			sherlock.setResponseBody(string(r.Body))
+			sherlock.setResponseBodyInBytes(r.Body)
+			sherlock.setResponseHeader(&r.Header)
+			sherlock.setStatusCode(r.StatusCode)
 
-	sherlock.setTaskError(nil)
-	sherlock.setTaskState(FINISHED)
+			sherlock.setResponseTime(respT)
+			sherlock.setTaskError(nil)
+			sherlock.setTaskState(FINISHED)
+		},
+		ErrorFunc: func(g *geziyor.Geziyor, r *client.Request, err error) {
+			sherlock.setTaskError(err)
+			sherlock.setTaskState(FAILED)
+			sherlock.taskErrorTry++
+		},
+		//BrowserEndpoint: "ws://localhost:3000",
+	}).Start()
 
 	log.WithFields(log.Fields{
 		"addr": sherlock.addr,

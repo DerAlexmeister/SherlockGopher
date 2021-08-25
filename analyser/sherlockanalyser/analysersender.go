@@ -126,7 +126,7 @@ func (analyser *AnalyserServiceHandler) ReceiveTaskFromCrawler(ctx context.Conte
 		task.setAddr(tmptask.Addr)
 		task.setTaskError(errors.New(tmptask.TaskError))
 		task.setResponseHeader(&headerMap)
-		fmt.Println(tmptask.ResponseBodyBytes)
+		fmt.Println(string(tmptask.ResponseBodyBytes))
 		task.setResponseBody(tmptask.ResponseBodyBytes)
 		fmt.Println(tmptask.StatusCode)
 		task.setStatusCode(tmptask.StatusCode)

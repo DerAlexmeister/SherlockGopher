@@ -63,6 +63,9 @@ func convert(task *CrawlerTaskRequest) *sherlockkafka.KafkaTask {
 	tmpmap := make(map[string][]string)
 	tmp.TaskID = task.taskID
 	tmp.Addr = task.addr
+	for headerkey, headerValue := range task.GetResponseHeader() {
+		tmpmap[headerkey] = headerValue
+	}
 	if task.taskError == nil {
 		tmperr := errors.New("")
 		tmp.TaskError = tmperr.Error()
@@ -70,16 +73,13 @@ func convert(task *CrawlerTaskRequest) *sherlockkafka.KafkaTask {
 		tmp.TaskError = task.taskError.Error()
 	}
 	tmp.StatusCode = task.statusCode
-	fmt.Println(task.statusCode)
 	tmp.ResponseBodyBytes = task.responseBodyBytes
-	fmt.Println(task.responseBodyBytes)
 	tmp.ResponseHeader = tmpmap
 	tmp.ResponseTime = task.responseTime
-	if task != nil && task.responseHeader != nil && task.GetResponseHeader() != nil && len(*task.responseHeader) > 0 {
-		for headerkey, headerValue := range task.GetResponseHeader() {
-			tmpmap[headerkey] = headerValue
-		}
-	}
+	fmt.Println(string(task.responseBody))
+	fmt.Println(task.statusCode)
+	fmt.Println(task.responseHeader)
+	fmt.Println(task.responseTime)
 	return &tmp
 }
 
