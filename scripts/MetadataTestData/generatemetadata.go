@@ -8,8 +8,8 @@ import (
 )
 
 type Metadata struct {
-	img_id            int
 	neo4j_node_id     int
+	img_url           string
 	datetime_original string
 	model             string
 	make              string

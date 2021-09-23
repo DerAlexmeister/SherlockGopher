@@ -108,10 +108,9 @@ type MetaArray struct {
 	metamap map[string]interface{}
 }
 
-type ImageMetadata struct {
+type Metadata struct {
 	neo4j_node_id     int
 	img_url           string
-	condition         bool
 	datetime_original string
 	model             string
 	make              string
@@ -120,8 +119,6 @@ type ImageMetadata struct {
 	gps_latitude      string
 	gps_longitude     string
 }
-
-type metadata struct{}
 
 /*
 NewRequestedURL will be a new instance of RequestedURL.
@@ -513,7 +510,7 @@ DropPostgresTable should drop the postgres table.
 */
 func (server *SherlockWebserver) DropPostgresTable(context *gin.Context) {
 
-	err := server.PGdriver.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&metadata{})
+	err := server.PGdriver.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&Metadata{})
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{
@@ -647,16 +644,16 @@ func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
 		})
 	}
 
-	var tmpmeta []ImageMetadata
+	var tmpmeta []Metadata
 
 	for i := range resultmap {
-		tmp := ImageMetadata{}
+		tmp := Metadata{}
 		tmp.neo4j_node_id = int(resultmap[i]["neo4j_node_id"].(int32))
 		tmp.img_url = isNil(resultmap[i]["img_url"])
-		tmp.condition = resultmap[i]["condition"].(bool)
 		tmp.datetime_original = isNil(resultmap[i]["datetime_original"])
 		tmp.model = isNil(resultmap[i]["model"])
 		tmp.make = isNil(resultmap[i]["make"])
+		tmp.maker_note = isNil(resultmap[i]["maker_note"])
 		tmp.software = isNil(resultmap[i]["software"])
 		tmp.gps_longitude = isNil(resultmap[i]["gps_longitude"])
 		tmp.gps_latitude = isNil(resultmap[i]["gps_latitude"])
@@ -670,7 +667,6 @@ func (server *SherlockWebserver) GetMetaData(ctx *gin.Context) {
 		tmpmap = append(tmpmap, gin.H{
 			"neo4j_node_id":     v.neo4j_node_id,
 			"img_url":           v.img_url,
-			"condition":         v.condition,
 			"datetime_original": v.datetime_original,
 			"model":             v.model,
 			"make":              v.make,

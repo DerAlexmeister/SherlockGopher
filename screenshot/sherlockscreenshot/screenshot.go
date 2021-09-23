@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"strings"
 
 	sherlockkafka "github.com/DerAlexx/SherlockGopher/sherlockkafka"
 	"github.com/chromedp/cdproto/page"
@@ -158,7 +159,9 @@ func (scrser *ScreenshotService) ConsumeUrlForScreenshot(ctx context.Context) {
 		if err != nil {
 			panic("parsing json failed" + err.Error())
 		}
-		res := scrser.TakeScreenshot(tmpurl.URL)
-		scrser.GetClient().Save(res)
+		if !strings.HasSuffix(tmpurl.URL, ".css") && !strings.HasSuffix(tmpurl.URL, ".js") && !strings.HasSuffix(tmpurl.URL, ".png") && !strings.HasSuffix(tmpurl.URL, ".jpg") {
+			res := scrser.TakeScreenshot(tmpurl.URL)
+			scrser.GetClient().Save(res)
+		}
 	}
 }

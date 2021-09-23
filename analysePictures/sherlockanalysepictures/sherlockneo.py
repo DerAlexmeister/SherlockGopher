@@ -1,8 +1,23 @@
 #!/usr/bin/env python3
 
+import os
 from neo4j import GraphDatabase
 
-URL = "bolt://10.0.2.15:7687" #"bolt://0.0.0.0:7687"
+def readFromENV(key, defaultVal):
+    try:
+        value = os.environ[key]
+        if value is None or value == "":
+            return defaultVal
+        return value
+    except:
+        return defaultVal
+
+def init():
+    add = readFromENV("FLASKA_URL", "0.0.0.0")
+    uri = "bolt://" + add + ":7687"
+    return uri     
+
+URL =  init()
 USER = "neo4j"
 PASS = "test"
 
@@ -46,18 +61,20 @@ def getPASS():
 def Images(tx):
     a = tx.run(findStatement("Images"))
     a = [(record['NodeID'], record['Address']) for record in a]
-    print(a, type(a))
+    #print(a, type(a))
     return a
 
 def runStatements(driver):
     ''' Will run all statements. '''
     try:
         with driver.session() as session:
-            session.read_transaction(Images)
+            a = session.read_transaction(Images)
+            return a
     except Exception as error:
         print("runStatements", error)
             
 def GetImages():
     ''' Skript entrypoint. '''
     neo4jinst = Neo4JInstance(getURL(), getUSER(), getPASS())
-    runStatements(neo4jinst._driver)
+    a = runStatements(neo4jinst._driver)
+    return a

@@ -89,7 +89,8 @@ func (db *DB) DropDB() error {
 	collection := db.GetMongoClient().Database("dbscreenshots").Collection("screenshots")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := collection.Drop(ctx); err != nil {
+	err := collection.Drop(ctx)
+	if err != nil {
 		return err
 	}
 	return nil

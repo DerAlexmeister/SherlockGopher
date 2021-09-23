@@ -89,7 +89,7 @@ func (sherlock *AnalyserServiceHandler) SendUrlToCrawler(ctx context.Context, ur
 }
 
 /*
-SendUrlToCrawler is a kafka consumer, receiving tasks from the crawler
+ReceiveTaskFromCrawler is a kafka consumer, receiving tasks from the crawler
 */
 func (analyser *AnalyserServiceHandler) ReceiveTaskFromCrawler(ctx context.Context) {
 	// initialize a new reader with the brokers and topic

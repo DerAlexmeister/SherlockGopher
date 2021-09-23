@@ -95,12 +95,12 @@ def DownloadImage():
 
     listWithIdAndUrl = GetImages() 
     #for test purpose
-    #listWithIdAndUrl = [(6, "https://www.aboutbenita.com/wp-content/uploads/benita-thenhaus-body.jpg")]
+    #listWithIdAndUrl = [(6, 'https://www.aboutbenita.com/wp-content/uploads/benita-thenhaus-body.jpg')]
+    print(listWithIdAndUrl)
 
     # check list
     if listWithIdAndUrl is not None and isinstance(listWithIdAndUrl, list) and len(listWithIdAndUrl) != 0:
-        for pair in listWithIdAndUrl:
-
+        for pair in listWithIdAndUrl:  
             response = requests.get(pair[1])
             _, fileExtension = os.path.splitext(pair[1])
             pathplusext = filePathToImage+fileExtension
